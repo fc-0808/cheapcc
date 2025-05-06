@@ -1,20 +1,69 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Script from 'next/script';
 
 export default function Home() {
-  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'error' | 'cancel'>('idle');
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [orderID, setOrderID] = useState<string | null>(null);
+  const [sdkReady, setSdkReady] = useState<boolean>(false);
+  const [sdkError, setSdkError] = useState<boolean>(false);
+  const paypalButtonContainerRef = useRef<HTMLDivElement>(null);
+  const scriptTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Function to handle when the PayPal SDK is loaded
+  const handlePayPalLoad = () => {
+    console.log('PayPal SDK loaded successfully');
+    setSdkReady(true);
+    setSdkError(false);
+    
+    // Clear timeout if it exists
+    if (scriptTimeoutRef.current) {
+      clearTimeout(scriptTimeoutRef.current);
+      scriptTimeoutRef.current = null;
+    }
+  };
+  
+  // Function to handle script load error
+  const handlePayPalError = () => {
+    console.error('PayPal SDK failed to load');
+    setSdkError(true);
+  };
+  
+  // Set a timeout to detect if the script doesn't load in a reasonable time
+  useEffect(() => {
+    // Set a 5 second timeout to check if the SDK loaded
+    scriptTimeoutRef.current = setTimeout(() => {
+      if (!sdkReady) {
+        console.warn('PayPal SDK is taking too long to load, may be blocked');
+        setSdkError(true);
+      }
+    }, 5000);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (scriptTimeoutRef.current) {
+        clearTimeout(scriptTimeoutRef.current);
+      }
+    };
+  }, [sdkReady]);
   
   // Initialize PayPal buttons when the SDK is loaded
-  const initializePayPalButton = () => {
+  useEffect(() => {
+    if (!sdkReady) return;
+    
+    // Clear any existing buttons to prevent duplicates
+    if (paypalButtonContainerRef.current) {
+      paypalButtonContainerRef.current.innerHTML = '';
+    }
+    
+    // Render the PayPal buttons
     if (typeof window !== 'undefined' && window.paypal) {
       window.paypal.Buttons({
         // Create order on the server
         createOrder: async () => {
           try {
-            setPaymentStatus('idle');
+            setPaymentStatus('loading');
             const response = await fetch('/api/orders', {
               method: 'POST',
               headers: {
@@ -39,6 +88,7 @@ export default function Home() {
         // Capture the order on the server
         onApprove: async (data: PayPalApproveData, actions: any) => {
           try {
+            setPaymentStatus('loading');
             const response = await fetch('/api/orders/capture', {
               method: 'POST',
               headers: {
@@ -83,35 +133,70 @@ export default function Home() {
         },
       }).render('#paypal-button-container');
     }
-  };
-
-  // Call the initialize function when the component mounts
-  useEffect(() => {
-    // Check if the PayPal script is already loaded
-    if (typeof window !== 'undefined' && window.paypal) {
-      initializePayPalButton();
-    }
-  }, []);
+  }, [sdkReady]);
 
   // Function to reset the payment flow
   const handleReset = () => {
     setPaymentStatus('idle');
     setOrderID(null);
-    // Re-render the PayPal button
-    if (typeof window !== 'undefined' && window.paypal) {
-      document.getElementById('paypal-button-container')!.innerHTML = '';
-      initializePayPalButton();
+    setSdkError(false);
+    
+    // Attempt to reload the SDK if there was an error
+    if (sdkError) {
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture`;
+      script.async = true;
+      script.onload = handlePayPalLoad;
+      script.onerror = handlePayPalError;
+      document.head.appendChild(script);
+    }
+  };
+
+  // Create a simple button alternative for when PayPal is blocked
+  const handleAlternativeCheckout = async () => {
+    try {
+      setPaymentStatus('loading');
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const orderData = await response.json() as PayPalOrderResponse;
+      
+      if (orderData.error) {
+        throw new Error(orderData.error);
+      }
+      
+      setOrderID(orderData.id);
+      // Show a message before redirecting
+      alert('You will now be redirected to PayPal to complete your payment.');
+      // Redirect to PayPal checkout
+      window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${orderData.id}`;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      setPaymentStatus('error');
+      alert('Could not create PayPal order. Please try again.');
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
+      {/* Load the PayPal SDK script in the head with async attribute */}
+      <Script
+        src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture`}
+        strategy="afterInteractive"
+        async
+        onLoad={handlePayPalLoad}
+        onError={handlePayPalError}
+      />
+      
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">PayPal Webhook Test</h1>
           <h2 className="text-lg text-gray-600 mb-4">Simple Test Purchase</h2>
           
-          {paymentStatus === 'idle' && (
+          {(paymentStatus === 'idle' || paymentStatus === 'loading') && (
             <div className="mb-6">
               <p className="text-gray-700 mb-3">
                 This is a simple payment to test PayPal webhook functionality.
@@ -121,6 +206,12 @@ export default function Home() {
                 <span className="font-medium">Price:</span>
                 <span className="font-bold text-lg">$1.00</span>
               </div>
+            </div>
+          )}
+          
+          {paymentStatus === 'loading' && (
+            <div className="flex justify-center items-center my-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
           )}
           
@@ -190,17 +281,27 @@ export default function Home() {
             </div>
           )}
           
-          {/* PayPal Button Container - only show when in idle state */}
-          {paymentStatus === 'idle' && (
-            <div id="paypal-button-container" className="mt-8"></div>
+          {/* PayPal Button Container - only show when in idle state or loading (but loading state shows spinner above) */}
+          {(paymentStatus === 'idle' || paymentStatus === 'loading') && !sdkError && (
+            <div id="paypal-button-container" ref={paypalButtonContainerRef} className="mt-8"></div>
           )}
           
-          {/* PayPal Script */}
-          <Script
-            src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID}&currency=USD&intent=capture`}
-            onLoad={initializePayPalButton}
-            strategy="afterInteractive"
-          />
+          {/* Alternative payment button if PayPal SDK fails to load */}
+          {sdkError && paymentStatus === 'idle' && (
+            <div className="mt-8">
+              <div className="bg-yellow-50 p-4 rounded-md mb-4">
+                <p className="text-yellow-700">
+                  PayPal button could not be loaded. You can still checkout with PayPal using the button below.
+                </p>
+              </div>
+              <button 
+                onClick={handleAlternativeCheckout}
+                className="pp-7NZBCCB8LA938 mt-2"
+              >
+                Pay with PayPal
+              </button>
+            </div>
+          )}
           
           <div className="mt-8 p-4 bg-gray-100 rounded-lg">
             <h2 className="font-bold mb-2">Note:</h2>

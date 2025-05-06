@@ -24,6 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Preconnect to PayPal domains to improve loading performance */}
+        <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.sandbox.paypal.com" crossOrigin="anonymous" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
