@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
+import { PRICING_OPTIONS, PricingOption } from '@/utils/products';
 
 // PayPal client configuration
 const environment = new paypal.core.SandboxEnvironment(
@@ -19,6 +20,19 @@ interface PayPalOrderResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    // Get the pricing option ID from the request
+    const { priceId } = await request.json();
+    
+    // Find the selected pricing option
+    const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
+    
+    if (!selectedOption) {
+      return NextResponse.json(
+        { error: 'Invalid pricing option' },
+        { status: 400 }
+      );
+    }
+
     // Create order request
     const orderRequest = new paypal.orders.OrdersCreateRequest();
     orderRequest.requestBody({
@@ -27,26 +41,27 @@ export async function POST(request: NextRequest) {
         {
           amount: {
             currency_code: 'USD',
-            value: '1.00',
+            value: selectedOption.price.toFixed(2),
           },
-          description: 'PayPal Webhook Test Purchase',
+          description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
         },
       ],
       application_context: {
-        brand_name: 'Webhook Test',
+        brand_name: 'Adobe Creative Cloud',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
-        // No need for return_url and cancel_url since we're handling everything via client-side JS
       },
     });
 
     // Call PayPal to create the order
     const order = await client.execute(orderRequest) as PayPalOrderResponse;
 
-    // Return the order ID to the client
+    // Return the order ID and details to the client
     return NextResponse.json({
       id: order.result.id,
       status: order.result.status,
+      price: selectedOption.price,
+      duration: selectedOption.duration,
     });
   } catch (error) {
     console.error('Error creating PayPal order:', error);

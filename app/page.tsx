@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Script from 'next/script';
+import { PRODUCT, PRICING_OPTIONS } from '@/utils/products';
 
 export default function Home() {
+  const [selectedPrice, setSelectedPrice] = useState<string>('1m'); // Default to 1 month
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [orderID, setOrderID] = useState<string | null>(null);
   const [sdkReady, setSdkReady] = useState<boolean>(false);
@@ -69,8 +71,9 @@ export default function Home() {
               headers: {
                 'Content-Type': 'application/json',
               },
+              body: JSON.stringify({ priceId: selectedPrice }),
             });
-            const orderData = await response.json() as PayPalOrderResponse;
+            const orderData = await response.json();
             
             if (orderData.error) {
               throw new Error(orderData.error);
@@ -86,7 +89,7 @@ export default function Home() {
           }
         },
         // Capture the order on the server
-        onApprove: async (data: PayPalApproveData, actions: any) => {
+        onApprove: async (data: any, actions: any) => {
           try {
             setPaymentStatus('loading');
             const response = await fetch('/api/orders/capture', {
@@ -99,7 +102,7 @@ export default function Home() {
               }),
             });
             
-            const captureData = await response.json() as PayPalCaptureResponse;
+            const captureData = await response.json();
             
             if (captureData.error) {
               throw new Error(captureData.error);
@@ -133,7 +136,7 @@ export default function Home() {
         },
       }).render('#paypal-button-container');
     }
-  }, [sdkReady]);
+  }, [sdkReady, selectedPrice]);
 
   // Function to reset the payment flow
   const handleReset = () => {
@@ -180,135 +183,126 @@ export default function Home() {
     }
   };
 
+  const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice)!;
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
-      {/* Load the PayPal SDK script in the head with async attribute */}
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Script
         src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture`}
         strategy="afterInteractive"
-        async
         onLoad={handlePayPalLoad}
         onError={handlePayPalError}
       />
-      
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">PayPal Webhook Test</h1>
-          <h2 className="text-lg text-gray-600 mb-4">Simple Test Purchase</h2>
-          
-          {(paymentStatus === 'idle' || paymentStatus === 'loading') && (
-            <div className="mb-6">
-              <p className="text-gray-700 mb-3">
-                This is a simple payment to test PayPal webhook functionality.
-                After payment, check your server logs for webhook events.
-              </p>
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium">Price:</span>
-                <span className="font-bold text-lg">$1.00</span>
-              </div>
-            </div>
-          )}
-          
-          {paymentStatus === 'loading' && (
-            <div className="flex justify-center items-center my-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          )}
-          
-          {paymentStatus === 'success' && (
-            <div className="mb-6">
-              <div className="bg-green-50 p-4 rounded-md mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span className="text-green-700 font-medium">Payment Successful!</span>
-              </div>
-              <p className="text-gray-700 mb-3">
-                Your payment has been processed. Check your server logs to see the webhook events.
-              </p>
-              {orderID && (
-                <div className="bg-gray-50 p-3 rounded-md text-sm text-gray-600 mb-4">
-                  <p className="font-medium">Order ID:</p>
-                  <code className="bg-gray-100 p-1 rounded">{orderID}</code>
+
+      <div className="max-w-7xl mx-auto">
+        {/* Product Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{PRODUCT.name}</h1>
+          <p className="text-xl text-gray-600">{PRODUCT.description}</p>
+        </div>
+
+        {/* Pricing Options */}
+        <div className="max-w-5xl mx-auto mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {PRICING_OPTIONS.map((option) => (
+              <div
+                key={option.id}
+                className={`relative rounded-lg border-2 p-6 ${
+                  selectedPrice === option.id
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <button
+                  onClick={() => setSelectedPrice(option.id)}
+                  className="absolute inset-0 w-full h-full cursor-pointer"
+                  aria-label={`Select ${option.name} plan`}
+                />
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {option.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4">{option.duration}</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-2">
+                    ${option.price}
+                  </p>
+                  <p className="text-sm text-gray-600">{option.description}</p>
                 </div>
-              )}
-              <button 
-                onClick={handleReset}
-                className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Make Another Test Payment
-              </button>
-            </div>
-          )}
-          
-          {paymentStatus === 'cancel' && (
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Payment Section */}
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-6">
             <div className="mb-6">
-              <div className="bg-yellow-50 p-4 rounded-md mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <span className="text-yellow-700 font-medium">Payment Cancelled</span>
-              </div>
-              <p className="text-gray-700 mb-4">
-                You've cancelled the payment process. No charges were made.
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Selected Plan: {selectedPriceOption.name}
+              </h2>
+              <p className="text-gray-600">
+                Duration: {selectedPriceOption.duration}
               </p>
-              <button 
-                onClick={handleReset}
-                className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          )}
-          
-          {paymentStatus === 'error' && (
-            <div className="mb-6">
-              <div className="bg-red-50 p-4 rounded-md mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <span className="text-red-700 font-medium">Payment Error</span>
-              </div>
-              <p className="text-gray-700 mb-4">
-                There was an error processing your payment. Please try again.
+              <p className="text-2xl font-bold text-gray-900 mt-2">
+                Total: ${selectedPriceOption.price}
               </p>
-              <button 
-                onClick={handleReset}
-                className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Try Again
-              </button>
             </div>
-          )}
-          
-          {/* PayPal Button Container - only show when in idle state or loading (but loading state shows spinner above) */}
-          {(paymentStatus === 'idle' || paymentStatus === 'loading') && !sdkError && (
-            <div id="paypal-button-container" ref={paypalButtonContainerRef} className="mt-8"></div>
-          )}
-          
-          {/* Alternative payment button if PayPal SDK fails to load */}
-          {sdkError && paymentStatus === 'idle' && (
-            <div className="mt-8">
-              <div className="bg-yellow-50 p-4 rounded-md mb-4">
-                <p className="text-yellow-700">
-                  PayPal button could not be loaded. You can still checkout with PayPal using the button below.
-                </p>
+
+            {/* PayPal Button Container */}
+            {(paymentStatus === 'idle' || paymentStatus === 'loading') && !sdkError && (
+              <div id="paypal-button-container" ref={paypalButtonContainerRef} className="mt-6" />
+            )}
+
+            {/* Loading State */}
+            {paymentStatus === 'loading' && (
+              <div className="flex justify-center items-center my-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>
-              <button 
-                onClick={handleAlternativeCheckout}
-                className="pp-7NZBCCB8LA938 mt-2"
-              >
-                Pay with PayPal
-              </button>
-            </div>
-          )}
-          
-          <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-            <h2 className="font-bold mb-2">Note:</h2>
-            <p className="text-sm text-gray-700">
-              Make sure you have configured your PayPal webhook in the developer dashboard 
-              and have set up a public URL using a service like ngrok to receive webhook events.
-            </p>
+            )}
+
+            {/* Success State */}
+            {paymentStatus === 'success' && (
+              <div className="bg-green-50 p-4 rounded-md">
+                <div className="flex items-center">
+                  <svg
+                    className="h-6 w-6 text-green-500 mr-2"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  <p className="text-green-700 font-medium">
+                    Payment successful! Check your email for access details.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Error State */}
+            {paymentStatus === 'error' && (
+              <div className="bg-red-50 p-4 rounded-md">
+                <div className="flex items-center">
+                  <svg
+                    className="h-6 w-6 text-red-500 mr-2"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                  <p className="text-red-700 font-medium">
+                    There was an error processing your payment. Please try again.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
