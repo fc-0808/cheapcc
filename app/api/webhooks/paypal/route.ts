@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
+import { supabase } from '@/utils/supabase-server';
 
 // PayPal client configuration
 const environment = new paypal.core.SandboxEnvironment(
@@ -115,6 +116,17 @@ async function handlePaymentCompleted(webhookData: any) {
     console.log(`Created new order record for payment ${paymentId}`);
   }
   
+  // Update Supabase order
+  if (orderId) {
+    await supabase.from('orders')
+      .update({
+        status: 'COMPLETED',
+        paypal_data: webhookData,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('paypal_order_id', orderId);
+  }
+  
   // Here you would also:
   // 1. Send confirmation email to customer
   // 2. Update inventory
@@ -136,6 +148,17 @@ async function handlePaymentDenied(webhookData: any) {
     };
     
     console.log(`Updated order ${orderId} status to DENIED`);
+  }
+  
+  // Update Supabase order
+  if (orderId) {
+    await supabase.from('orders')
+      .update({
+        status: 'DENIED',
+        paypal_data: webhookData,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('paypal_order_id', orderId);
   }
   
   // Here you would handle the failed payment
@@ -160,6 +183,17 @@ async function handleOrderApproved(webhookData: any) {
   };
   
   console.log(`Stored new order: ${JSON.stringify(orders[orderId])}`);
+  
+  // Update Supabase order
+  if (orderId) {
+    await supabase.from('orders')
+      .update({
+        status: 'APPROVED',
+        paypal_data: webhookData,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('paypal_order_id', orderId);
+  }
   
   // Here you would:
   // 1. Reserve inventory

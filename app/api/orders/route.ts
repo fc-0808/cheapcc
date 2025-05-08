@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
 import { PRICING_OPTIONS, PricingOption } from '@/utils/products';
+import { supabase } from '@/utils/supabase-server';
 
 // PayPal client configuration
 const environment = new paypal.core.SandboxEnvironment(
@@ -21,7 +22,7 @@ interface PayPalOrderResponse {
 export async function POST(request: NextRequest) {
   try {
     // Get the pricing option ID from the request
-    const { priceId } = await request.json();
+    const { priceId, name, email } = await request.json();
     
     // Find the selected pricing option
     const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
@@ -55,6 +56,18 @@ export async function POST(request: NextRequest) {
 
     // Call PayPal to create the order
     const order = await client.execute(orderRequest) as PayPalOrderResponse;
+
+    // Store in Supabase
+    await supabase.from('orders').insert([
+      {
+        paypal_order_id: order.result.id,
+        name,
+        email,
+        status: order.result.status,
+        amount: selectedOption?.price,
+        currency: 'USD',
+      }
+    ]);
 
     // Return the order ID and details to the client
     return NextResponse.json({
