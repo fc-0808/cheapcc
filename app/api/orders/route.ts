@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
-import { PRICING_OPTIONS, PricingOption } from '@/utils/products';
-import { supabase } from '@/utils/supabase-server';
+import { PRICING_OPTIONS } from '@/utils/products';
 
 // PayPal client configuration
 const environment = new paypal.core.SandboxEnvironment(
@@ -45,6 +44,7 @@ export async function POST(request: NextRequest) {
             value: selectedOption.price.toFixed(2),
           },
           description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
+          custom_id: JSON.stringify({ name, email }),
         },
       ],
       application_context: {
@@ -55,21 +55,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Call PayPal to create the order
-    const order = await client.execute(orderRequest) as PayPalOrderResponse;
-
-    // Store in Supabase
-    await supabase.from('orders').insert([
-      {
-        paypal_order_id: order.result.id,
-        name,
-        email,
-        status: order.result.status,
-        amount: selectedOption?.price,
-        currency: 'USD',
-      }
-    ]);
-
-    // Return the order ID and details to the client
+    const order = await client.execute(orderRequest) as any;
     return NextResponse.json({
       id: order.result.id,
       status: order.result.status,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
 import { supabase } from '@/utils/supabase-server';
+import { sendConfirmationEmail } from '@/utils/send-email';
 
 // PayPal client configuration
 const environment = new paypal.core.SandboxEnvironment(
@@ -9,21 +10,6 @@ const environment = new paypal.core.SandboxEnvironment(
   process.env.PAYPAL_SECRET_KEY!
 );
 const client = new paypal.core.PayPalHttpClient(environment);
-
-// Simple in-memory store for demonstration
-// In a real app, you would use a database
-type Order = {
-  id: string;
-  status: string;
-  customerEmail?: string;
-  amount?: string;
-  currency?: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-// This would typically be stored in a database
-const orders: Record<string, Order> = {};
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,8 +30,7 @@ export async function POST(request: NextRequest) {
     // Parse the JSON body
     const body = JSON.parse(rawBody);
     
-    // Get webhook ID and event type
-    const webhookId = process.env.PAYPAL_WEBHOOK_ID;
+    // Get event type
     const eventType = body.event_type;
     
     console.log('Received PayPal webhook:', eventType);
@@ -63,11 +48,6 @@ export async function POST(request: NextRequest) {
         await handlePaymentDenied(body);
         break;
       
-      // Handle other event types as needed
-      case 'CHECKOUT.ORDER.APPROVED':
-        await handleOrderApproved(body);
-        break;
-        
       default:
         console.log(`Unhandled event type: ${eventType}`);
     }
@@ -83,119 +63,107 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper functions for handling different event types
+// Helper function for handling PAYMENT.CAPTURE.COMPLETED event
 async function handlePaymentCompleted(webhookData: any) {
   const paymentId = webhookData.resource.id;
   const paymentStatus = webhookData.resource.status;
   const orderId = webhookData.resource.supplementary_data?.related_ids?.order_id;
-  
-  console.log(`Processing completed payment: ${paymentId} with status: ${paymentStatus}`);
-  
-  if (orderId && orders[orderId]) {
-    // Update order status
-    orders[orderId] = {
-      ...orders[orderId],
-      status: 'COMPLETED',
-      updatedAt: new Date()
-    };
-    
-    console.log(`Updated order ${orderId} status to COMPLETED`);
-  } else {
-    // Create a new order record if we don't have it yet
-    const newOrderId = paymentId;
-    orders[newOrderId] = {
-      id: newOrderId,
-      status: 'COMPLETED',
-      amount: webhookData.resource.amount?.value,
-      currency: webhookData.resource.amount?.currency_code,
-      customerEmail: webhookData.resource.payer?.email_address,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    console.log(`Created new order record for payment ${paymentId}`);
+  const purchaseUnit = webhookData.resource.supplementary_data?.purchase_units?.[0] || webhookData.resource.purchase_units?.[0];
+
+  // Extract name and email from custom_id
+  let name = '';
+  let email = '';
+  let customId = '';
+  try {
+    customId = purchaseUnit?.custom_id || webhookData.resource.custom_id;
+    if (customId) {
+      const parsed = JSON.parse(customId);
+      name = parsed.name || '';
+      email = parsed.email || '';
+    }
+  } catch (e) {
+    console.error('Failed to parse custom_id:', customId, e);
   }
-  
-  // Update Supabase order
-  if (orderId) {
-    await supabase.from('orders')
-      .update({
-        status: 'COMPLETED',
-        paypal_data: webhookData,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('paypal_order_id', orderId);
+
+  // Extract amount and currency
+  const amount = webhookData.resource.amount?.value || null;
+  const currency = webhookData.resource.amount?.currency_code || null;
+
+  // Duplicate insert protection
+  const { data: existingOrder, error: fetchError } = await supabase
+    .from('orders')
+    .select('id')
+    .eq('paypal_order_id', orderId || paymentId)
+    .maybeSingle();
+  if (fetchError) {
+    console.error('Error checking for existing order:', fetchError);
+    return;
   }
+  if (existingOrder) {
+    console.log('Order already exists, skipping insert.');
+    return;
+  }
+
+  // Insert new order into Supabase
+  const { error: insertError } = await supabase.from('orders').insert([
+    {
+      paypal_order_id: orderId || paymentId,
+      name,
+      email,
+      status: paymentStatus,
+      amount,
+      currency,
+      paypal_data: webhookData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ]);
+  if (insertError) {
+    console.error('Failed to insert Supabase order:', insertError);
+    return;
+  }
+  console.log('Inserted new order into Supabase:', orderId || paymentId);
   
-  // Here you would also:
-  // 1. Send confirmation email to customer
-  // 2. Update inventory
-  // 3. Generate license keys or access credentials
+  // Fetch the order from Supabase to get name/email
+  const { data: order, error } = await supabase
+    .from('orders')
+    .select('email, name')
+    .eq('paypal_order_id', orderId || paymentId)
+    .single();
+
+  if (order && order.email && order.name) {
+    try {
+      await sendConfirmationEmail(order.email, order.name, orderId || paymentId);
+      console.log(`Confirmation email sent to ${order.email}`);
+    } catch (emailError) {
+      console.error('Failed to send confirmation email:', emailError);
+    }
+  }
 }
 
+// Helper function for handling PAYMENT.CAPTURE.DENIED event
 async function handlePaymentDenied(webhookData: any) {
   const paymentId = webhookData.resource.id;
   const orderId = webhookData.resource.supplementary_data?.related_ids?.order_id;
   
   console.log(`Processing denied payment: ${paymentId}`);
   
-  if (orderId && orders[orderId]) {
-    // Update order status
-    orders[orderId] = {
-      ...orders[orderId],
-      status: 'DENIED',
-      updatedAt: new Date()
-    };
-    
-    console.log(`Updated order ${orderId} status to DENIED`);
-  }
-  
   // Update Supabase order
   if (orderId) {
-    await supabase.from('orders')
+    const { error: updateError } = await supabase.from('orders')
       .update({
         status: 'DENIED',
         paypal_data: webhookData,
         updated_at: new Date().toISOString(),
       })
       .eq('paypal_order_id', orderId);
+    if (updateError) {
+      console.error('Failed to update Supabase order (DENIED):', updateError);
+      return;
+    }
   }
   
   // Here you would handle the failed payment
   // 1. Notify customer
   // 2. Log the failed transaction
-}
-
-async function handleOrderApproved(webhookData: any) {
-  const orderId = webhookData.resource.id;
-  
-  console.log(`Processing approved order: ${orderId}`);
-  
-  // Store order information
-  orders[orderId] = {
-    id: orderId,
-    status: 'APPROVED',
-    amount: webhookData.resource.purchase_units?.[0]?.amount?.value,
-    currency: webhookData.resource.purchase_units?.[0]?.amount?.currency_code,
-    customerEmail: webhookData.resource.payer?.email_address,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-  
-  console.log(`Stored new order: ${JSON.stringify(orders[orderId])}`);
-  
-  // Update Supabase order
-  if (orderId) {
-    await supabase.from('orders')
-      .update({
-        status: 'APPROVED',
-        paypal_data: webhookData,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('paypal_order_id', orderId);
-  }
-  
-  // Here you would:
-  // 1. Reserve inventory
-  // 2. Prepare for fulfillment when payment completes
 } 
