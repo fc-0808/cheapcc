@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import paypal from '@paypal/checkout-server-sdk';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
 import { supabase } from '@/utils/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
-
-// PayPal client configuration
-const environment = new paypal.core.SandboxEnvironment(
-  process.env.PAYPAL_CLIENT_ID!,
-  process.env.PAYPAL_SECRET_KEY!
-);
-const client = new paypal.core.PayPalHttpClient(environment);
+import { logToFile } from '../../../../utils/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +13,7 @@ export async function POST(request: NextRequest) {
     const isValid = await verifyPayPalWebhookSignature(rawBody, request.headers);
     
     if (!isValid) {
-      console.error('Invalid PayPal webhook signature');
+      await logToFile('Invalid PayPal webhook signature');
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
@@ -33,8 +26,8 @@ export async function POST(request: NextRequest) {
     // Get event type
     const eventType = body.event_type;
     
-    console.log('Received PayPal webhook:', eventType);
-    console.log('Webhook data:', JSON.stringify(body, null, 2));
+    await logToFile(`Received PayPal webhook: ${eventType}`);
+    await logToFile(`Webhook data: ${JSON.stringify(body, null, 2)}`);
     
     // Process different event types
     switch (eventType) {
@@ -42,20 +35,16 @@ export async function POST(request: NextRequest) {
         // Payment was successful
         await handlePaymentCompleted(body);
         break;
-      
-      case 'PAYMENT.CAPTURE.DENIED':
-        // Payment was denied
-        await handlePaymentDenied(body);
-        break;
-      
       default:
-        console.log(`Unhandled event type: ${eventType}`);
+        // Log all other events
+        await logPayPalWebhookEvent(body);
+        await logToFile(`Unhandled event type: ${eventType}`);
     }
     
     // Return 200 OK to PayPal
     return NextResponse.json({ status: 'success' });
   } catch (error) {
-    console.error('PayPal webhook error:', error);
+    await logToFile(`PayPal webhook error: ${error}`);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }
@@ -82,7 +71,7 @@ async function handlePaymentCompleted(webhookData: any) {
       email = parsed.email || '';
     }
   } catch (e) {
-    console.error('Failed to parse custom_id:', customId, e);
+    await logToFile(`Failed to parse custom_id: ${customId} ${e}`);
   }
 
   // Extract amount and currency
@@ -96,11 +85,11 @@ async function handlePaymentCompleted(webhookData: any) {
     .eq('paypal_order_id', orderId || paymentId)
     .maybeSingle();
   if (fetchError) {
-    console.error('Error checking for existing order:', fetchError);
+    await logToFile(`Error checking for existing order: ${fetchError}`);
     return;
   }
   if (existingOrder) {
-    console.log('Order already exists, skipping insert.');
+    await logToFile('Order already exists, skipping insert.');
     return;
   }
 
@@ -119,13 +108,13 @@ async function handlePaymentCompleted(webhookData: any) {
     },
   ]);
   if (insertError) {
-    console.error('Failed to insert Supabase order:', insertError);
+    await logToFile(`Failed to insert Supabase order: ${insertError}`);
     return;
   }
-  console.log('Inserted new order into Supabase:', orderId || paymentId);
+  await logToFile(`Inserted new order into Supabase: ${orderId || paymentId}`);
   
   // Fetch the order from Supabase to get name/email
-  const { data: order, error } = await supabase
+  const { data: order } = await supabase
     .from('orders')
     .select('email, name')
     .eq('paypal_order_id', orderId || paymentId)
@@ -134,36 +123,78 @@ async function handlePaymentCompleted(webhookData: any) {
   if (order && order.email && order.name) {
     try {
       await sendConfirmationEmail(order.email, order.name, orderId || paymentId);
-      console.log(`Confirmation email sent to ${order.email}`);
+      await logToFile(`Confirmation email sent to ${order.email}`);
     } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError);
+      await logToFile(`Failed to send confirmation email: ${emailError}`);
     }
   }
 }
 
-// Helper function for handling PAYMENT.CAPTURE.DENIED event
-async function handlePaymentDenied(webhookData: any) {
-  const paymentId = webhookData.resource.id;
-  const orderId = webhookData.resource.supplementary_data?.related_ids?.order_id;
-  
-  console.log(`Processing denied payment: ${paymentId}`);
-  
-  // Update Supabase order
-  if (orderId) {
-    const { error: updateError } = await supabase.from('orders')
-      .update({
-        status: 'DENIED',
-        paypal_data: webhookData,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('paypal_order_id', orderId);
-    if (updateError) {
-      console.error('Failed to update Supabase order (DENIED):', updateError);
-      return;
-    }
+// Helper function to log non-completed PayPal webhook events
+async function logPayPalWebhookEvent(webhookData: any) {
+  const eventId = webhookData.id;
+  const eventType = webhookData.event_type;
+  const resource = webhookData.resource || {};
+  const resourceId = resource.id || null;
+
+  // Robust extraction for paypal_order_id
+  let paypalOrderId = null;
+  if (resource.supplementary_data?.related_ids?.order_id) {
+    paypalOrderId = resource.supplementary_data.related_ids.order_id;
+  } else if (resource.id) {
+    paypalOrderId = resource.id;
   }
-  
-  // Here you would handle the failed payment
-  // 1. Notify customer
-  // 2. Log the failed transaction
-} 
+
+  // Robust extraction for amount and currency
+  let amount = null;
+  let currency = null;
+  if (resource.amount?.value && resource.amount?.currency_code) {
+    amount = resource.amount.value;
+    currency = resource.amount.currency_code;
+  } else if (Array.isArray(resource.purchase_units) && resource.purchase_units[0]?.amount) {
+    amount = resource.purchase_units[0].amount.value || null;
+    currency = resource.purchase_units[0].amount.currency_code || null;
+  }
+
+  // Robust extraction for name/email from custom_id
+  let name = null;
+  let email = null;
+  let customId = null;
+  let purchaseUnit = null;
+  if (Array.isArray(resource.purchase_units) && resource.purchase_units[0]) {
+    purchaseUnit = resource.purchase_units[0];
+  } else if (resource.supplementary_data?.purchase_units?.[0]) {
+    purchaseUnit = resource.supplementary_data.purchase_units[0];
+  }
+  customId = purchaseUnit?.custom_id || resource.custom_id;
+  try {
+    if (customId) {
+      const parsed = JSON.parse(customId);
+      name = parsed.name || null;
+      email = parsed.email || null;
+    }
+  } catch (e) {
+    await logToFile(`Failed to parse custom_id in webhook event: ${customId} ${e}`);
+  }
+
+  const { error: insertError } = await supabase.from('paypal_webhook_events').insert([
+    {
+      event_id: eventId,
+      event_type: eventType,
+      paypal_order_id: paypalOrderId,
+      resource_id: resourceId,
+      name,
+      email,
+      amount,
+      currency,
+      payload: webhookData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ]);
+  if (insertError) {
+    await logToFile(`Failed to log PayPal webhook event: ${insertError}`);
+  } else {
+    await logToFile(`Logged PayPal webhook event: ${eventType} (${eventId})`);
+  }
+}

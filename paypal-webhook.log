@@ -1,0 +1,390 @@
+[2025-05-14T14:20:37.533Z] Received PayPal webhook: CHECKOUT.ORDER.APPROVED
+[2025-05-14T14:20:37.548Z] Webhook data: {
+  "id": "WH-56W96518DF0093111-4U06147411750011V",
+  "event_version": "1.0",
+  "create_time": "2025-05-14T14:20:26.983Z",
+  "resource_type": "checkout-order",
+  "resource_version": "2.0",
+  "event_type": "CHECKOUT.ORDER.APPROVED",
+  "summary": "An order has been approved by buyer",
+  "resource": {
+    "create_time": "2025-05-14T14:19:52Z",
+    "purchase_units": [
+      {
+        "reference_id": "default",
+        "amount": {
+          "currency_code": "USD",
+          "value": "2.99",
+          "breakdown": {}
+        },
+        "payee": {
+          "email_address": "sb-p47mak34641177@business.example.com",
+          "merchant_id": "7J7Z7J5TY4NVL",
+          "display_data": {
+            "brand_name": "Adobe Creative Cloud"
+          }
+        },
+        "description": "Adobe Creative Cloud - 14 days Subscription",
+        "custom_id": "{\"name\":\"Kylie cunt\",\"email\":\"jennyli006969@gmail.com\"}",
+        "shipping": {
+          "name": {
+            "full_name": "John Doe"
+          },
+          "address": {
+            "address_line_1": "1 Maire-Victorin",
+            "admin_area_2": "Toronto",
+            "admin_area_1": "ON",
+            "postal_code": "M5A 1E1",
+            "country_code": "CA"
+          }
+        }
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5TW2026033183141G",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5TW2026033183141G",
+        "rel": "update",
+        "method": "PATCH"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5TW2026033183141G/capture",
+        "rel": "capture",
+        "method": "POST"
+      }
+    ],
+    "id": "5TW2026033183141G",
+    "payment_source": {
+      "paypal": {
+        "email_address": "sb-rpc6934527515@personal.example.com",
+        "account_id": "L5N9TBLJ93P92",
+        "account_status": "VERIFIED",
+        "name": {
+          "given_name": "John",
+          "surname": "Doe"
+        },
+        "address": {
+          "country_code": "CA"
+        }
+      }
+    },
+    "intent": "CAPTURE",
+    "payer": {
+      "name": {
+        "given_name": "John",
+        "surname": "Doe"
+      },
+      "email_address": "sb-rpc6934527515@personal.example.com",
+      "payer_id": "L5N9TBLJ93P92",
+      "address": {
+        "country_code": "CA"
+      }
+    },
+    "status": "APPROVED"
+  },
+  "links": [
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-56W96518DF0093111-4U06147411750011V",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-56W96518DF0093111-4U06147411750011V/resend",
+      "rel": "resend",
+      "method": "POST"
+    }
+  ]
+}
+[2025-05-14T14:20:39.116Z] Logged PayPal webhook event: CHECKOUT.ORDER.APPROVED (WH-56W96518DF0093111-4U06147411750011V)
+[2025-05-14T14:20:39.120Z] Unhandled event type: CHECKOUT.ORDER.APPROVED
+[2025-05-14T14:20:47.535Z] Received PayPal webhook: PAYMENT.CAPTURE.COMPLETED
+[2025-05-14T14:20:47.536Z] Webhook data: {
+  "id": "WH-8XA00044R9332422L-3JP774584U969701D",
+  "event_version": "1.0",
+  "create_time": "2025-05-14T14:20:32.034Z",
+  "resource_type": "capture",
+  "resource_version": "2.0",
+  "event_type": "PAYMENT.CAPTURE.COMPLETED",
+  "summary": "Payment completed for $ 2.99 USD",
+  "resource": {
+    "payee": {
+      "email_address": "sb-p47mak34641177@business.example.com",
+      "merchant_id": "7J7Z7J5TY4NVL"
+    },
+    "amount": {
+      "value": "2.99",
+      "currency_code": "USD"
+    },
+    "seller_protection": {
+      "dispute_categories": [
+        "ITEM_NOT_RECEIVED",
+        "UNAUTHORIZED_TRANSACTION"
+      ],
+      "status": "ELIGIBLE"
+    },
+    "supplementary_data": {
+      "related_ids": {
+        "order_id": "5TW2026033183141G"
+      }
+    },
+    "update_time": "2025-05-14T14:20:28Z",
+    "create_time": "2025-05-14T14:20:28Z",
+    "final_capture": true,
+    "seller_receivable_breakdown": {
+      "exchange_rate": {
+        "source_currency": "USD",
+        "target_currency": "CAD",
+        "value": "1.341278048780487"
+      },
+      "paypal_fee": {
+        "value": "0.39",
+        "currency_code": "USD"
+      },
+      "gross_amount": {
+        "value": "2.99",
+        "currency_code": "USD"
+      },
+      "net_amount": {
+        "value": "2.60",
+        "currency_code": "USD"
+      },
+      "receivable_amount": {
+        "value": "3.49",
+        "currency_code": "CAD"
+      }
+    },
+    "custom_id": "{\"name\":\"Kylie cunt\",\"email\":\"jennyli006969@gmail.com\"}",
+    "links": [
+      {
+        "method": "GET",
+        "rel": "self",
+        "href": "https://api.sandbox.paypal.com/v2/payments/captures/4DC35916AD1136418"
+      },
+      {
+        "method": "POST",
+        "rel": "refund",
+        "href": "https://api.sandbox.paypal.com/v2/payments/captures/4DC35916AD1136418/refund"
+      },
+      {
+        "method": "GET",
+        "rel": "up",
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/5TW2026033183141G"
+      }
+    ],
+    "id": "4DC35916AD1136418",
+    "status": "COMPLETED"
+  },
+  "links": [
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-8XA00044R9332422L-3JP774584U969701D",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-8XA00044R9332422L-3JP774584U969701D/resend",
+      "rel": "resend",
+      "method": "POST"
+    }
+  ]
+}
+[2025-05-14T14:20:48.911Z] Inserted new order into Supabase: 5TW2026033183141G
+[2025-05-14T14:20:50.581Z] Confirmation email sent to jennyli006969@gmail.com
+[2025-05-14T14:42:36.968Z] Received PayPal webhook: CHECKOUT.ORDER.APPROVED
+[2025-05-14T14:42:36.971Z] Webhook data: {
+  "id": "WH-7HG74154CP5450919-6BL24904P8439062M",
+  "event_version": "1.0",
+  "create_time": "2025-05-14T14:42:26.688Z",
+  "resource_type": "checkout-order",
+  "resource_version": "2.0",
+  "event_type": "CHECKOUT.ORDER.APPROVED",
+  "summary": "An order has been approved by buyer",
+  "resource": {
+    "create_time": "2025-05-14T14:41:54Z",
+    "purchase_units": [
+      {
+        "reference_id": "default",
+        "amount": {
+          "currency_code": "USD",
+          "value": "12.99",
+          "breakdown": {}
+        },
+        "payee": {
+          "email_address": "sb-p47mak34641177@business.example.com",
+          "merchant_id": "7J7Z7J5TY4NVL",
+          "display_data": {
+            "brand_name": "Adobe Creative Cloud"
+          }
+        },
+        "description": "Adobe Creative Cloud - 1 month Subscription",
+        "custom_id": "{\"name\":\"Barefoot Project\",\"email\":\"barefootproject01@gmail.com\"}",
+        "shipping": {
+          "name": {
+            "full_name": "John Doe"
+          },
+          "address": {
+            "address_line_1": "1 Maire-Victorin",
+            "admin_area_2": "Toronto",
+            "admin_area_1": "ON",
+            "postal_code": "M5A 1E1",
+            "country_code": "CA"
+          }
+        }
+      }
+    ],
+    "links": [
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/884313091N682264K",
+        "rel": "self",
+        "method": "GET"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/884313091N682264K",
+        "rel": "update",
+        "method": "PATCH"
+      },
+      {
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/884313091N682264K/capture",
+        "rel": "capture",
+        "method": "POST"
+      }
+    ],
+    "id": "884313091N682264K",
+    "payment_source": {
+      "paypal": {
+        "email_address": "sb-rpc6934527515@personal.example.com",
+        "account_id": "L5N9TBLJ93P92",
+        "account_status": "VERIFIED",
+        "name": {
+          "given_name": "John",
+          "surname": "Doe"
+        },
+        "address": {
+          "country_code": "CA"
+        }
+      }
+    },
+    "intent": "CAPTURE",
+    "payer": {
+      "name": {
+        "given_name": "John",
+        "surname": "Doe"
+      },
+      "email_address": "sb-rpc6934527515@personal.example.com",
+      "payer_id": "L5N9TBLJ93P92",
+      "address": {
+        "country_code": "CA"
+      }
+    },
+    "status": "APPROVED"
+  },
+  "links": [
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-7HG74154CP5450919-6BL24904P8439062M",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-7HG74154CP5450919-6BL24904P8439062M/resend",
+      "rel": "resend",
+      "method": "POST"
+    }
+  ]
+}
+[2025-05-14T14:42:38.241Z] Logged PayPal webhook event: CHECKOUT.ORDER.APPROVED (WH-7HG74154CP5450919-6BL24904P8439062M)
+[2025-05-14T14:42:38.243Z] Unhandled event type: CHECKOUT.ORDER.APPROVED
+[2025-05-14T14:42:46.274Z] Received PayPal webhook: PAYMENT.CAPTURE.COMPLETED
+[2025-05-14T14:42:46.276Z] Webhook data: {
+  "id": "WH-9L6707858C8028205-8R7089772J8949621",
+  "event_version": "1.0",
+  "create_time": "2025-05-14T14:42:31.729Z",
+  "resource_type": "capture",
+  "resource_version": "2.0",
+  "event_type": "PAYMENT.CAPTURE.COMPLETED",
+  "summary": "Payment completed for $ 12.99 USD",
+  "resource": {
+    "payee": {
+      "email_address": "sb-p47mak34641177@business.example.com",
+      "merchant_id": "7J7Z7J5TY4NVL"
+    },
+    "amount": {
+      "value": "12.99",
+      "currency_code": "USD"
+    },
+    "seller_protection": {
+      "dispute_categories": [
+        "ITEM_NOT_RECEIVED",
+        "UNAUTHORIZED_TRANSACTION"
+      ],
+      "status": "ELIGIBLE"
+    },
+    "supplementary_data": {
+      "related_ids": {
+        "order_id": "884313091N682264K"
+      }
+    },
+    "update_time": "2025-05-14T14:42:28Z",
+    "create_time": "2025-05-14T14:42:28Z",
+    "final_capture": true,
+    "seller_receivable_breakdown": {
+      "exchange_rate": {
+        "source_currency": "USD",
+        "target_currency": "CAD",
+        "value": "1.341278048780487"
+      },
+      "paypal_fee": {
+        "value": "0.68",
+        "currency_code": "USD"
+      },
+      "gross_amount": {
+        "value": "12.99",
+        "currency_code": "USD"
+      },
+      "net_amount": {
+        "value": "12.31",
+        "currency_code": "USD"
+      },
+      "receivable_amount": {
+        "value": "16.51",
+        "currency_code": "CAD"
+      }
+    },
+    "custom_id": "{\"name\":\"Barefoot Project\",\"email\":\"barefootproject01@gmail.com\"}",
+    "links": [
+      {
+        "method": "GET",
+        "rel": "self",
+        "href": "https://api.sandbox.paypal.com/v2/payments/captures/7CD91729R2960552Y"
+      },
+      {
+        "method": "POST",
+        "rel": "refund",
+        "href": "https://api.sandbox.paypal.com/v2/payments/captures/7CD91729R2960552Y/refund"
+      },
+      {
+        "method": "GET",
+        "rel": "up",
+        "href": "https://api.sandbox.paypal.com/v2/checkout/orders/884313091N682264K"
+      }
+    ],
+    "id": "7CD91729R2960552Y",
+    "status": "COMPLETED"
+  },
+  "links": [
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-9L6707858C8028205-8R7089772J8949621",
+      "rel": "self",
+      "method": "GET"
+    },
+    {
+      "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-9L6707858C8028205-8R7089772J8949621/resend",
+      "rel": "resend",
+      "method": "POST"
+    }
+  ]
+}
+[2025-05-14T14:42:47.686Z] Inserted new order into Supabase: 884313091N682264K
+[2025-05-14T14:42:49.529Z] Confirmation email sent to barefootproject01@gmail.com

@@ -25,14 +25,66 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         {/* Preconnect to PayPal domains to improve loading performance */}
         <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.sandbox.paypal.com" crossOrigin="anonymous" />
+        {/* Font Awesome for icons */}
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-[#171717]`}>
+        {/* Header - always logged out state for server component */}
+        <header>
+          <div className="container header-container flex items-center justify-between py-4 px-4 md:px-8">
+            <a href="/" className="logo text-2xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2">
+              cheap<span className="text-[#ff3366]">CC</span>
+            </a>
+            <div className="account-nav flex items-center gap-4">
+              <a href="/login" className="account-btn login-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#2c2d5a] text-white font-semibold text-sm hover:bg-[#484a9e] transition">
+                <i className="fas fa-sign-in-alt" aria-hidden="true"></i>Login
+              </a>
+              <a href="/register" className="account-btn register-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#ff3366] text-white font-semibold text-sm hover:bg-[#ff6b8b] transition">
+                <i className="fas fa-user-plus" aria-hidden="true"></i>Register
+              </a>
+            </div>
+          </div>
+        </header>
+        {/* Main Content */}
         {children}
+        {/* Footer */}
+        <footer className="bg-[#181028] text-white py-12 mt-16">
+          <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-2">CheapCC</h3>
+              <p className="text-sm text-white/80">Affordable Adobe Creative Cloud subscriptions for everyone.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Quick Links</h3>
+              <ul className="space-y-1">
+                <li><a href="/" className="hover:underline">Home</a></li>
+                <li><a href="/#pricing" className="hover:underline">Pricing</a></li>
+                <li><a href="mailto:support@cheapcc.online" className="hover:underline">Support</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Legal</h3>
+              <ul className="space-y-1">
+                <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
+                <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
+                <li><a href="/refund" className="hover:underline">Refund Policy</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Contact</h3>
+              <ul className="space-y-1">
+                <li><a href="mailto:support@cheapcc.online" className="hover:underline">support@cheapcc.online</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-white/10 mt-8 pt-6 text-center text-xs text-white/60">
+            &copy; {new Date().getFullYear()} CheapCC. All rights reserved.
+          </div>
+        </footer>
       </body>
     </html>
   );
