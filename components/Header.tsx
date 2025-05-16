@@ -33,10 +33,10 @@ export default function Header() {
           cheap<span className="text-[#ff3366]">CC</span>
         </a>
         <div className="account-nav flex items-center gap-4">
-          <a href="/login" className="account-btn login-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#2c2d5a] text-white font-semibold text-sm hover:bg-[#484a9e] transition">
+          <a href="/login" className="account-btn login-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#2c2d5a] text-white font-semibold text-sm hover:bg-[#484a9e] focus:ring-2 focus:ring-[#ff3366] focus:outline-none transition">
             <i className="fas fa-sign-in-alt" aria-hidden="true"></i>Login
           </a>
-          <a href="/register" className="account-btn register-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#ff3366] text-white font-semibold text-sm hover:bg-[#ff6b8b] transition">
+          <a href="/register" className="account-btn register-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#ff3366] text-white font-semibold text-sm hover:bg-[#ff6b8b] focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none transition">
             <i className="fas fa-user-plus" aria-hidden="true"></i>Register
           </a>
         </div>

@@ -65,6 +65,18 @@ export default function Home() {
   const howItWorksRef = useRef<HTMLDivElement>(null);
   const [stepsVisible, setStepsVisible] = useState(false);
 
+  // Animation refs and state for scroll-triggered sections
+  const benefitsRef = useRef<HTMLDivElement>(null);
+  const pricingRef = useRef<HTMLDivElement>(null);
+  const checkoutRef = useRef<HTMLDivElement>(null);
+  const faqRef = useRef<HTMLDivElement>(null);
+  const testimonialsRef = useRef<HTMLDivElement>(null);
+  const [benefitsVisible, setBenefitsVisible] = useState(false);
+  const [pricingVisible, setPricingVisible] = useState(false);
+  const [checkoutVisible, setCheckoutVisible] = useState(false);
+  const [faqVisible, setFaqVisible] = useState(false);
+  const [testimonialsVisible, setTestimonialsVisible] = useState(false);
+
   // Validate email format
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
 
@@ -210,6 +222,34 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScrollOrObserve);
   }, []);
 
+  useEffect(() => {
+    function onScroll() {
+      if (benefitsRef.current && !benefitsVisible) {
+        const rect = benefitsRef.current.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) setBenefitsVisible(true);
+      }
+      if (pricingRef.current && !pricingVisible) {
+        const rect = pricingRef.current.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) setPricingVisible(true);
+      }
+      if (checkoutRef.current && !checkoutVisible) {
+        const rect = checkoutRef.current.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) setCheckoutVisible(true);
+      }
+      if (faqRef.current && !faqVisible) {
+        const rect = faqRef.current.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) setFaqVisible(true);
+      }
+      if (testimonialsRef.current && !testimonialsVisible) {
+        const rect = testimonialsRef.current.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) setTestimonialsVisible(true);
+      }
+    }
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [benefitsVisible, pricingVisible, checkoutVisible, faqVisible, testimonialsVisible]);
+
   return (
     <main className="bg-white">
       {/* Hero Section */}
@@ -276,8 +316,8 @@ export default function Home() {
 
       {/* Benefits Section */}
       <section className="benefits py-20 bg-white">
-        <div className="container">
-          <div className="section-heading text-center mb-12">
+        <div className="container" ref={benefitsRef}>
+          <div className={`section-heading text-center mb-12 stagger-item${benefitsVisible ? ' visible' : ''}`}> 
             <h2 className="text-4xl font-extrabold bg-gradient-to-r from-[#2c2d5a] to-[#484a9e] bg-clip-text text-transparent inline-block mb-2">
               Why Choose CheapCC?
             </h2>
@@ -285,7 +325,7 @@ export default function Home() {
               Authorized Adobe Creative Cloud subscriptions at significantly reduced prices compared to official channels
             </p>
           </div>
-          <div className="benefits-container grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mt-12">
+          <div className={`benefits-container grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mt-12 stagger-item delay-100${benefitsVisible ? ' visible' : ''}`}> 
             <div className="benefit-card">
               <i className="fas fa-piggy-bank" />
               <h3>Massive Savings</h3>
@@ -312,12 +352,12 @@ export default function Home() {
 
       {/* Pricing Section */}
       <section className="pricing py-20 bg-gradient-to-b from-[#f3f4f6] to-white border-t border-b border-gray-100" id="pricing">
-        <div className="container">
-          <div className="section-heading text-center mb-12">
+        <div className="container" ref={pricingRef}>
+          <div className={`section-heading text-center mb-12 stagger-item${pricingVisible ? ' visible' : ''}`}> 
             <h2 className="mb-2">Choose Your Plan</h2>
             <p className="text-lg text-gray-500">Select the best Adobe Creative Cloud subscription for your needs</p>
           </div>
-          <div className="plans-container flex flex-wrap gap-6 justify-center">
+          <div className={`plans-container flex flex-wrap gap-6 justify-center stagger-item delay-100${pricingVisible ? ' visible' : ''}`}> 
               {PRICING_OPTIONS.map((option) => (
                 <div
                   key={option.id}
@@ -348,7 +388,7 @@ export default function Home() {
                       }}
                     >
                       One-time purchase
-                    </div>
+                  </div>
                   )}
                   <div className="plan-duration">{option.duration}</div>
                   <div className="plan-price">${option.price}</div>
@@ -383,7 +423,7 @@ export default function Home() {
       {/* How It Works Section */}
       <section className="how-it-works py-20 bg-white">
         <div className="container">
-          <div className="section-heading text-center mb-12">
+          <div className={`section-heading text-center mb-12 stagger-item${stepsVisible ? ' visible' : ''}`}> 
             <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">How It Works</h2>
             <p className="text-lg text-gray-500">Getting your Adobe Creative Cloud subscription is simple and fast</p>
           </div>
@@ -409,12 +449,12 @@ export default function Home() {
 
       {/* Checkout Section */}
       <section className="checkout py-20 bg-[#f3f4f6]" id="checkout">
-        <div className="container">
-          <div className="section-heading text-center mb-12">
+        <div className="container" ref={checkoutRef}>
+          <div className={`section-heading text-center mb-12 stagger-item${checkoutVisible ? ' visible' : ''}`}> 
             <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">Complete Your Order</h2>
             <p className="text-lg text-gray-500">You're just moments away from accessing Adobe Creative Cloud</p>
           </div>
-          <div className="checkout-container flex flex-wrap gap-8 justify-center items-start">
+          <div className={`checkout-container flex flex-wrap gap-8 justify-center items-start stagger-item${checkoutVisible ? ' visible' : ''}`}>
             <div className="checkout-form w-full max-w-md">
               {/* Trust/Payment Widgets */}
               <form id="checkout-form" onSubmit={e => e.preventDefault()} className="space-y-6">
@@ -457,9 +497,11 @@ export default function Home() {
                     className={!canPay ? 'opacity-50 pointer-events-none' : ''}
                 />
                 {!canPay && (
-                  <div className="form-note flex items-center gap-2 bg-[#fee2e2] text-[#991b1b] p-3 rounded-md shadow-sm border border-[#fecaca] animate-fade-in">
-                    <i className="fas fa-exclamation-circle text-[#ef4444] text-lg"></i>
-                    <span className="font-medium">Please enter your name and a valid email to continue.</span>
+                  <div className="form-note flex items-center gap-3 bg-[#fff0f3] text-[#b91c1c] p-3 rounded-lg shadow border border-[#ffd6db] animate-fade-in">
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#ffe4ea] mr-2">
+                      <i className="fas fa-exclamation-circle text-[#ff3366] text-base"></i>
+                    </span>
+                    <span className="font-semibold whitespace-nowrap tracking-tight text-sm">Please enter your name and a valid email to continue.</span>
                   </div>
                 )}
                 </div>
@@ -480,7 +522,7 @@ export default function Home() {
               </div>
             )}
                 <p className="form-disclaimer">
-                  By completing your purchase, you agree to our{' '}
+                  By completing your purchase, you agree to our<br />
                   <a href="/terms">Terms of Service</a> and{' '}
                   <a href="/privacy">Privacy Policy</a>.
                 </p>
@@ -516,12 +558,12 @@ export default function Home() {
 
       {/* FAQ Section */}
       <section className="faq py-20 bg-white" id="faq">
-        <div className="container">
-          <div className="section-heading text-center mb-12">
+        <div className="container" ref={faqRef}>
+          <div className={`section-heading text-center mb-12 stagger-item${faqVisible ? ' visible' : ''}`}> 
             <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">Frequently Asked Questions</h2>
             <p className="text-lg text-gray-500">Quick answers to common questions about our Adobe Creative Cloud subscriptions</p>
           </div>
-          <div className="faq-accordion">
+          <div className={`faq-accordion stagger-item${faqVisible ? ' visible' : ''}`}>
             {[
               {
                 q: "How does cheapcc.online offer such low prices?",
@@ -576,8 +618,8 @@ export default function Home() {
 
       {/* Testimonials Carousel Section */}
       <section className="testimonials" id="testimonials">
-        <div className="container">
-          <div className="section-heading text-center mb-12">
+        <div className="container" ref={testimonialsRef}>
+          <div className={`section-heading text-center mb-12 stagger-item${testimonialsVisible ? ' visible' : ''}`}> 
             <h2 className="mb-2">
               What Our Customers Say
             </h2>
@@ -590,7 +632,7 @@ export default function Home() {
               Real feedback from real users
             </p>
           </div>
-          <div className="testimonials-container">
+          <div className={`testimonials-container stagger-item${testimonialsVisible ? ' visible' : ''}`}>
             <div className="testimonial-card" key={testimonialIdx}>
               <div className="testimonial-rating">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -617,8 +659,8 @@ export default function Home() {
                 onClick={() => setTestimonialIdx(idx)}
               />
             ))}
-          </div>
-        </div>
+      </div>
+    </div>
       </section>
     </main>
   );
