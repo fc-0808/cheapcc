@@ -1,17 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -33,45 +23,13 @@ export default function RootLayout({
         {/* Font Awesome for icons */}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-[#171717]`}>
+      <body className="antialiased bg-white text-[#171717]">
         {/* Header - always logged out state for server component */}
         <Header />
         {/* Main Content */}
         {children}
         {/* Footer */}
-        <footer className="bg-[#181028] text-white py-12 mt-16">
-          <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-2">CheapCC</h3>
-              <p className="text-sm text-white/80">Affordable Adobe Creative Cloud subscriptions for everyone.</p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Quick Links</h3>
-              <ul className="space-y-1">
-                <li><a href="/" className="hover:underline">Home</a></li>
-                <li><a href="/#pricing" className="hover:underline">Pricing</a></li>
-                <li><a href="mailto:support@cheapcc.online" className="hover:underline">Support</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Legal</h3>
-              <ul className="space-y-1">
-                <li><a href="/terms" className="hover:underline">Terms of Service</a></li>
-                <li><a href="/privacy" className="hover:underline">Privacy Policy</a></li>
-                <li><a href="/refund" className="hover:underline">Refund Policy</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Contact</h3>
-              <ul className="space-y-1">
-                <li><a href="mailto:support@cheapcc.online" className="hover:underline">support@cheapcc.online</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-white/10 mt-8 pt-6 text-center text-xs text-white/60">
-            &copy; {new Date().getFullYear()} CheapCC. All rights reserved.
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );

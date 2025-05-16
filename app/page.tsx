@@ -61,6 +61,10 @@ export default function Home() {
   ]);
   const [animated, setAnimated] = useState(false);
 
+  // Add ref for how-it-works steps animation
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const [stepsVisible, setStepsVisible] = useState(false);
+
   // Validate email format
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
 
@@ -192,6 +196,20 @@ export default function Home() {
     }
   }, [counterVisible, animated]);
 
+  // How it works steps animation
+  useEffect(() => {
+    function onScrollOrObserve() {
+      if (!howItWorksRef.current) return;
+      const rect = howItWorksRef.current.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 100) {
+        setStepsVisible(true);
+      }
+    }
+    window.addEventListener('scroll', onScrollOrObserve);
+    onScrollOrObserve();
+    return () => window.removeEventListener('scroll', onScrollOrObserve);
+  }, []);
+
   return (
     <main className="bg-white">
       {/* Hero Section */}
@@ -206,7 +224,7 @@ export default function Home() {
               Adobe Creative Cloud
               <span className="highlight-underline" />
             </span>
-          </h1>
+            </h1>
           <p>
             Get the complete suite with all premium applications at a fraction of the official cost. Same powerful tools, same features, massive savings.
           </p>
@@ -277,12 +295,12 @@ export default function Home() {
               <i className="fas fa-bolt" />
               <h3>Email Delivery</h3>
               <p>Receive your Adobe account details via email after purchase with all apps ready to download.</p>
-            </div>
+              </div>
             <div className="benefit-card">
               <i className="fas fa-check-circle" />
               <h3>100% Genuine</h3>
               <p>Full access to all Creative Cloud apps and services with regular updates and cloud storage.</p>
-            </div>
+              </div>
             <div className="benefit-card">
               <i className="fas fa-exchange-alt" />
               <h3>Alternative to cheapcc.net</h3>
@@ -296,32 +314,68 @@ export default function Home() {
       <section className="pricing py-20 bg-gradient-to-b from-[#f3f4f6] to-white border-t border-b border-gray-100" id="pricing">
         <div className="container">
           <div className="section-heading text-center mb-12">
-            <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">Choose Your Plan</h2>
-            <p className="text-lg text-gray-500">Select the subscription duration that works best for you</p>
+            <h2 className="mb-2">Choose Your Plan</h2>
+            <p className="text-lg text-gray-500">Select the best Adobe Creative Cloud subscription for your needs</p>
           </div>
           <div className="plans-container flex flex-wrap gap-6 justify-center">
-            {PRICING_OPTIONS.map((option) => (
-              <div
-                key={option.id}
-                className={`plan-card${selectedPrice === option.id ? ' selected' : ''}`}
-                onClick={() => setSelectedPrice(option.id)}
-                tabIndex={0}
-                role="button"
-                aria-pressed={selectedPrice === option.id}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedPrice(option.id)}
-              >
-                <div className="plan-duration">{option.duration}</div>
-                <div className="plan-price">${option.price}</div>
-                <div className="plan-features text-left mt-4 mb-6">
-                  <ul className="space-y-2">
-                    <li>All Creative Cloud Apps</li>
-                    <li>All AI features</li>
-                    <li>100GB Cloud Storage</li>
-                  </ul>
+              {PRICING_OPTIONS.map((option) => (
+                <div
+                  key={option.id}
+                  className={`plan-card${selectedPrice === option.id ? ' selected' : ''}`}
+                  onClick={() => {
+                    if (selectedPrice !== option.id) setSelectedPrice(option.id);
+                    setTimeout(() => {
+                      const el = document.getElementById('checkout');
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 10);
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={selectedPrice === option.id}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedPrice(option.id)}
+                  style={{ position: 'relative', overflow: 'visible' }}
+                >
+                  {/* Ribbon for 14-Day Trial */}
+                  {option.id === '14d' && (
+                    <div
+                      className="absolute right-0 top-0 z-10 px-3 py-1 text-xs font-bold text-white rounded-bl-lg"
+                      style={{
+                        background: 'linear-gradient(90deg, #ff3366 0%, #a855f7 100%)',
+                        transform: 'translateY(-40%) translateX(35%) rotate(18deg)',
+                        boxShadow: '0 6px 24px rgba(255,51,102,0.25), 0 1.5px 6px rgba(168,85,247,0.18)',
+                        letterSpacing: '0.03em',
+                        fontSize: '13px',
+                      }}
+                    >
+                      One-time purchase
+                    </div>
+                  )}
+                  <div className="plan-duration">{option.duration}</div>
+                  <div className="plan-price">${option.price}</div>
+                  <div className="plan-features text-left mt-4 mb-6">
+                    <ul className="space-y-2">
+                      <li>All Creative Cloud Apps</li>
+                      <li>All AI features</li>
+                      <li>100GB Cloud Storage</li>
+                    </ul>
+                  </div>
+                  <button
+                    className="select-btn w-full"
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setSelectedPrice(option.id);
+                      setTimeout(() => {
+                        const el = document.getElementById('checkout');
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 10);
+                    }}
+                  >
+                    {selectedPrice === option.id ? 'Selected' : 'Select'}
+                  </button>
                 </div>
-                <button className="select-btn w-full">{selectedPrice === option.id ? 'Selected' : 'Select'}</button>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </section>
@@ -333,34 +387,28 @@ export default function Home() {
             <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">How It Works</h2>
             <p className="text-lg text-gray-500">Getting your Adobe Creative Cloud subscription is simple and fast</p>
           </div>
-          <div className="steps-container flex flex-wrap gap-8 justify-center">
-            <div className="step bg-[#f9fafb] rounded-xl shadow p-8 text-center min-w-[220px] max-w-[320px] flex-1">
-              <div className="step-number bg-gradient-to-r from-[#ff3366] to-[#ff9966] text-white text-2xl font-bold w-14 h-14 flex items-center justify-center rounded-full mx-auto mb-4 shadow">
-                1
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-[#2c2d5a]">Choose a Plan</h3>
-              <p className="text-gray-500 text-base">Select the subscription duration that best fits your needs.</p>
+          <div className="steps-container" ref={howItWorksRef}>
+            <div className={`step stagger-item${stepsVisible ? ' visible' : ''}`}> 
+              <div className="step-number">1</div>
+              <h3>Choose a Plan</h3>
+              <p>Select the subscription duration that best fits your needs.</p>
             </div>
-            <div className="step bg-[#f9fafb] rounded-xl shadow p-8 text-center min-w-[220px] max-w-[320px] flex-1">
-              <div className="step-number bg-gradient-to-r from-[#ff3366] to-[#ff9966] text-white text-2xl font-bold w-14 h-14 flex items-center justify-center rounded-full mx-auto mb-4 shadow">
-                2
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-[#2c2d5a]">Complete Purchase</h3>
-              <p className="text-gray-500 text-base">Enter your email and pay securely with PayPal.</p>
+            <div className={`step stagger-item delay-100${stepsVisible ? ' visible' : ''}`}> 
+              <div className="step-number">2</div>
+              <h3>Complete Purchase</h3>
+              <p>Enter your email and pay securely with PayPal.</p>
             </div>
-            <div className="step bg-[#f9fafb] rounded-xl shadow p-8 text-center min-w-[220px] max-w-[320px] flex-1">
-              <div className="step-number bg-gradient-to-r from-[#ff3366] to-[#ff9966] text-white text-2xl font-bold w-14 h-14 flex items-center justify-center rounded-full mx-auto mb-4 shadow">
-                3
-              </div>
-              <h3 className="text-lg font-bold mb-2 text-[#2c2d5a]">Receive Details</h3>
-              <p className="text-gray-500 text-base">Get your Adobe account information delivered via email.</p>
+            <div className={`step stagger-item delay-200${stepsVisible ? ' visible' : ''}`}> 
+              <div className="step-number">3</div>
+              <h3>Receive Details</h3>
+              <p>Get your Adobe account information delivered via email.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Checkout Section */}
-      <section className="checkout py-20 bg-[#f3f4f6]">
+      <section className="checkout py-20 bg-[#f3f4f6]" id="checkout">
         <div className="container">
           <div className="section-heading text-center mb-12">
             <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">Complete Your Order</h2>
@@ -368,6 +416,7 @@ export default function Home() {
           </div>
           <div className="checkout-container flex flex-wrap gap-8 justify-center items-start">
             <div className="checkout-form w-full max-w-md">
+              {/* Trust/Payment Widgets */}
               <form id="checkout-form" onSubmit={e => e.preventDefault()} className="space-y-6">
                 <div className="form-group">
                   <label htmlFor="email">Email Address</label>
@@ -381,7 +430,7 @@ export default function Home() {
                     onChange={e => setEmail(e.target.value)}
                     autoComplete="email"
                   />
-                </div>
+              </div>
                 <div className="form-group">
                   <label htmlFor="name">Name</label>
                   <input
@@ -394,7 +443,7 @@ export default function Home() {
                     onChange={e => setName(e.target.value)}
                     autoComplete="name"
                   />
-                </div>
+            </div>
                 <div className="form-group">
                   <Script
                     src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture`}
@@ -402,14 +451,17 @@ export default function Home() {
                     onLoad={handlePayPalLoad}
                     onError={handlePayPalError}
                   />
-                  <div
-                    id="paypal-button-container"
-                    ref={paypalButtonContainerRef}
+                <div
+                  id="paypal-button-container"
+                  ref={paypalButtonContainerRef}
                     className={!canPay ? 'opacity-50 pointer-events-none' : ''}
-                  />
-                  {!canPay && (
-                    <p className="form-note text-[#ef4444]">Please enter your name and a valid email to continue.</p>
-                  )}
+                />
+                {!canPay && (
+                  <div className="form-note flex items-center gap-2 bg-[#fee2e2] text-[#991b1b] p-3 rounded-md shadow-sm border border-[#fecaca] animate-fade-in">
+                    <i className="fas fa-exclamation-circle text-[#ef4444] text-lg"></i>
+                    <span className="font-medium">Please enter your name and a valid email to continue.</span>
+                  </div>
+                )}
                 </div>
                 {paymentStatus === 'loading' && (
                   <div className="form-note flex items-center gap-2">
@@ -420,19 +472,31 @@ export default function Home() {
                 {paymentStatus === 'success' && (
                   <div className="form-note bg-[#d1fae5] text-[#065f46] p-4 rounded-md">
                     Payment successful! Check your email for access details.
-                  </div>
-                )}
+              </div>
+            )}
                 {paymentStatus === 'error' && (
                   <div className="form-note bg-[#fee2e2] text-[#991b1b] p-4 rounded-md">
                     There was an error processing your payment. Please try again.
-                  </div>
-                )}
+              </div>
+            )}
                 <p className="form-disclaimer">
                   By completing your purchase, you agree to our{' '}
                   <a href="/terms">Terms of Service</a> and{' '}
                   <a href="/privacy">Privacy Policy</a>.
                 </p>
               </form>
+              {/* Trust Badge Below Form */}
+              <div className="flex flex-col items-center gap-3 mb-6">
+                <div className="flex items-center pt-5 gap-2 text-[#10b981] text-base font-semibold">
+                  <i className="fas fa-lock" /> Secure Payment with PayPal
+                </div>
+                <div className="flex gap-3 mt-1 text-2xl text-gray-400">
+                  <i className="fab fa-cc-paypal" title="PayPal" style={{color:'#003087'}}></i>
+                  <i className="fab fa-cc-visa" title="Visa"></i>
+                  <i className="fab fa-cc-mastercard" title="Mastercard" style={{color:'#eb001b'}}></i>
+                  <i className="fab fa-cc-amex" title="Amex" style={{color:'#2e77bb'}}></i>
+                </div>
+              </div>
             </div>
             <div className="selected-plan-summary w-full max-w-sm">
               <h3>Your Selected Plan <span>{selectedPriceOption.name}</span></h3>
@@ -511,41 +575,48 @@ export default function Home() {
       </section>
 
       {/* Testimonials Carousel Section */}
-      <section className="testimonials py-20 bg-gradient-to-b from-white to-[#f3f4f6] border-t border-gray-100">
+      <section className="testimonials" id="testimonials">
         <div className="container">
           <div className="section-heading text-center mb-12">
-            <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">What Our Customers Say</h2>
-            <p className="text-lg text-gray-500">Real feedback from real users</p>
+            <h2 className="mb-2">
+              What Our Customers Say
+            </h2>
+            <p className="text-lg text-gray-500" style={{ 
+              color: '#4b5563', 
+              fontWeight: 'normal',
+              position: 'relative',
+              zIndex: '2'
+            }}>
+              Real feedback from real users
+            </p>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="testimonials-container">
             <div className="testimonial-card" key={testimonialIdx}>
               <div className="testimonial-rating">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <i key={i} className={`fas fa-star${i < TESTIMONIALS[testimonialIdx].rating ? '' : ' inactive'}`}></i>
                 ))}
               </div>
-              <div className="testimonial-text">"{TESTIMONIALS[testimonialIdx].text}"</div>
-              <div className="testimonial-author flex items-center gap-4 mt-4">
-                <div className="author-image">
-                  {TESTIMONIALS[testimonialIdx].name[0]}
-                </div>
+              <div className="testimonial-text">{TESTIMONIALS[testimonialIdx].text}</div>
+              <div className="testimonial-author">
                 <div className="author-details">
                   <div className="author-name">{TESTIMONIALS[testimonialIdx].name}</div>
                   <div className="author-title">{TESTIMONIALS[testimonialIdx].title}</div>
+                  <span className="verified-badge"><i className="fas fa-check-circle" /> Verified Buyer</span>
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 mt-6">
-              {TESTIMONIALS.map((_, idx) => (
-                <button
-                  key={idx}
-                  className={`btn btn-outline${testimonialIdx === idx ? ' active' : ''}`}
-                  style={{ width: 12, height: 12, borderRadius: '50%', padding: 0, minWidth: 0, minHeight: 0, borderWidth: 2, borderColor: testimonialIdx === idx ? '#ff3366' : '#b9a7d1', background: testimonialIdx === idx ? '#ff3366' : 'transparent' }}
-                  aria-label={`Show testimonial ${idx + 1}`}
-                  onClick={() => setTestimonialIdx(idx)}
-                />
-              ))}
-            </div>
+          </div>
+          <div className="flex gap-2 mt-6 justify-center">
+            {TESTIMONIALS.map((_, idx) => (
+              <button
+                key={idx}
+                className={`btn btn-outline${testimonialIdx === idx ? ' active' : ''}`}
+                style={{ width: 12, height: 12, borderRadius: '50%', padding: 0, minWidth: 0, minHeight: 0, borderWidth: 2, borderColor: testimonialIdx === idx ? '#ff3366' : '#b9a7d1', background: testimonialIdx === idx ? '#ff3366' : 'transparent' }}
+                aria-label={`Show testimonial ${idx + 1}`}
+                onClick={() => setTestimonialIdx(idx)}
+              />
+            ))}
           </div>
         </div>
       </section>
