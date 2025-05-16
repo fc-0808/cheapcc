@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,21 +35,7 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-[#171717]`}>
         {/* Header - always logged out state for server component */}
-        <header>
-          <div className="container header-container flex items-center justify-between py-4 px-4 md:px-8">
-            <a href="/" className="logo text-2xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2">
-              cheap<span className="text-[#ff3366]">CC</span>
-            </a>
-            <div className="account-nav flex items-center gap-4">
-              <a href="/login" className="account-btn login-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#2c2d5a] text-white font-semibold text-sm hover:bg-[#484a9e] transition">
-                <i className="fas fa-sign-in-alt" aria-hidden="true"></i>Login
-              </a>
-              <a href="/register" className="account-btn register-btn flex items-center gap-2 px-4 py-2 rounded-md bg-[#ff3366] text-white font-semibold text-sm hover:bg-[#ff6b8b] transition">
-                <i className="fas fa-user-plus" aria-hidden="true"></i>Register
-              </a>
-            </div>
-          </div>
-        </header>
+        <Header />
         {/* Main Content */}
         {children}
         {/* Footer */}

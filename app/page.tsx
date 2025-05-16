@@ -145,16 +145,18 @@ export default function Home() {
   }, [testimonialIdx]);
 
   useEffect(() => {
-    function onScroll() {
+    // Only trigger animation when social proof section enters viewport
+    function onScrollOrObserve() {
       if (!counterRef.current) return;
       const rect = counterRef.current.getBoundingClientRect();
       if (rect.top < window.innerHeight - 100) {
         setCounterVisible(true);
       }
     }
-    window.addEventListener('scroll', onScroll);
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScrollOrObserve);
+    // Also check on mount in case already in view
+    onScrollOrObserve();
+    return () => window.removeEventListener('scroll', onScrollOrObserve);
   }, []);
 
   useEffect(() => {
@@ -219,7 +221,15 @@ export default function Home() {
               <i className="fas fa-check-circle" /> Adobe Firefly Included
             </div>
           </div>
-          <a href="#pricing" className="primary-btn">
+          <a
+            href="#pricing"
+            className="primary-btn"
+            onClick={e => {
+              e.preventDefault();
+              const el = document.getElementById('pricing');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             <i className="fas fa-bolt" /> View Plans & Pricing
           </a>
         </div>
@@ -229,11 +239,11 @@ export default function Home() {
       <section className="social-proof bg-gradient-to-br from-[#2c2d5a] to-[#1e0029] py-12">
         <div className="container">
           <div
-            className={`counter-container flex flex-wrap justify-center gap-6${counterVisible ? ' visible' : ''}`}
+            className="counter-container flex flex-wrap justify-center gap-6"
             ref={counterRef}
           >
             {counters.map((counter, idx) => (
-              <div key={counter.label} className={`counter-item${counterVisible ? ' visible' : ''}`}>
+              <div key={counter.label} className="counter-item">
                 <i className={`${counter.icon} text-2xl`} />
                 <div className={`counter-value${animated ? ' animated' : ''}`}>
                   {counter.value}
@@ -305,8 +315,8 @@ export default function Home() {
                 <div className="plan-features text-left mt-4 mb-6">
                   <ul className="space-y-2">
                     <li>All Creative Cloud Apps</li>
+                    <li>All AI features</li>
                     <li>100GB Cloud Storage</li>
-                    <li>Email Delivery</li>
                   </ul>
                 </div>
                 <button className="select-btn w-full">{selectedPrice === option.id ? 'Selected' : 'Select'}</button>
