@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
-import { supabase } from '@/utils/supabase-server';
+import { createClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
 import { logToFile } from '../../../../utils/logger';
 
 export async function POST(request: NextRequest) {
+  const supabase = createClient();
   try {
     // Get the raw request body for signature verification
     const rawBody = await request.text();
@@ -33,11 +34,11 @@ export async function POST(request: NextRequest) {
     switch (eventType) {
       case 'PAYMENT.CAPTURE.COMPLETED':
         // Payment was successful
-        await handlePaymentCompleted(body);
+        await handlePaymentCompleted(body, supabase);
         break;
       default:
         // Log all other events
-        await logPayPalWebhookEvent(body);
+        await logPayPalWebhookEvent(body, supabase);
         await logToFile(`Unhandled event type: ${eventType}`);
     }
     
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function for handling PAYMENT.CAPTURE.COMPLETED event
-async function handlePaymentCompleted(webhookData: any) {
+async function handlePaymentCompleted(webhookData: any, supabase: any) {
   const paymentId = webhookData.resource.id;
   const paymentStatus = webhookData.resource.status;
   const orderId = webhookData.resource.supplementary_data?.related_ids?.order_id;
@@ -131,7 +132,7 @@ async function handlePaymentCompleted(webhookData: any) {
 }
 
 // Helper function to log non-completed PayPal webhook events
-async function logPayPalWebhookEvent(webhookData: any) {
+async function logPayPalWebhookEvent(webhookData: any, supabase: any) {
   const eventId = webhookData.id;
   const eventType = webhookData.event_type;
   const resource = webhookData.resource || {};
