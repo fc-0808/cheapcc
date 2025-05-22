@@ -24,6 +24,7 @@ export async function signup(formData: FormData) {
     password,
     options: {
       data: { name },
+      emailRedirectTo: 'http://localhost:3000/auth/callback'
     },
   })
 
@@ -32,5 +33,5 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/login')
+  redirect('/login?success=register')
 } 

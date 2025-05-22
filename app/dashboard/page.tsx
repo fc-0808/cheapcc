@@ -20,8 +20,17 @@ export default async function DashboardPage() {
 
   // Fetch user info (name, email)
   const userEmail = user.email || '';
-  const userName = user.user_metadata?.name || user.email?.split('@')[0] || 'Customer';
   const userId = user.id;
+  
+  // Fetch profile from profiles table to get the updated name
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('name')
+    .eq('id', userId)
+    .maybeSingle();
+    
+  // Use name from profile if available, otherwise fallback to user metadata
+  const userName = profileData?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'Customer';
 
   // Fetch order stats
   const { data } = await supabase
@@ -40,34 +49,10 @@ export default async function DashboardPage() {
 
   return (
     <>
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="container">
-          <div className="dashboard-logo">
-            <Link href="/">
-              <h1>CheapCC</h1>
-            </Link>
-          </div>
-          <nav className="dashboard-main-nav">
-            <ul>
-              <li className="dashboard-user-email">
-                <span><i className="fas fa-user-circle"></i> {userEmail}</span>
-              </li>
-              <li>
-                <Link href="/profile"><i className="fas fa-user"></i> Profile</Link>
-              </li>
-              <li>
-                <Link href="/logout"><i className="fas fa-sign-out-alt"></i> Logout</Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </header>
-
       <div className="dashboard-container">
         <main className="dashboard-content">
           <div className="dashboard-welcome">
-            <h1>Welcome back, {userName}</h1>
+            <h1>Welcome back, <b className="text-[#ff3366]">{userName}</b></h1>
             <p>Here's an overview of your account and services.</p>
           </div>
 

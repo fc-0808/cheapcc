@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Script from "next/script";
 import { PRODUCT, PRICING_OPTIONS } from "@/utils/products";
+import { useSearchParams, useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/supabase-client';
 
 // --- Testimonials Data ---
 const TESTIMONIALS = [
@@ -33,15 +35,25 @@ const TESTIMONIALS = [
 ];
 
 export default function Home() {
-  const [selectedPrice, setSelectedPrice] = useState<string>(PRICING_OPTIONS[0].id);
+  const router = useRouter();
+  const [selectedPrice, setSelectedPrice] = useState<string>('1m');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [orderID, setOrderID] = useState<string | null>(null);
   const [sdkReady, setSdkReady] = useState<boolean>(false);
   const [sdkError, setSdkError] = useState<boolean>(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [formError, setFormError] = useState('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
+  const [canPay, setCanPay] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [hasPopupBeenShown, setHasPopupBeenShown] = useState(false);
+  
   const paypalButtonContainerRef = useRef<HTMLDivElement>(null);
+  const isAuthChecked = useRef<boolean>(false);
+  const shouldRenderPayPal = useRef<boolean>(false);
 
   // --- FAQ Accordion State ---
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -77,25 +89,42 @@ export default function Home() {
   const [faqVisible, setFaqVisible] = useState(false);
   const [testimonialsVisible, setTestimonialsVisible] = useState(false);
 
+  const searchParams = useSearchParams();
+
   // Validate email format
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
 
-  // Function to handle when the PayPal SDK is loaded
-  const handlePayPalLoad = () => {
-    setSdkReady(true);
-    setSdkError(false);
-  };
-
-  const handlePayPalError = () => {
-    setSdkError(true);
-  };
-
-  // Initialize PayPal buttons when the SDK is loaded
-  useEffect(() => {
-    if (!sdkReady || !name || !isValidEmail(email)) return;
-    if (paypalButtonContainerRef.current) {
-      paypalButtonContainerRef.current.innerHTML = '';
+  // Function to render the PayPal button when conditions are right
+  const renderPayPalButton = () => {
+    console.log('Attempting to render PayPal button:', {
+      sdkReady,
+      canPay,
+      isUserSignedIn,
+      name,
+      email,
+      buttonContainerExists: !!paypalButtonContainerRef.current
+    });
+    
+    if (!sdkReady) {
+      console.log('PayPal SDK not yet ready, cannot render button');
+      return;
     }
+    
+    if (!canPay) {
+      console.log('Cannot pay yet - name or email missing or invalid');
+      return;
+    }
+    
+    if (!paypalButtonContainerRef.current) {
+      console.log('PayPal button container not found in DOM');
+      return;
+    }
+    
+    // Clear any existing buttons before rendering new ones
+    paypalButtonContainerRef.current.innerHTML = '';
+    
+    console.log('Rendering PayPal button now...');
+    
     if (typeof window !== 'undefined' && window.paypal) {
       window.paypal.Buttons({
         createOrder: async () => {
@@ -142,14 +171,124 @@ export default function Home() {
           setPaymentStatus('cancel');
         },
         onError: (err: Error) => {
+          console.error('PayPal button error:', err);
           setPaymentStatus('error');
         },
       }).render('#paypal-button-container');
+      console.log('PayPal button render method called');
+    } else {
+      console.error('PayPal SDK not available on window object');
     }
-  }, [sdkReady, selectedPrice, name, email]);
+  };
+
+  // Function to handle when the PayPal SDK is loaded
+  const handlePayPalLoad = () => {
+    console.log('PayPal SDK loaded successfully');
+    setSdkReady(true);
+    setSdkError(false);
+    
+    // If auth is already checked and we should render, do it now
+    if (isAuthChecked.current && shouldRenderPayPal.current) {
+      console.log('Auth was already checked, rendering PayPal button immediately after SDK load');
+      setTimeout(renderPayPalButton, 0);
+    }
+  };
+
+  const handlePayPalError = () => {
+    console.error('PayPal SDK failed to load');
+    setSdkError(true);
+  };
+  
+  // Component initialization & cleanup effect
+  useEffect(() => {
+    console.log('Component mounted');
+    setIsInitialized(true);
+    
+    return () => {
+      console.log('Component unmounting, cleaning up');
+      // Any cleanup needed
+    };
+  }, []);
+  
+  // Update canPay whenever relevant dependencies change
+  useEffect(() => {
+    const shouldAllowPayment = isUserSignedIn || (name.trim() !== '' && isValidEmail(email));
+    console.log('Updating canPay state:', { shouldAllowPayment, isUserSignedIn, name, email });
+    setCanPay(shouldAllowPayment);
+  }, [isUserSignedIn, name, email]);
+
+  // Main effect to handle PayPal button rendering when conditions change
+  useEffect(() => {
+    if (isInitialized && canPay && sdkReady) {
+      console.log('All conditions met, rendering PayPal button');
+      renderPayPalButton();
+    }
+  }, [isInitialized, sdkReady, canPay, selectedPrice]);
+
+  // Dedicated effect for user authentication
+  useEffect(() => {
+    async function checkUserAuth() {
+      console.log('Checking user authentication');
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          console.log('User is authenticated:', user.email);
+          setIsUserSignedIn(true);
+          
+          // Set email from user data
+          if (user.email) {
+            console.log('Setting email from user data:', user.email);
+            setEmail(user.email);
+          }
+          
+          // Try to get name from user metadata first
+          if (user.user_metadata?.name) {
+            console.log('Setting name from user metadata:', user.user_metadata.name);
+            setName(user.user_metadata.name);
+          } else {
+            // If not in metadata, try to get from profiles table
+            console.log('Fetching name from profiles table');
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('id', user.id)
+              .maybeSingle();
+              
+            if (profileData?.name) {
+              console.log('Setting name from profiles table:', profileData.name);
+              setName(profileData.name);
+            }
+          }
+          
+          // Mark that we should render PayPal once SDK is ready
+          shouldRenderPayPal.current = true;
+        } else {
+          console.log('No authenticated user found');
+          setIsUserSignedIn(false);
+          shouldRenderPayPal.current = false;
+        }
+        
+        // Mark auth as checked regardless of result
+        isAuthChecked.current = true;
+        
+        // If SDK is already loaded, we can render PayPal button now
+        if (sdkReady && shouldRenderPayPal.current) {
+          console.log('SDK was already loaded, triggering PayPal button render after auth check');
+          setTimeout(renderPayPalButton, 0);
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        setIsUserSignedIn(false);
+        isAuthChecked.current = true;
+      }
+    }
+    
+    checkUserAuth();
+  }, []);
 
   const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice)!;
-  const canPay = name.trim() && isValidEmail(email);
 
   // Testimonials auto-rotate
   useEffect(() => {
@@ -250,8 +389,85 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll);
   }, [benefitsVisible, pricingVisible, checkoutVisible, faqVisible, testimonialsVisible]);
 
+  useEffect(() => {
+    if (searchParams.get('success') === 'confirmed') {
+      setSuccessMessage('Successfully confirmed!');
+      window.history.replaceState({}, document.title, '/');
+      
+      // Auto-hide the message after 5 seconds
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+
+  // Add this effect to show the popup when user scrolls to checkout
+  useEffect(() => {
+    if (checkoutVisible && !isUserSignedIn && !hasPopupBeenShown) {
+      console.log('User scrolled to checkout section, showing login popup');
+      // Delay popup slightly for better UX (let the section render first)
+      setTimeout(() => setShowLoginPopup(true), 500);
+      setHasPopupBeenShown(true);
+    }
+  }, [checkoutVisible, isUserSignedIn, hasPopupBeenShown]);
+  
+  const handleRegisterClick = () => {
+    setShowLoginPopup(false);
+    router.push('/register');
+  };
+  
+  const handleContinueAsGuest = () => {
+    setShowLoginPopup(false);
+    // Focus on the email input field
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+      emailInput.focus();
+    }
+  };
+
   return (
     <main className="bg-white">
+      {/* Login Popup */}
+      {showLoginPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform animate-scaleIn">
+            <div className="text-center mb-4">
+              <i className="fas fa-user-circle text-5xl text-[#ff3366]"></i>
+            </div>
+            <h3 className="text-xl font-bold text-[#2c2d5a] mb-3 text-center">Create an Account?</h3>
+            <p className="text-gray-600 mb-5 text-center">
+              Creating an account lets you track your orders and save your information for faster checkout.
+            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+              <button
+                onClick={handleRegisterClick}
+                className="py-3 px-5 bg-[#ff3366] text-white rounded-lg hover:bg-[#e62e5c] transition font-medium flex-1 flex items-center justify-center"
+              >
+                <i className="fas fa-user-plus mr-2"></i> Register
+              </button>
+              <button
+                onClick={handleContinueAsGuest}
+                className="py-3 px-5 border border-gray-300 text-[#2c2d5a] rounded-lg hover:bg-gray-100 transition font-medium flex-1 flex items-center justify-center"
+              >
+                <i className="fas fa-arrow-right mr-2"></i> Continue as Guest
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Display success message if present */}
+      {successMessage && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-100 text-green-700 px-6 py-3 rounded-md shadow-lg">
+          <div className="flex items-center">
+            <i className="fas fa-check-circle mr-2" />
+            {successMessage}
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="hero">
         <div className="container">
@@ -459,7 +675,7 @@ export default function Home() {
               {/* Trust/Payment Widgets */}
               <form id="checkout-form" onSubmit={e => e.preventDefault()} className="space-y-6">
                 <div className="form-group">
-                  <label htmlFor="email">Email Address</label>
+                  <label htmlFor="email">Email Address {isUserSignedIn && <span className="text-[#10b981] text-xs">(Autofilled)</span>}</label>
                   <input
                     type="email"
                     id="email"
@@ -467,12 +683,14 @@ export default function Home() {
                     required
                     placeholder="Where we'll send your account details"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={e => !isUserSignedIn && setEmail(e.target.value)}
                     autoComplete="email"
+                    disabled={isUserSignedIn}
+                    className={isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""}
                   />
               </div>
                 <div className="form-group">
-                  <label htmlFor="name">Name</label>
+                  <label htmlFor="name">Name {isUserSignedIn && <span className="text-[#10b981] text-xs">(Autofilled)</span>}</label>
                   <input
                     type="text"
                     id="name"
@@ -480,8 +698,10 @@ export default function Home() {
                     required
                     placeholder="Your name"
                     value={name}
-                    onChange={e => setName(e.target.value)}
+                    onChange={e => !isUserSignedIn && setName(e.target.value)}
                     autoComplete="name"
+                    disabled={isUserSignedIn}
+                    className={isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""}
                   />
             </div>
                 <div className="form-group">
@@ -491,19 +711,20 @@ export default function Home() {
                     onLoad={handlePayPalLoad}
                     onError={handlePayPalError}
                   />
-                <div
-                  id="paypal-button-container"
-                  ref={paypalButtonContainerRef}
-                    className={!canPay ? 'opacity-50 pointer-events-none' : ''}
-                />
-                {!canPay && (
-                  <div className="form-note flex items-center gap-3 bg-[#fff0f3] text-[#b91c1c] p-3 rounded-lg shadow border border-[#ffd6db] animate-fade-in">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#ffe4ea] mr-2">
-                      <i className="fas fa-exclamation-circle text-[#ff3366] text-base"></i>
-                    </span>
-                    <span className="font-semibold whitespace-nowrap tracking-tight text-sm">Please enter your name and a valid email to continue.</span>
-                  </div>
-                )}
+                  {canPay ? (
+                    <div
+                      id="paypal-button-container"
+                      ref={paypalButtonContainerRef}
+                      className="mt-4"
+                    />
+                  ) : (
+                    <div className="form-note flex items-center gap-3 bg-[#fff0f3] text-[#b91c1c] p-3 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-4">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#ffe4ea] mr-2">
+                        <i className="fas fa-exclamation-circle text-[#ff3366] text-base"></i>
+                      </span>
+                      <span className="font-semibold whitespace-nowrap tracking-tight text-sm">Please enter your name and a valid email to continue.</span>
+                    </div>
+                  )}
                 </div>
                 {paymentStatus === 'loading' && (
                   <div className="form-note flex items-center gap-2">
