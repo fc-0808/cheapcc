@@ -3,9 +3,122 @@ import { createClient } from '@/utils/supabase/supabase-server';
 import React from 'react';
 import Link from 'next/link';
 
+// Adobe's regular pricing (for savings calculation)
+const ADOBE_REGULAR_PRICING = {
+  '14 days': 23.99, // About $1.71/day for trial
+  '14-Day': 23.99, // Alternative name format
+  '1 month': 54.99,
+  '3 months': 164.97, // $54.99 x 3
+  '6 months': 329.94, // $54.99 x 6
+  '12 months': 599.88, // $54.99 x 12 (annual price for monthly subscription)
+};
+
 // Helper to format currency
 function formatCurrency(amount: number) {
   return `$${amount.toFixed(2)}`;
+}
+
+// Helper to calculate savings for an order
+function calculateOrderSavings(order: any): number {
+  if (!order.amount) return 0;
+  
+  const orderAmount = parseFloat(order.amount);
+  if (isNaN(orderAmount)) return 0;
+  
+  // Try to determine the regular price based on description or plan name
+  const description = order.description || order.plan_name || '';
+  
+  // Check if the order has savings already calculated
+  if (order.savings && !isNaN(parseFloat(order.savings))) {
+    return parseFloat(order.savings);
+  }
+  
+  // Calculate based on duration
+  let regularPrice = 0;
+  
+  if (description.includes('14 days') || description.includes('14-Day')) {
+    regularPrice = ADOBE_REGULAR_PRICING['14 days'];
+  } else if (description.includes('1 month') || description.includes('30 days')) {
+    regularPrice = ADOBE_REGULAR_PRICING['1 month'];
+  } else if (description.includes('3 month') || description.includes('90 days')) {
+    regularPrice = ADOBE_REGULAR_PRICING['3 months'];
+  } else if (description.includes('6 month') || description.includes('180 days')) {
+    regularPrice = ADOBE_REGULAR_PRICING['6 months'];
+  } else if (description.includes('12 month') || description.includes('1 year') || description.includes('365 days')) {
+    regularPrice = ADOBE_REGULAR_PRICING['12 months'];
+  } else {
+    // Default to 14-day price if we can't determine (instead of monthly)
+    regularPrice = ADOBE_REGULAR_PRICING['14 days'];
+  }
+  
+  const savings = regularPrice - orderAmount;
+  return savings > 0 ? savings : 0;
+}
+
+// Helper to check if a subscription is active
+function isActiveSubscription(order: any) {
+  // Consider both ACTIVE and COMPLETED statuses as active for backwards compatibility
+  if (order.status === 'ACTIVE' || order.status === 'COMPLETED') {
+    // If we have an expiry date, check if it's in the future
+    if (order.expiry_date) {
+      const now = new Date();
+      const expiry = new Date(order.expiry_date);
+      return expiry > now;
+    }
+    // Without expiry date, assume it's active (will be fixed by webhook handler in the future)
+    return true;
+  }
+  return false;
+}
+
+// Helper to calculate expiry date if missing
+function calculateExpiryDateIfNeeded(order: any) {
+  if (order.expiry_date) {
+    return order.expiry_date;
+  }
+  
+  // Calculate approximate expiry based on creation date
+  const createdAt = new Date(order.created_at);
+  const expiryDate = new Date(createdAt);
+  
+  // Default to 30 days from creation
+  let days = 30;
+  
+  // Try to determine duration from description
+  const description = order.description || order.plan_name || '';
+  if (description.includes('14 days')) {
+    days = 14;
+  } else if (description.includes('30 days') || description.includes('1 month')) {
+    days = 30;
+  } else if (description.includes('90 days') || description.includes('3 month')) {
+    days = 90;
+  } else if (description.includes('180 days') || description.includes('6 month')) {
+    days = 180;
+  } else if (description.includes('365 days') || description.includes('1 year')) {
+    days = 365;
+  }
+  
+  expiryDate.setDate(createdAt.getDate() + days);
+  return expiryDate.toISOString();
+}
+
+// Add a helper to infer plan duration
+function getPlanDuration(order: any): string {
+  const description = order.description || order.plan_name || '';
+  const amount = parseFloat(order.amount);
+  // Check description first
+  if (/14\s*-?\s*days?/i.test(description)) return '14 days';
+  if (/1\s*-?\s*month|30\s*-?\s*days?/i.test(description)) return '1 month';
+  if (/3\s*-?\s*months?|90\s*-?\s*days?/i.test(description)) return '3 months';
+  if (/6\s*-?\s*months?|180\s*-?\s*days?/i.test(description)) return '6 months';
+  if (/12\s*-?\s*months?|1\s*-?\s*year|365\s*-?\s*days?/i.test(description)) return '12 months';
+  // Fallback to amount
+  if (amount === 4.99) return '14 days';
+  if (amount === 14.99) return '1 month';
+  if (amount === 34.99) return '3 months';
+  if (amount === 64.99) return '6 months';
+  if (amount === 124.99) return '12 months';
+  return 'Unknown';
 }
 
 export default async function DashboardPage() {
@@ -40,12 +153,35 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false });
   const orders = data ?? [];
 
+  // Calculate active orders using our helper function
+  const activeOrders = orders.filter(isActiveSubscription);
+
   // Stats
-  const activeOrders = orders.filter((o: any) => o.status === 'ACTIVE');
   const totalOrders = orders.length;
   const totalSpent = orders.reduce((sum: number, o: any) => sum + (parseFloat(o.amount) || 0), 0);
-  const totalSavings = orders.reduce((sum: number, o: any) => sum + (parseFloat(o.savings) || 0), 0); // If you store savings
+  
+  // Calculate total savings properly by summing up the calculated savings for each order
+  const totalSavings = orders.reduce((sum: number, order) => sum + calculateOrderSavings(order), 0);
+  
   const recentOrders = orders.slice(0, 5);
+
+  // Before rendering, update expired orders to INACTIVE if needed
+  const now = new Date();
+  const expiredOrderIds = orders
+    .filter((order: any) => {
+      if (!order.expiry_date) return false;
+      const expiry = new Date(order.expiry_date);
+      return expiry < now && order.status !== 'INACTIVE';
+    })
+    .map((order: any) => order.id);
+
+  if (expiredOrderIds.length > 0) {
+    // Update all expired orders to INACTIVE
+    await supabase
+      .from('orders')
+      .update({ status: 'INACTIVE', updated_at: new Date().toISOString() })
+      .in('id', expiredOrderIds);
+  }
 
   return (
     <>
@@ -87,7 +223,11 @@ export default async function DashboardPage() {
               <span className="badge">{activeOrders.length}</span>
             </h2>
             {activeOrders.length > 0 ? (
-              activeOrders.map((order: any) => (
+              activeOrders.map((order: any) => {
+                // Calculate expiry date if not present
+                const expiryDate = calculateExpiryDateIfNeeded(order);
+                
+                return (
                 <div className="credential-card" key={order.id}>
                   <h3>{order.plan_name || order.description || 'Adobe CC Plan'}</h3>
                   <ul className="credential-details">
@@ -107,33 +247,28 @@ export default async function DashboardPage() {
                     </li>
                     <li>
                       <span className="detail-label">Expires</span>
-                      <span className="detail-value">{order.expiry_date ? new Date(order.expiry_date).toLocaleDateString() : '-'}</span>
+                        <span className="detail-value">{expiryDate ? new Date(expiryDate).toLocaleDateString() : '-'}</span>
                     </li>
                     <li>
                       <span className="detail-label">Adobe Account</span>
                       <span className="detail-value">{order.adobe_email || order.email}</span>
                     </li>
-                    <li>
-                      <span className="detail-label">Password</span>
-                      <span className="detail-value">
-                        <span className="credential-password">••••••••</span>
-                        <button className="btn-show-password" title="Show Password" type="button" tabIndex={-1} disabled>
-                          <i className="fas fa-eye"></i>
-                        </button>
-                      </span>
-                    </li>
                   </ul>
-                  <div className="credential-actions">
-                    <Link href={`/credentials/${order.id}`} className="btn btn-sm btn-outline">View Details</Link>
-                    <Link href={`/support?order=${order.paypal_order_id || order.id}`} className="btn btn-sm btn-ghost">Report Issue</Link>
-                  </div>
                 </div>
-              ))
+                );
+              })
             ) : (
               <div className="empty-state">
                 <i className="fas fa-box-open"></i>
                 <p>You don't have any active subscriptions.</p>
-                <Link href="/#pricing" className="btn btn-accent">View Available Plans</Link>
+                {recentOrders.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-500">
+                      Have you recently made a purchase? You may need to refresh your dashboard data.
+                    </p>
+                  </div>
+                )}
+                <Link href="/#pricing" className="btn btn-accent mt-3">View Available Plans</Link>
               </div>
             )}
           </div>
@@ -142,7 +277,7 @@ export default async function DashboardPage() {
           <div className="content-card">
             <h2>
               Recent Orders
-              <Link href="/orders" className="btn btn-sm btn-outline">View All</Link>
+              <Link href="/dashboard/orders" className="btn btn-sm btn-outline">View All</Link>
             </h2>
             {recentOrders.length > 0 ? (
               <table className="data-table">
@@ -153,26 +288,26 @@ export default async function DashboardPage() {
                     <th>Plan</th>
                     <th>Amount</th>
                     <th>Status</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentOrders.map((order: any) => (
+                  {recentOrders.map((order: any) => {
+                    // Determine if order is active
+                    const isActive = isActiveSubscription(order);
+                    return (
                     <tr key={order.id}>
                       <td>{order.paypal_order_id || order.id}</td>
                       <td>{order.created_at ? new Date(order.created_at).toLocaleDateString() : '-'}</td>
-                      <td>{order.plan_name || order.description || 'Adobe CC Plan'}</td>
+                      <td>{getPlanDuration(order)}</td>
                       <td>{formatCurrency(parseFloat(order.amount) || 0)}</td>
                       <td>
-                        <span className={`status-badge ${order.status?.toLowerCase()}`}>{order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase() : '-'}</span>
-                      </td>
-                      <td>
-                        <Link href={`/orders/${order.id}`} className="table-action">
-                          <i className="fas fa-eye"></i> View
-                        </Link>
+                          <span className={`status-badge ${isActive ? 'active' : order.status?.toLowerCase()}`}>
+                            {isActive ? 'Active' : order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase() : '-'}
+                          </span>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (

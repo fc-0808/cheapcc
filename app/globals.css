@@ -78,8 +78,8 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--light);
+  color: var(--gray-dark);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
@@ -163,7 +163,7 @@ header .header-container {
 footer {
   background-color: #1e0029;
   color: var(--white);
-  padding: 4rem 0 2rem;
+  padding: 3rem 0 2rem;
   position: relative;
   overflow: hidden;
   margin-top: auto;
@@ -214,7 +214,7 @@ footer::before {
 }
 
 .footer-links li {
-  margin-bottom: 0.75rem;
+  margin-bottom: -0.25rem;
 }
 
 .footer-links a {
@@ -1690,3 +1690,16 @@ input:focus, select:focus, textarea:focus {
   }
 }
 /* === End Dashboard Styles === */
+
+.alert-info {
+  background-color: #f5f7ff !important;
+  border-color: var(--primary);
+  color: #2c2d5a !important;
+}
+.alert-info a {
+  color: #2c2d5a;
+  text-decoration: underline;
+}
+.alert-info a:hover {
+  color: #ff3366;
+}

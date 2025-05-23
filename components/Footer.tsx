@@ -7,13 +7,13 @@ const gradientUnderline =
 
 const Footer: React.FC = () => (
   <footer
-    className="bg-[#181028] text-white py-16 mt-20 relative z-10"
+    className="bg-[#181028] text-white py-8 mt-8 relative z-10"
     style={{ pointerEvents: 'auto' }}
   >
-    <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 footer-container">
-      <div>
+    <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-2 footer-container">
+      <div className="mb-0">
         <h3
-          className="text-2xl font-bold mb-3"
+          className="text-2xl font-bold mb-2"
           style={{ fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em' }}
         >
           <span className="text-white">Cheap </span><span className="text-[#ff3366]">CC</span>
@@ -22,13 +22,13 @@ const Footer: React.FC = () => (
           Affordable Adobe Creative Cloud subscriptions for everyone.
         </p>
       </div>
-      <div>
+      <div className="mb-0">
         <h3
-          className="text-lg font-semibold mb-3 relative text-[#ff3366]"
+          className="text-lg font-semibold mb-2 relative text-[#ff3366]"
         >
           Quick Links
         </h3>
-        <ul className="footer-links space-y-2 mt-2">
+        <ul className="footer-links flex flex-col space-y-1 mt-2">
           <li>
             <a href="/" className="hover:underline transition-colors duration-150">
               Home
@@ -46,13 +46,13 @@ const Footer: React.FC = () => (
           </li>
         </ul>
       </div>
-      <div>
+      <div className="mb-0">
         <h3
-          className="text-lg font-semibold mb-3 relative text-[#ff3366]"
+          className="text-lg font-semibold mb-2 relative text-[#ff3366]"
         >
           Legal
         </h3>
-        <ul className="footer-links space-y-2 mt-2">
+        <ul className="footer-links flex flex-col space-y-1 mt-2">
           <li>
             <a href="/terms" className="hover:underline transition-colors duration-150">
               Terms of Service
@@ -70,9 +70,9 @@ const Footer: React.FC = () => (
           </li>
         </ul>
       </div>
-      <div>
+      <div className="mb-0">
         <h3
-          className="text-lg font-semibold mb-3 relative text-[#ff3366]"
+          className="text-lg font-semibold mb-2 relative text-[#ff3366]"
         >
           Contact
         </h3>
@@ -85,7 +85,7 @@ const Footer: React.FC = () => (
         </ul>
       </div>
     </div>
-    <div className="copyright border-t border-white/10 mt-12 pt-8 text-center text-xs text-white/60">
+    <div className="copyright border-t border-white/10 mt-4 pt-4 text-center text-xs text-white/60">
       &copy; {new Date().getFullYear()} CheapCC. All rights reserved.
     </div>
   </footer>

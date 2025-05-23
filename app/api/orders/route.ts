@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
 import { PRICING_OPTIONS } from '@/utils/products';
+import { createServiceClient } from '@/utils/supabase/supabase-server';
 
 // PayPal client configuration
 const environment = new paypal.core.SandboxEnvironment(
@@ -19,6 +20,9 @@ interface PayPalOrderResponse {
 }
 
 export async function POST(request: NextRequest) {
+  // Initialize service role client for potential database operations
+  const supabase = await createServiceClient();
+  
   try {
     // Get the pricing option ID from the request
     const { priceId, name, email } = await request.json();
@@ -55,7 +59,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Call PayPal to create the order
-    const order = await client.execute(orderRequest) as any;
+    const order = await client.execute(orderRequest) as PayPalOrderResponse;
     return NextResponse.json({
       id: order.result.id,
       status: order.result.status,

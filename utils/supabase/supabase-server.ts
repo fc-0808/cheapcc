@@ -27,3 +27,25 @@ export async function createClient() {
     }
   )
 }
+
+// Create a service role client for admin operations that need elevated permissions
+// Use this for server-side operations that need to bypass RLS
+export async function createServiceClient() {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!, // Service role key with admin privileges
+    {
+      // No cookies needed for service role client
+      cookies: {
+        getAll: () => [],
+        setAll: () => {},
+      },
+      // Set auth context
+      global: {
+        headers: {
+          'x-supabase-auth-override': 'service_role',
+        },
+      },
+    }
+  )
+}

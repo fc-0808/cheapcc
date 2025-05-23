@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import paypal from '@paypal/checkout-server-sdk';
+import { createServiceClient } from '@/utils/supabase/supabase-server';
 
 // PayPal client configuration
 const environment = new paypal.core.SandboxEnvironment(
@@ -20,6 +21,9 @@ interface PayPalCaptureResponse {
 }
 
 export async function POST(request: NextRequest) {
+  // Initialize service role client for potential database operations
+  const supabase = await createServiceClient();
+  
   try {
     // Get order ID from request body
     const { orderID } = await request.json();

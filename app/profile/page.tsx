@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
+import Link from 'next/link';
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -295,6 +296,9 @@ export default function ProfilePage() {
         <h1 className="text-2xl font-bold text-[#2c2d5a] mb-6 flex items-center gap-2">
           <i className="fas fa-user-circle text-[#ff3366] text-2xl" /> My Profile
         </h1>
+        
+        {/* Admin Tools Section (only for admin users) */}
+        {/* Removed: Admin tools for /admin/fix-orders */}
         
         {/* Profile Update Form */}
         <form onSubmit={handleProfileUpdate} className="mb-10">
