@@ -771,11 +771,13 @@ export default function Home() {
                       className="mt-4"
                     />
                   ) : (
-                    <div className="form-note flex items-center gap-3 bg-[#fff0f3] text-[#b91c1c] p-3 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-4">
+                    <div className="form-note flex items-center gap-2 bg-[#fff0f3] text-[#b91c1c] py-3 px-2 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-4">
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#ffe4ea] mr-2">
                         <i className="fas fa-exclamation-circle text-[#ff3366] text-base"></i>
                       </span>
-                      <span className="font-semibold whitespace-nowrap tracking-tight text-sm">Please enter your name and a valid email to continue.</span>
+                      <span className="font-semibold whitespace-nowrap tracking-tight text-sm">
+                        Please enter your name and a valid email to continue.
+                      </span>
                     </div>
                   )}
                 </div>
