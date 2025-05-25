@@ -146,26 +146,232 @@ body {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
-/* Header & Footer Polishing */
+/* === Enhanced Header Styles === */
 header {
-  box-shadow: 0 2px 8px 0 rgba(44,45,90,0.04);
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(4px);
+  background-color: rgba(var(--white-rgb), 0.97);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 3px rgba(var(--primary-rgb), 0.05), 0 2px 8px rgba(var(--primary-rgb), 0.03);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  border-bottom: 1px solid var(--gray-100);
 }
-header .header-container {
-	padding-top: 0.75rem;
-	padding-bottom: 0.75rem;
+
+header .container {
+  max-width: var(--content-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: var(--header-height, 70px);
 }
-.logo span {
+
+header .logo-link {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s ease-in-out;
+}
+
+header .logo-link:hover {
+  opacity: 0.85;
+}
+
+header .logo-text {
+  font-size: 1.75rem;
   font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.02em;
 }
-footer {
-  background-color: #1e0029;
+
+header .logo-text .accent-text {
+  color: var(--accent);
+}
+
+header .nav-links a {
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  font-size: 0.95rem;
+}
+
+header .nav-links a:hover {
+  color: var(--accent);
+  background-color: rgba(var(--accent-rgb), 0.05);
+}
+
+header .nav-links .register-btn {
+  background-color: var(--accent);
   color: var(--white);
-  padding: 3rem 0 2rem;
+  padding: 0.6rem 1.2rem;
+}
+
+header .nav-links .register-btn:hover {
+  background-color: var(--accent-light);
+  color: var(--white);
+}
+
+header .user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+header .user-email-display {
+  font-weight: 500;
+  color: var(--primary);
+  font-size: 0.9rem;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  header .user-email-display {
+    display: inline-block;
+  }
+}
+
+header .user-email-display .icon {
+  color: var(--accent);
+  margin-right: 0.4rem;
+  font-size: 1.1rem;
+}
+
+header .dropdown-button {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-200);
+  background-color: var(--white);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+header .dropdown-button:hover {
+  background-color: var(--gray-50);
+  border-color: var(--gray-300);
+  box-shadow: var(--shadow-md);
+}
+
+header .dropdown-button .icon {
+  color: var(--accent);
+  font-size: 1rem;
+}
+
+header .dropdown-button .chevron-icon {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--gray-500);
+  transition: transform 0.3s ease-in-out;
+}
+
+header .dropdown-button.open .chevron-icon {
+  transform: rotate(180deg);
+}
+
+header .dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  width: 220px;
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--gray-100);
+  padding: 0.5rem 0;
+  z-index: 60;
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out, visibility 0.2s;
+}
+
+header .dropdown-menu.open {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+header .dropdown-menu a,
+header .dropdown-menu button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+header .dropdown-menu a:hover,
+header .dropdown-menu button:hover {
+  background-color: rgba(var(--accent-rgb), 0.07);
+  color: var(--accent);
+}
+
+header .dropdown-menu .icon {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+  color: var(--gray-500);
+}
+
+header .dropdown-menu a:hover .icon,
+header .dropdown-menu button:hover .icon {
+  color: var(--accent);
+}
+
+header .dropdown-divider {
+  height: 1px;
+  background-color: var(--gray-100);
+  margin: 0.5rem 0;
+}
+
+header.hidden {
+  transform: translateY(-100%);
+}
+
+header .auth-skeleton {
+  width: 150px;
+  height: 40px;
+  background-color: var(--gray-100);
+  border-radius: var(--radius-md);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* === Enhanced Footer Styles === */
+footer {
+  background-color: #111827;
+  color: var(--gray-300);
+  padding: 4rem 0 2rem;
   position: relative;
   overflow: hidden;
   margin-top: auto;
+  border-top: 1px solid var(--gray-700);
 }
 
 footer::before {
@@ -175,8 +381,9 @@ footer::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: radial-gradient(circle at top right, rgba(44, 45, 90, 0.25), transparent 70%);
-  opacity: 0.5;
+  background-image: radial-gradient(circle at top right, rgba(44, 45, 90, 0.35), transparent 70%),
+                    radial-gradient(circle at bottom left, rgba(255, 51, 102, 0.2), transparent 60%);
+  opacity: 0.6;
   z-index: 0;
 }
 
@@ -184,14 +391,29 @@ footer::before {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 3rem;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2.5rem;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+@media (min-width: 768px) {
+  .footer-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .footer-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .footer-section h3 {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   color: var(--accent);
   position: relative;
   display: inline-block;
@@ -200,50 +422,77 @@ footer::before {
 .footer-section h3::after {
   content: "";
   position: absolute;
-  bottom: -0.5rem;
+  bottom: -0.35rem;
   left: 0;
-  width: 30px;
-  height: 3px;
-  background-color: #ff3366;
-  border-radius: 2px;
+  width: 40px;
+  height: 2px;
+  background-color: var(--accent);
+  border-radius: 1px;
 }
 
 .footer-links {
   list-style: none;
+  padding: 0;
 }
 
 .footer-links li {
-  margin-bottom: -0.25rem;
+  margin-bottom: 0.65rem;
 }
 
 .footer-links a {
   color: var(--gray-300);
   text-decoration: none;
-  transition: all var(--transition-normal);
-  display: inline-block;
-  font-size: 0.97rem;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
   font-weight: 500;
 }
 
 .footer-links a:hover {
   color: var(--accent-light);
-  transform: translateX(5px) scale(1.04);
+  transform: translateX(4px);
 }
 
-footer p, .footer-section p {
+.footer-links a .footer-link-icon {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.footer-logo-section p {
   color: var(--gray-400);
-  font-size: 0.97rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 300px;
 }
 
 .copyright {
   text-align: center;
   margin-top: 3rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 2rem;
+  border-top: 1px solid var(--gray-700);
   color: var(--gray-500);
-  font-size: 0.89rem;
+  font-size: 0.9rem;
   position: relative;
   z-index: 1;
+}
+
+.footer-social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.footer-social-icons a {
+  color: var(--gray-400);
+  font-size: 1.5rem;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.footer-social-icons a:hover {
+  color: var(--accent-light);
+  transform: scale(1.1);
 }
 
 /* Form & Button Polishing */

@@ -1,92 +1,99 @@
 import React from 'react';
-
-const gradientText =
-  'bg-gradient-to-r from-[#ff3366] via-[#ff6b8b] to-[#2c2d5a] bg-clip-text text-transparent';
-const gradientUnderline =
-  'after:absolute after:left-0 after:-bottom-1 after:w-10 after:h-0.5 after:bg-gradient-to-r after:from-[#ff3366] after:via-[#ff6b8b] after:to-[#ff3366] after:rounded-full after:content-["\""]';
+import Link from 'next/link';
 
 const Footer: React.FC = () => (
-  <footer
-    className="bg-[#181028] text-white py-8 mt-8 relative z-10"
-    style={{ pointerEvents: 'auto' }}
-  >
-    <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-2 footer-container">
-      <div className="mb-0">
+  <footer style={{ pointerEvents: 'auto' }}>
+    <div className="footer-container">
+      <div className="footer-section footer-logo-section">
         <h3
-          className="text-2xl font-bold mb-2"
+          className="text-2xl font-bold mb-3"
           style={{ fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em' }}
         >
-          <span className="text-white">Cheap </span><span className="text-[#ff3366]">CC</span>
+          <Link href="/" className="text-white hover:text-gray-200 transition-colors duration-150">
+            Cheap <span className="text-[#ff3366]">CC</span>
+          </Link>
         </h3>
-        <p className="text-sm text-white/80 max-w-xs">
-          Affordable Adobe Creative Cloud subscriptions for everyone.
+        <p>
+          Affordable Adobe Creative Cloud subscriptions for everyone. Access top-tier software without breaking the bank.
         </p>
+        <div className="footer-social-icons">
+          <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i className="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><i className="fab fa-twitter"></i></a>
+          <a href="#" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i className="fab fa-instagram"></i></a>
+        </div>
       </div>
-      <div className="mb-0">
-        <h3
-          className="text-lg font-semibold mb-2 relative text-[#ff3366]"
-        >
+
+      <div className="footer-section">
+        <h3 className="text-lg font-semibold mb-4">
           Quick Links
         </h3>
-        <ul className="footer-links flex flex-col space-y-1 mt-2">
+        <ul className="footer-links">
           <li>
-            <a href="/" className="hover:underline transition-colors duration-150">
-              Home
-            </a>
+            <Link href="/" className="footer-link">
+              <i className="fas fa-home footer-link-icon"></i>Home
+            </Link>
           </li>
           <li>
-            <a href="/#pricing" className="hover:underline transition-colors duration-150">
-              Pricing
-            </a>
+            <Link href="/#pricing" className="footer-link">
+              <i className="fas fa-tags footer-link-icon"></i>Pricing
+            </Link>
           </li>
           <li>
-            <a href="mailto:support@cheapcc.online" className="hover:underline transition-colors duration-150">
-              Support
+            <Link href="/faq" className="footer-link">
+              <i className="fas fa-question-circle footer-link-icon"></i>FAQ
+            </Link>
+          </li>
+          <li>
+            <a href="mailto:support@cheapcc.online">
+              <i className="fas fa-envelope footer-link-icon"></i>Support
             </a>
           </li>
         </ul>
       </div>
-      <div className="mb-0">
-        <h3
-          className="text-lg font-semibold mb-2 relative text-[#ff3366]"
-        >
+
+      <div className="footer-section">
+        <h3 className="text-lg font-semibold mb-4">
           Legal
         </h3>
-        <ul className="footer-links flex flex-col space-y-1 mt-2">
+        <ul className="footer-links">
           <li>
-            <a href="/terms" className="hover:underline transition-colors duration-150">
-              Terms of Service
-            </a>
+            <Link href="/terms" className="footer-link">
+              <i className="fas fa-file-contract footer-link-icon"></i>Terms of Service
+            </Link>
           </li>
           <li>
-            <a href="/privacy" className="hover:underline transition-colors duration-150">
-              Privacy Policy
-            </a>
+            <Link href="/privacy" className="footer-link">
+              <i className="fas fa-shield-alt footer-link-icon"></i>Privacy Policy
+            </Link>
           </li>
           <li>
-            <a href="/refund" className="hover:underline transition-colors duration-150">
-              Refund Policy
-            </a>
+            <Link href="/refund" className="footer-link">
+              <i className="fas fa-undo-alt footer-link-icon"></i>Refund Policy
+            </Link>
           </li>
         </ul>
       </div>
-      <div className="mb-0">
-        <h3
-          className="text-lg font-semibold mb-2 relative text-[#ff3366]"
-        >
-          Contact
+
+      <div className="footer-section">
+        <h3 className="text-lg font-semibold mb-4">
+          Contact Us
         </h3>
-        <ul className="footer-links space-y-2 mt-2">
+        <ul className="footer-links">
           <li>
-            <a href="mailto:support@cheapcc.online" className="hover:underline transition-colors duration-150">
-              support@cheapcc.online
+            <a href="mailto:support@cheapcc.online">
+              <i className="fas fa-at footer-link-icon"></i>support@cheapcc.online
             </a>
+          </li>
+          <li>
+            <Link href="/#faq" className="footer-link">
+              <i className="fas fa-comments footer-link-icon"></i>Help Center
+            </Link>
           </li>
         </ul>
       </div>
     </div>
-    <div className="copyright border-t border-white/10 mt-4 pt-4 text-center text-xs text-white/60">
-      &copy; {new Date().getFullYear()} CheapCC. All rights reserved.
+    <div className="copyright">
+      &copy; {new Date().getFullYear()} CheapCC. All rights reserved. Designed with <i className="fas fa-heart text-red-500"></i>.
     </div>
   </footer>
 );
