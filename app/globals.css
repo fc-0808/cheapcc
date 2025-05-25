@@ -1486,34 +1486,38 @@ input:focus, select:focus, textarea:focus {
   font-size: 1.1rem;
 }
 .dashboard-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+  padding-top: calc(var(--header-height) + 2rem);
+  padding-bottom: 2rem;
+  background-color: var(--light-gray);
+  min-height: 100vh;
 }
 .dashboard-content {
-  flex: 1;
-  width: 100%;
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
 }
 .dashboard-welcome {
-  background-color: var(--primary-ultra-light);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: var(--white);
+  padding: 2rem 1.5rem;
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
   margin-bottom: 2rem;
-  border-left: 4px solid var(--accent);
+  box-shadow: var(--shadow-lg);
 }
 .dashboard-welcome h1 {
-  margin-top: 0;
+  font-size: 2.25rem;
+  font-weight: 800;
   margin-bottom: 0.5rem;
-  font-size: 1.75rem;
-  color: var(--dark);
+  color: var(--white);
+}
+.dashboard-welcome h1 .text-\[\#ff3366\] {
+  color: var(--accent-light);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 .dashboard-welcome p {
-  margin: 0;
-  color: var(--gray-dark);
+  font-size: 1.1rem;
+  color: rgba(var(--white-rgb), 0.9);
+  margin-top: 0.5rem;
 }
 .dashboard-nav {
   display: flex;
@@ -1702,3 +1706,356 @@ input:focus, select:focus, textarea:focus {
 .alert-info a:hover {
   color: #ff3366;
 }
+
+/* === Enhanced Dashboard Styles === */
+
+/* General Dashboard Container */
+.dashboard-container {
+  padding-top: calc(var(--header-height) + 2rem);
+  padding-bottom: 2rem;
+  background-color: var(--light-gray);
+  min-height: 100vh;
+}
+
+.dashboard-content {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Welcome Banner Styling */
+.dashboard-welcome {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: var(--white);
+  padding: 2rem 1.5rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.dashboard-welcome h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: var(--white);
+}
+.dashboard-welcome h1 .text-\[\#ff3366\] {
+  color: var(--accent-light);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.dashboard-welcome p {
+  font-size: 1.1rem;
+  color: rgba(var(--white-rgb), 0.9);
+  margin-top: 0.5rem;
+}
+
+/* Stat Cards Enhancements */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background-color: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--gray-200);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.stat-icon {
+  font-size: 1.75rem;
+  color: var(--accent);
+  align-self: flex-end;
+  opacity: 0.8;
+}
+
+/* Content Card (for Active Subscriptions, Recent Orders, Help) */
+.content-card {
+  background-color: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--gray-200);
+}
+
+.content-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--accent);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content-card h2 .badge {
+  background-color: var(--accent);
+  color: var(--white);
+  font-size: 0.8rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+/* Credential Card (Active Subscriptions) */
+.credential-card {
+  background-color: var(--light-gray);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--gray-200);
+  transition: box-shadow 0.2s ease;
+}
+.credential-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.credential-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 1rem;
+}
+
+.credential-details {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.credential-details li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.95rem;
+}
+.credential-details li:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.detail-value {
+  color: var(--text);
+  font-weight: 600;
+}
+.detail-value .status-badge {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+}
+
+/* Data Table (Recent Orders) Styling */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+  padding: 0.9rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 0.95rem;
+}
+
+.data-table th {
+  background-color: var(--light-gray);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+.data-table tbody tr:hover {
+  background-color: rgba(var(--primary-rgb), 0.03);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  display: inline-block;
+  line-height: 1;
+}
+
+.status-badge.active {
+  background-color: var(--success);
+  color: var(--white);
+}
+.status-badge.completed {
+  background-color: var(--success);
+  color: var(--white);
+}
+.status-badge.pending {
+  background-color: var(--warning);
+  color: var(--dark);
+}
+.status-badge.inactive, .status-badge.cancelled, .status-badge.expired  {
+  background-color: var(--gray-300);
+  color: var(--gray-700);
+}
+
+/* Empty State Styling */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius-lg);
+  background-color: rgba(var(--light-gray-rgb), 0.5);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  color: var(--gray-400);
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* Alert Info Box (Need Help Section) */
+.alert.alert-info {
+  background-color: rgba(var(--primary-rgb), 0.05) !important;
+  border-left: 4px solid var(--primary);
+  color: var(--primary-dark) !important;
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: flex-start;
+}
+
+.alert.alert-info i {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  color: var(--primary);
+  margin-top: 0.15rem;
+}
+
+.alert.alert-info div strong {
+  font-weight: 700;
+  color: var(--primary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.alert.alert-info p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.alert.alert-info a {
+  color: var(--accent);
+  font-weight: 600;
+}
+.alert.alert-info a:hover {
+  color: var(--accent-light);
+  text-decoration: underline;
+}
+
+/* Button Styling */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: var(--white);
+  border: 1px solid var(--accent);
+}
+.btn-primary:hover {
+  background-color: var(--accent-light);
+  border-color: var(--accent-light);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+.btn-outline:hover {
+  background-color: var(--accent);
+  color: var(--white);
+}
+.btn-outline.mt-4 {
+  color: var(--white);
+  border-color: var(--white);
+}
+.btn-outline.mt-4:hover {
+  background-color: var(--white);
+  color: var(--primary);
+}
+
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--white);
+}
+.btn-accent:hover {
+  background-color: var(--accent-light);
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.content-card h2 .btn-outline {
+  border-width: 1.5px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+/* === End Enhanced Dashboard Styles === */
