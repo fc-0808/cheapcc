@@ -5,6 +5,7 @@ import Script from "next/script";
 import { PRODUCT, PRICING_OPTIONS } from "@/utils/products";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
+import type { Session } from '@supabase/supabase-js';
 
 // --- Testimonials Data ---
 const TESTIMONIALS = [
@@ -262,65 +263,72 @@ export default function Home() {
 
   // Dedicated effect for user authentication
   useEffect(() => {
-    async function checkUserAuth() {
-      console.log('Checking user authentication');
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          console.log('User is authenticated:', user.email);
+    const supabase = createClient();
+    // Subscribe to auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event: string, session: Session | null) => {
+        const currentUser = session?.user;
+        if (currentUser) {
           setIsUserSignedIn(true);
-          
           // Set email from user data
-          if (user.email) {
-            console.log('Setting email from user data:', user.email);
-            setEmail(user.email);
-          }
-          
-          // Try to get name from user metadata first
-          if (user.user_metadata?.name) {
-            console.log('Setting name from user metadata:', user.user_metadata.name);
-            setName(user.user_metadata.name);
-          } else {
-            // If not in metadata, try to get from profiles table
-            console.log('Fetching name from profiles table');
+          const userEmail = currentUser.email || '';
+          setEmail(userEmail);
+          emailRef.current = userEmail;
+          // Try to get name from user metadata first or profiles table
+          let userName = currentUser.user_metadata?.name || '';
+          if (!userName) {
             const { data: profileData } = await supabase
               .from('profiles')
               .select('name')
-              .eq('id', user.id)
+              .eq('id', currentUser.id)
               .maybeSingle();
-              
-            if (profileData?.name) {
-              console.log('Setting name from profiles table:', profileData.name);
-              setName(profileData.name);
-            }
+            userName = profileData?.name || '';
           }
-          
-          // Mark that we should render PayPal once SDK is ready
-          shouldRenderPayPal.current = true;
+          setName(userName);
+          nameRef.current = userName;
         } else {
-          console.log('No authenticated user found');
+          // User logged out
           setIsUserSignedIn(false);
-          shouldRenderPayPal.current = false;
+          setName('');
+          setEmail('');
+          nameRef.current = '';
+          emailRef.current = '';
         }
-        
-        // Mark auth as checked regardless of result
-        isAuthChecked.current = true;
-        
-        // If SDK is already loaded, we can render PayPal button now
-        if (sdkReady && shouldRenderPayPal.current) {
-          console.log('SDK was already loaded, triggering PayPal button render after auth check');
-          setTimeout(renderPayPalButton, 0);
-        }
-      } catch (error) {
-        console.error('Error checking authentication:', error);
-        setIsUserSignedIn(false);
-        isAuthChecked.current = true;
       }
-    }
-    
-    checkUserAuth();
+    );
+
+    // Initial check
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setIsUserSignedIn(true);
+        const userEmail = user.email || '';
+        setEmail(userEmail);
+        emailRef.current = userEmail;
+        let userName = user.user_metadata?.name || '';
+        if (!userName) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user.id)
+            .maybeSingle();
+          userName = profileData?.name || '';
+        }
+        setName(userName);
+        nameRef.current = userName;
+      } else {
+        setIsUserSignedIn(false);
+        setName('');
+        setEmail('');
+        nameRef.current = '';
+        emailRef.current = '';
+      }
+    };
+    checkUser();
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice)!;
