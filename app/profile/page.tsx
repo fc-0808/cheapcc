@@ -1,451 +1,390 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/supabase-client';
-import Link from 'next/link';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/supabase-client";
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [profileMessage, setProfileMessage] = useState('');
-  const [profileMessageType, setProfileMessageType] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState('');
-  const [passwordMessageType, setPasswordMessageType] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileMessageType, setProfileMessageType] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordMessageType, setPasswordMessageType] = useState("");
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [newPasswordTouched, setNewPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
 
-  // Password requirements state
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
     hasUppercase: false,
-    hasLowercase: false
+    hasLowercase: false,
   });
 
-  // Calculate overall password validity
-  const isPasswordValid = Object.values(passwordRequirements).every(req => req);
+  const isNewPasswordValid = Object.values(passwordRequirements).every((req) => req);
 
   const router = useRouter();
   const supabase = createClient();
 
-  // Fetch profile data on load
   useEffect(() => {
     async function loadProfile() {
       try {
         setIsLoading(true);
-        
-        // Get current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-          console.error('Auth error:', userError);
-          setProfileMessage('Authentication error');
-          setProfileMessageType('error');
-          router.push('/login');
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+          router.push("/login");
           return;
         }
-        
-        if (!user) {
-          console.log('No user found, redirecting to login');
-          router.push('/login');
-          return;
-        }
-        
-        // Set email from auth
-        setEmail(user.email || '');
-        
-        console.log('Fetching profile for user ID:', user.id);
-        
-        // Fetch profile from profiles table
+
+        setEmail(user.email || "");
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
+          .from("profiles")
+          .select("name")
+          .eq("id", user.id)
           .maybeSingle();
-          
+
         if (profileError) {
-          console.error('Error loading profile:', profileError);
           setProfileMessage(`Failed to load profile: ${profileError.message}`);
-          setProfileMessageType('error');
+          setProfileMessageType("error");
+          setName(user.user_metadata?.name || user.email?.split("@")[0] || "");
           return;
         }
-        
-        // If profile doesn't exist yet, create one
-        if (!profileData) {
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert([{ id: user.id, name: user.user_metadata?.name || '' }]);
-            
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-            setProfileMessage('Failed to create profile');
-            setProfileMessageType('error');
-            return;
-          }
-          
-          // Fetch the newly created profile
-          const { data: newProfile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .maybeSingle();
-            
-            setProfile(newProfile || { name: user.user_metadata?.name || '' });
-            setName(newProfile?.name || user.user_metadata?.name || '');
-        } else {
-          setProfile(profileData);
-          setName(profileData.name || '');
-        }
+
+        setName(profileData?.name || user.user_metadata?.name || user.email?.split("@")[0] || "");
       } catch (error) {
-        console.error('Profile load error:', error);
-        setProfileMessage('An error occurred while loading your profile');
-        setProfileMessageType('error');
+        setProfileMessage("An error occurred while loading your profile.");
+        setProfileMessageType("error");
       } finally {
         setIsLoading(false);
       }
     }
-    
     loadProfile();
   }, [router, supabase]);
 
-  // Validate password strength
   useEffect(() => {
     if (newPasswordTouched) {
       setPasswordRequirements({
         minLength: newPassword.length >= 8,
         hasUppercase: /[A-Z]/.test(newPassword),
-        hasLowercase: /[a-z]/.test(newPassword)
+        hasLowercase: /[a-z]/.test(newPassword),
       });
+    } else {
+      setPasswordRequirements({ minLength: false, hasUppercase: false, hasLowercase: false });
     }
   }, [newPassword, newPasswordTouched]);
 
-  // Check if passwords match
   useEffect(() => {
     if (confirmPasswordTouched) {
       setPasswordsMatch(newPassword === confirmPassword);
+    } else {
+      setPasswordsMatch(true);
     }
   }, [newPassword, confirmPassword, confirmPasswordTouched]);
 
-  // Update profile handler
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!name.trim()) {
-      setProfileMessage('Name is required.');
-      setProfileMessageType('error');
+      setProfileMessage("Name cannot be empty.");
+      setProfileMessageType("error");
       return;
     }
-    
+    setIsSubmitting(true);
+    setProfileMessage("");
+
     try {
-      setIsSubmitting(true);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        router.push('/login');
+        router.push("/login");
         return;
       }
-      
-      // Update the profile in database
+
       const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          name,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-        
-      if (profileError) {
-        throw profileError;
-      }
-      
-      // Also update user metadata so it's consistent across the app
-      const { error: metadataError } = await supabase.auth.updateUser({
-        data: { name }
-      });
-      
-      if (metadataError) {
-        console.error('Failed to update user metadata:', metadataError);
-        // Continue execution, this is not critical
-      }
-      
-      setProfileMessage('Profile updated successfully!');
-      setProfileMessageType('success');
-      
-      // Refresh the profile data
-      const { data: refreshedProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-        
-      if (refreshedProfile) {
-        setProfile(refreshedProfile);
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      setProfileMessage('Failed to update profile.');
-      setProfileMessageType('error');
+        .from("profiles")
+        .update({ name, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (profileError) throw profileError;
+
+      const { error: metadataError } = await supabase.auth.updateUser({ data: { name } });
+      if (metadataError) console.warn("Failed to update user metadata:", metadataError);
+
+      setProfileMessage("Profile updated successfully!");
+      setProfileMessageType("success");
+    } catch (error: any) {
+      setProfileMessage(error.message || "Failed to update profile.");
+      setProfileMessageType("error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Password change handler
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setPasswordMessage("");
+
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordMessage('All password fields are required.');
-      setPasswordMessageType('error');
+      setPasswordMessage("All password fields are required.");
+      setPasswordMessageType("error");
       return;
     }
-    
-    if (newPassword !== confirmPassword) {
-      setPasswordMessage('New password and confirmation do not match.');
-      setPasswordMessageType('error');
+    if (!isNewPasswordValid) {
+      setPasswordMessage("New password does not meet all requirements.");
+      setPasswordMessageType("warning");
+      return;
+    }
+    if (!passwordsMatch) {
+      setPasswordMessage("New passwords do not match.");
+      setPasswordMessageType("error");
       return;
     }
 
-    if (!isPasswordValid) {
-      setPasswordMessage('New password does not meet the requirements.');
-      setPasswordMessageType('error');
-      return;
-    }
-    
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      
-      // First verify the current password by attempting to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: currentPassword,
-      });
-      
-      if (signInError) {
-        setPasswordMessage('Current password is incorrect.');
-        setPasswordMessageType('error');
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        if (error.message.includes("password should be different")) {
+          setPasswordMessage("New password must be different from the current password.");
+        } else if (
+          error.message.toLowerCase().includes("old password") ||
+          error.message.toLowerCase().includes("current password")
+        ) {
+          setPasswordMessage("Current password is incorrect or verification failed.");
+        } else {
+          setPasswordMessage(error.message || "Failed to update password.");
+        }
+        setPasswordMessageType("error");
         return;
       }
-      
-      // Only update password if current password verification succeeded
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      setPasswordMessage('Password changed successfully!');
-      setPasswordMessageType('success');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+
+      setPasswordMessage("Password changed successfully!");
+      setPasswordMessageType("success");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
       setNewPasswordTouched(false);
       setConfirmPasswordTouched(false);
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
     } catch (error: any) {
-      console.error('Password change error:', error);
-      setPasswordMessage(error.message || 'Failed to update password.');
-      setPasswordMessageType('error');
+      setPasswordMessage(error.message || "An unexpected error occurred.");
+      setPasswordMessageType("error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Toggle password visibility
-  const toggleNewPasswordVisibility = () => {
-    setShowNewPassword(!showNewPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
-  // Handle password input changes
-  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewPassword(e.target.value);
-    setNewPasswordTouched(true);
-  };
-
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value);
-    setConfirmPasswordTouched(true);
-  };
+  const PasswordRequirementItem: React.FC<{ met: boolean; text: string }> = ({ met, text }) => (
+    <p className={`requirement${met ? " met" : ""}`}>
+      <i className={`fas ${met ? "fa-check-circle" : "fa-times-circle"} icon`}></i> {text}
+    </p>
+  );
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-[#f8f9fa]">
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff3366]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] flex flex-col items-center pt-24 pb-12">
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-6 flex items-center gap-2">
-          <i className="fas fa-user-circle text-[#ff3366] text-2xl" /> My Profile
+    <div className="profile-page-container">
+      <div className="profile-card-container">
+        <h1 className="profile-page-title">
+          <i className="fas fa-user-cog icon"></i> My Profile
         </h1>
-        
-        {/* Admin Tools Section (only for admin users) */}
-        {/* Removed: Admin tools for /admin/fix-orders */}
-        
-        {/* Profile Update Form */}
-        <form onSubmit={handleProfileUpdate} className="mb-10">
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-sm font-medium text-[#2c2d5a] mb-1">Name</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-[#2c2d5a] mb-1">Email Address</label>
-            <input
-              type="email"
-              className="w-full px-4 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
-              value={email}
-              disabled
-            />
-            <p className="text-xs text-gray-500 mt-1">Email cannot be changed. Contact support for assistance.</p>
-          </div>
-          
-          {profileMessage && (
-            <div className={`mb-4 p-3 rounded-md text-sm font-medium ${profileMessageType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-              {profileMessage}
-            </div>
-          )}
-          
-          <button
-            type="submit"
-            className="py-2 px-6 bg-[#ff3366] text-white font-semibold rounded-lg hover:bg-[#e62e5c] transition-colors duration-300 focus:ring-4 focus:ring-[#ff3366]/50 focus:outline-none shadow-md"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Updating...' : 'Update Profile'}
-          </button>
-        </form>
-        
-        {/* Password Change Form */}
-        <h2 className="text-xl font-semibold text-[#2c2d5a] mb-4 mt-8 flex items-center gap-2">
-          <i className="fas fa-key text-[#ff3366]" /> Change Password
-        </h2>
-        
-        <form onSubmit={handlePasswordChange}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-            <div className="md:col-span-2">
-              <label htmlFor="currentPassword" className="block text-sm font-medium text-[#2c2d5a] mb-1">Current Password</label>
+
+        <div className="profile-form-section">
+          <h2 className="profile-section-heading">
+            <i className="fas fa-id-card icon"></i> Personal Information
+          </h2>
+          <form onSubmit={handleProfileUpdate} className="profile-form space-y-6">
+            <div>
+              <label htmlFor="name">Full Name</label>
               <input
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
-                value={currentPassword}
-                onChange={e => setCurrentPassword(e.target.value)}
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
+                placeholder="Enter your full name"
               />
             </div>
-            
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-[#2c2d5a] mb-1">New Password</label>
-              <div className="relative">
+              <label htmlFor="email">Email Address</label>
+              <input id="email" type="email" value={email} disabled />
+              <p className="input-hint">Email address cannot be changed.</p>
+            </div>
+            {profileMessage && (
+              <div className={`profile-message ${profileMessageType}`}>
+                <i
+                  className={`fas ${
+                    profileMessageType === "success"
+                      ? "fa-check-circle"
+                      : "fa-exclamation-triangle"
+                  } icon`}
+                ></i>
+                {profileMessage}
+              </div>
+            )}
+            <div>
+              <button
+                type="submit"
+                className="btn-submit btn-update-profile"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Updating..." : "Update Profile"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="profile-form-section">
+          <h2 className="profile-section-heading">
+            <i className="fas fa-key icon"></i> Change Password
+          </h2>
+          <form onSubmit={handlePasswordChange} className="profile-form space-y-6">
+            <div>
+              <label htmlFor="currentPassword">Current Password</label>
+              <div className="password-input-wrapper">
                 <input
-                  id="newPassword"
-                  name="newPassword"
-                  type={showNewPassword ? "text" : "password"}
-                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${newPasswordTouched && !isPasswordValid ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200'}`}
-                  value={newPassword}
-                  onChange={handleNewPasswordChange}
+                  id="currentPassword"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
                   required
+                  placeholder="Enter your current password"
                 />
-                <button 
-                  type="button" 
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
-                  onClick={toggleNewPasswordVisibility}
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                 >
-                  <i className={`fas ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                  <i className={`fas ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
                 </button>
               </div>
-              
+            </div>
+            <div>
+              <label htmlFor="newPassword">New Password</label>
+              <div className="password-input-wrapper">
+                <input
+                  id="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    setNewPasswordTouched(true);
+                  }}
+                  required
+                  placeholder="Enter new password"
+                  className={
+                    newPasswordTouched && !isNewPasswordValid
+                      ? "border-yellow-500 focus:border-yellow-500"
+                      : ""
+                  }
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                </button>
+              </div>
               {newPasswordTouched && (
-                <div className="mt-2 text-sm space-y-1">
-                  <p className="font-medium text-gray-700">Password must contain:</p>
-                  <div className="flex flex-col gap-1">
-                    <p className={passwordRequirements.minLength ? 'text-green-600' : 'text-gray-500'}>
-                      <i className={`fas ${passwordRequirements.minLength ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
-                      At least 8 characters
-                    </p>
-                    <p className={passwordRequirements.hasUppercase ? 'text-green-600' : 'text-gray-500'}>
-                      <i className={`fas ${passwordRequirements.hasUppercase ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
-                      One uppercase letter
-                    </p>
-                    <p className={passwordRequirements.hasLowercase ? 'text-green-600' : 'text-gray-500'}>
-                      <i className={`fas ${passwordRequirements.hasLowercase ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
-                      One lowercase letter
-                    </p>
-                  </div>
+                <div className="password-requirements-info">
+                  <p className="heading">Password must contain:</p>
+                  <PasswordRequirementItem
+                    met={passwordRequirements.minLength}
+                    text="At least 8 characters"
+                  />
+                  <PasswordRequirementItem
+                    met={passwordRequirements.hasUppercase}
+                    text="One uppercase letter (A-Z)"
+                  />
+                  <PasswordRequirementItem
+                    met={passwordRequirements.hasLowercase}
+                    text="One lowercase letter (a-z)"
+                  />
                 </div>
               )}
             </div>
-            
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#2c2d5a] mb-1">Confirm New Password</label>
-              <div className="relative">
+              <label htmlFor="confirmPassword">Confirm New Password</label>
+              <div className="password-input-wrapper">
                 <input
                   id="confirmPassword"
-                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${!passwordsMatch && confirmPasswordTouched ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
                   value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setConfirmPasswordTouched(true);
+                  }}
                   required
+                  placeholder="Confirm new password"
+                  className={
+                    confirmPasswordTouched && !passwordsMatch
+                      ? "border-red-500 focus:border-red-500"
+                      : ""
+                  }
                 />
-                <button 
-                  type="button" 
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
-                  onClick={toggleConfirmPasswordVisibility}
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                  <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
                 </button>
               </div>
-              {!passwordsMatch && confirmPasswordTouched && (
-                <p className="mt-1 text-sm text-red-600">
-                  <i className="fas fa-exclamation-circle mr-1"></i>
-                  Passwords don't match
-                </p>
+              {confirmPasswordTouched && !passwordsMatch && (
+                <p className="input-hint text-red-600 mt-1">Passwords do not match.</p>
               )}
             </div>
-          </div>
-          
-          {passwordMessage && (
-            <div className={`mb-4 p-3 rounded-md text-sm font-medium ${passwordMessageType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-              {passwordMessage}
+            {passwordMessage && (
+              <div className={`profile-message ${passwordMessageType}`}>
+                <i
+                  className={`fas ${
+                    passwordMessageType === "success"
+                      ? "fa-check-circle"
+                      : passwordMessageType === "warning"
+                      ? "fa-exclamation-triangle"
+                      : "fa-times-circle"
+                  } icon`}
+                ></i>
+                {passwordMessage}
+              </div>
+            )}
+            <div>
+              <button
+                type="submit"
+                className="btn-submit btn-change-password"
+                disabled={
+                  isSubmitting ||
+                  (newPasswordTouched && (!isNewPasswordValid || (confirmPasswordTouched && !passwordsMatch)))
+                }
+              >
+                {isSubmitting ? "Changing..." : "Change Password"}
+              </button>
             </div>
-          )}
-          
-          <button
-            type="submit"
-            className="py-2 px-6 bg-[#2c2d5a] text-white font-semibold rounded-lg hover:bg-[#484a9e] transition-colors duration-300 focus:ring-4 focus:ring-[#2c2d5a]/50 focus:outline-none shadow-md"
-            disabled={isSubmitting || (newPasswordTouched && (!isPasswordValid || (confirmPasswordTouched && !passwordsMatch)))}
-          >
-            {isSubmitting ? 'Updating...' : 'Change Password'}
-          </button>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

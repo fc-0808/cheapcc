@@ -289,7 +289,7 @@ async function handlePaymentCompleted(webhookData: any, supabase: any) {
         console.error(`Failed to update order status for ${orderId}:`, updateError);
         return;
       }
-    } else {
+  } else {
       console.log(`Order ${orderId} already ACTIVE or COMPLETED, skipping status update.`);
     }
     // Use existing order details for email
