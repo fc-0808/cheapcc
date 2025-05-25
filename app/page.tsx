@@ -127,6 +127,12 @@ export default function Home() {
     if (typeof window !== 'undefined' && window.paypal) {
       window.paypal.Buttons({
         createOrder: async () => {
+          // Double-check conditions right before creating the order
+          if (!name.trim() || !isValidEmail(email)) {
+            console.error('CreateOrder called with invalid name/email despite canPay being true. Aborting.');
+            setPaymentStatus('error');
+            return Promise.reject(new Error('Invalid user details.'));
+          }
           try {
             setPaymentStatus('loading');
             const response = await fetch('/api/orders', {
@@ -217,16 +223,31 @@ export default function Home() {
   useEffect(() => {
     const shouldAllowPayment = isUserSignedIn || (name.trim() !== '' && isValidEmail(email));
     console.log('Updating canPay state:', { shouldAllowPayment, isUserSignedIn, name, email });
+
+    // If changing from canPay=true to shouldAllowPayment=false, clear the PayPal button container
+    if (canPay && !shouldAllowPayment && paypalButtonContainerRef.current) {
+      console.log('canPay became false, clearing PayPal button container');
+      paypalButtonContainerRef.current.innerHTML = '';
+    }
     setCanPay(shouldAllowPayment);
-  }, [isUserSignedIn, name, email]);
+  }, [isUserSignedIn, name, email, canPay]); // Added canPay to dependencies for the previous state check
 
   // Main effect to handle PayPal button rendering when conditions change
   useEffect(() => {
-    if (isInitialized && canPay && sdkReady) {
-      console.log('All conditions met, rendering PayPal button');
-      renderPayPalButton();
+    if (isInitialized && sdkReady) {
+      if (canPay) {
+        console.log('All conditions met, rendering PayPal button');
+        renderPayPalButton();
+      } else {
+        // If conditions are not met (e.g., name/email cleared),
+        // ensure the button container is empty to prevent stale buttons.
+        if (paypalButtonContainerRef.current) {
+          console.log('Conditions to pay not met, clearing PayPal button container.');
+          paypalButtonContainerRef.current.innerHTML = '';
+        }
+      }
     }
-  }, [isInitialized, sdkReady, canPay, selectedPrice]);
+  }, [isInitialized, sdkReady, canPay, selectedPrice]); // selectedPrice if it influences order creation details
 
   // Dedicated effect for user authentication
   useEffect(() => {
