@@ -443,16 +443,16 @@ export default function Home() {
             <p className="text-gray-600 mb-5 text-center">
               Creating an account lets you track your orders and save your information for faster checkout.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:justify-center">
               <button
                 onClick={handleRegisterClick}
-                className="py-3 px-5 bg-[#ff3366] text-white rounded-lg hover:bg-[#e62e5c] transition font-medium flex-1 flex items-center justify-center"
+                className="py-2.5 px-5 bg-[#ff3366] text-white rounded-lg hover:bg-[#e62e5c] transition font-medium flex items-center justify-center whitespace-nowrap cursor-pointer"
               >
                 <i className="fas fa-user-plus mr-2"></i> Register
               </button>
               <button
                 onClick={handleContinueAsGuest}
-                className="py-3 px-5 border border-gray-300 text-[#2c2d5a] rounded-lg hover:bg-gray-100 transition font-medium flex-1 flex items-center justify-center"
+                className="py-2.5 px-5 border border-gray-300 text-[#2c2d5a] rounded-lg hover:bg-gray-100 transition font-medium flex items-center justify-center whitespace-nowrap cursor-pointer"
               >
                 <i className="fas fa-arrow-right mr-2"></i> Continue as Guest
               </button>
