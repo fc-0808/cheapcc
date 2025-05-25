@@ -93,54 +93,56 @@ export default function Home() {
   // Validate email format
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
 
+  // --- Refs to hold the latest values for PayPal callbacks ---
+  const nameRef = useRef(name);
+  const emailRef = useRef(email);
+  const selectedPriceRef = useRef(selectedPrice);
+
   // Function to render the PayPal button when conditions are right
   const renderPayPalButton = () => {
-    console.log('Attempting to render PayPal button:', {
-      sdkReady,
-      canPay,
-      isUserSignedIn,
-      name,
-      email,
-      buttonContainerExists: !!paypalButtonContainerRef.current
-    });
-    
-    if (!sdkReady) {
-      console.log('PayPal SDK not yet ready, cannot render button');
-      return;
-    }
-    
-    if (!canPay) {
-      console.log('Cannot pay yet - name or email missing or invalid');
-      return;
-    }
-    
     if (!paypalButtonContainerRef.current) {
-      console.log('PayPal button container not found in DOM');
+      console.log('PayPal button container not found in DOM, cannot render.');
       return;
     }
-    
-    // Clear any existing buttons before rendering new ones
+    // Clear any existing buttons before rendering new ones to prevent duplicates or stale instances
     paypalButtonContainerRef.current.innerHTML = '';
-    
+
     console.log('Rendering PayPal button now...');
-    
     if (typeof window !== 'undefined' && window.paypal) {
       window.paypal.Buttons({
-        createOrder: async () => {
-          // Double-check conditions right before creating the order
-          if (!name.trim() || !isValidEmail(email)) {
-            console.error('CreateOrder called with invalid name/email despite canPay being true. Aborting.');
+        // See: https://developer.paypal.com/docs/checkout/standard/customize/validate-user/
+        onClick: (data: any, actions: any) => {
+          const currentName = nameRef.current;
+          const currentEmail = emailRef.current;
+          const currentSelectedPrice = selectedPriceRef.current;
+          console.log('[PayPal onClick] Validating fields. Name from ref:', `"${currentName}"`, 'Email from ref:', `"${currentEmail}"`, 'Selected Price from ref:', currentSelectedPrice);
+          if (!currentName.trim() || !isValidEmail(currentEmail) || !currentSelectedPrice) {
+            console.error('[PayPal onClick] Validation failed. Rejecting payment flow.');
             setPaymentStatus('error');
-            return Promise.reject(new Error('Invalid user details.'));
+            return actions.reject();
           }
+          console.log('[PayPal onClick] Validation passed. Resolving to proceed.');
+          if(paymentStatus === 'error') setPaymentStatus('idle');
+          return actions.resolve();
+        },
+        createOrder: async () => {
+          const currentName = nameRef.current;
+          const currentEmail = emailRef.current;
+          const currentSelectedPrice = selectedPriceRef.current;
+          console.log(`[createOrder EXECUTION] Using Name from ref: "${currentName}", Email from ref: "${currentEmail}", PriceID from ref: "${currentSelectedPrice}"`);
+          const requestBody = {
+            priceId: currentSelectedPrice,
+            name: currentName,
+            email: currentEmail
+          };
+          const requestBodyString = JSON.stringify(requestBody);
+          console.log('[createOrder EXECUTION] Request Body String:', requestBodyString);
           try {
             setPaymentStatus('loading');
             const response = await fetch('/api/orders', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ priceId: selectedPrice, name, email }),
+              headers: { 'Content-Type': 'application/json' },
+              body: requestBodyString,
             });
             const orderData = await response.json();
             if (orderData.error) {
@@ -149,6 +151,7 @@ export default function Home() {
             setOrderID(orderData.id);
             return orderData.id;
           } catch (error) {
+            console.error('Error in createOrder:', error);
             setPaymentStatus('error');
             throw error;
           }
@@ -210,12 +213,22 @@ export default function Home() {
   
   // Component initialization & cleanup effect
   useEffect(() => {
-    console.log('Component mounted');
+    console.log('Component mounted or re-activated');
     setIsInitialized(true);
-    
+
+    // Check if PayPal SDK is already loaded on the window object.
+    if (typeof window !== 'undefined' && window.paypal) {
+      console.log('PayPal SDK already present on window, calling handlePayPalLoad directly.');
+      handlePayPalLoad();
+    }
+
     return () => {
-      console.log('Component unmounting, cleaning up');
-      // Any cleanup needed
+      console.log('Component unmounting or de-activating, cleaning up PayPal button container.');
+      if (paypalButtonContainerRef.current) {
+        paypalButtonContainerRef.current.innerHTML = '';
+      }
+      // Optionally reset sdkReady if needed:
+      // setSdkReady(false);
     };
   }, []);
   
@@ -236,18 +249,16 @@ export default function Home() {
   useEffect(() => {
     if (isInitialized && sdkReady) {
       if (canPay) {
-        console.log('All conditions met, rendering PayPal button');
+        console.log('Conditions met, rendering PayPal button (dependencies: isInitialized, sdkReady, canPay, selectedPrice)');
         renderPayPalButton();
       } else {
-        // If conditions are not met (e.g., name/email cleared),
-        // ensure the button container is empty to prevent stale buttons.
         if (paypalButtonContainerRef.current) {
           console.log('Conditions to pay not met, clearing PayPal button container.');
           paypalButtonContainerRef.current.innerHTML = '';
         }
       }
     }
-  }, [isInitialized, sdkReady, canPay, selectedPrice]); // selectedPrice if it influences order creation details
+  }, [isInitialized, sdkReady, canPay, selectedPrice]); // REMOVE name and email from here
 
   // Dedicated effect for user authentication
   useEffect(() => {
@@ -603,7 +614,10 @@ export default function Home() {
                   key={option.id}
                   className={`plan-card${selectedPrice === option.id ? ' selected' : ''}`}
                   onClick={() => {
-                    if (selectedPrice !== option.id) setSelectedPrice(option.id);
+                    if (selectedPrice !== option.id) {
+                      setSelectedPrice(option.id);
+                      selectedPriceRef.current = option.id;
+                    }
                     setTimeout(() => {
                       const el = document.getElementById('checkout');
                       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -646,6 +660,7 @@ export default function Home() {
                       e.stopPropagation();
                       e.preventDefault();
                       setSelectedPrice(option.id);
+                      selectedPriceRef.current = option.id;
                       setTimeout(() => {
                         const el = document.getElementById('checkout');
                         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -707,7 +722,14 @@ export default function Home() {
                     required
                     placeholder="Where we'll send your account details"
                     value={email}
-                    onChange={e => !isUserSignedIn && setEmail(e.target.value)}
+                    onChange={e => {
+                      if (!isUserSignedIn) {
+                        const val = e.target.value;
+                        console.log(`[Input onChange] Setting email to: "${val}"`);
+                        setEmail(val);
+                        emailRef.current = val;
+                      }
+                    }}
                     autoComplete="email"
                     disabled={isUserSignedIn}
                     className={isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""}
@@ -725,7 +747,9 @@ export default function Home() {
                     onChange={e => {
                       if (!isUserSignedIn) {
                         const val = e.target.value;
+                        console.log(`[Input onChange] Setting name to: "${val}"`);
                         setName(val);
+                        nameRef.current = val;
                       }
                     }}
                     autoComplete="name"

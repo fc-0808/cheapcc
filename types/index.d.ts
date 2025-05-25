@@ -32,6 +32,9 @@ interface PayPalButtonsConfig {
     height?: number;
     tagline?: boolean;
   };
+  
+  // PayPal JS SDK: Validate user input before proceeding
+  onClick?: (data: any, actions: any) => void;
 }
 
 // Data structure for onApprove callback
