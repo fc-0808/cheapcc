@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-server';
 import Link from 'next/link';
 import React from 'react';
+import { getPlanDuration } from '@/utils/products';
 
 // Helper to format currency
 function formatCurrency(amount: number) {
@@ -19,23 +20,6 @@ function isActiveSubscription(order: any) {
     return true;
   }
   return false;
-}
-
-// Add a helper to infer plan duration
-function getPlanDuration(order: any): string {
-  const description = order.description || order.plan_name || '';
-  const amount = parseFloat(order.amount);
-  if (/14\s*-?\s*days?/i.test(description)) return '14 days';
-  if (/1\s*-?\s*month|30\s*-?\s*days?/i.test(description)) return '1 month';
-  if (/3\s*-?\s*months?|90\s*-?\s*days?/i.test(description)) return '3 months';
-  if (/6\s*-?\s*months?|180\s*-?\s*days?/i.test(description)) return '6 months';
-  if (/12\s*-?\s*months?|1\s*-?\s*year|365\s*-?\s*days?/i.test(description)) return '12 months';
-  if (amount === 4.99) return '14 days';
-  if (amount === 14.99) return '1 month';
-  if (amount === 39.99) return '3 months';
-  if (amount === 64.99) return '6 months';
-  if (amount === 124.99) return '12 months';
-  return 'Unknown';
 }
 
 export default async function OrdersPage() {

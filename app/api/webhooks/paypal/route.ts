@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
 import { createServiceClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
-import crypto from 'crypto';
 
 // Adobe's regular pricing (for savings calculation)
 const ADOBE_REGULAR_PRICING = {
@@ -39,8 +38,27 @@ function calculateSavings(amount: string | number | null, description: string): 
     regularPrice = ADOBE_REGULAR_PRICING['14 days'];
   }
   
-  const savings = regularPrice - orderAmount;
+  let savings = regularPrice - orderAmount;
+  // Fix floating point precision by rounding to 2 decimal places
+  savings = Math.round((savings + Number.EPSILON) * 100) / 100;
   return savings > 0 ? savings : 0;
+}
+
+// Helper to get the correct plan description
+function getPlanDescription(amount: number | string | null, description: string): string {
+  // If the PayPal description is already correct, use it
+  if (description && description.startsWith('Adobe Creative Cloud -')) {
+    return description;
+  }
+  // Try to infer from amount
+  const amt = parseFloat(amount?.toString() || '0');
+  if (amt === 4.99 || /14\s*-?\s*days?/i.test(description)) return 'Adobe Creative Cloud - 14 days Subscription';
+  if (amt === 14.99 || /1\s*-?\s*month|30\s*-?\s*days?/i.test(description)) return 'Adobe Creative Cloud - 1 month Subscription';
+  if (amt === 39.99 || /3\s*-?\s*months?|90\s*-?\s*days?/i.test(description)) return 'Adobe Creative Cloud - 3 months Subscription';
+  if (amt === 64.99 || /6\s*-?\s*months?|180\s*-?\s*days?/i.test(description)) return 'Adobe Creative Cloud - 6 months Subscription';
+  if (amt === 124.99 || /12\s*-?\s*months?|1\s*-?\s*year|365\s*-?\s*days?/i.test(description)) return 'Adobe Creative Cloud - 12 months Subscription';
+  // Fallback to original description or a generic one
+  return description || 'Adobe Creative Cloud Subscription';
 }
 
 export async function POST(request: NextRequest) {
@@ -97,86 +115,87 @@ export async function POST(request: NextRequest) {
 async function handleOrderApproved(webhookData: any, supabase: any) {
   const orderId = webhookData.resource.id;
   const status = webhookData.resource.status;
-  
+
   console.log(`Processing CHECKOUT.ORDER.APPROVED for order ${orderId}`);
-  
+
   // Parse custom ID from the purchase unit if available
   let name = '';
   let email = '';
   let customId = '';
   let description = '';
-  
+  // Extract amount and currency at the top
+  let amount = null;
+  let currency = null;
   try {
     if (webhookData.resource.purchase_units && webhookData.resource.purchase_units[0]) {
       const purchaseUnit = webhookData.resource.purchase_units[0];
       description = purchaseUnit.description || '';
-      
       if (purchaseUnit.custom_id) {
         customId = purchaseUnit.custom_id;
         const parsed = JSON.parse(customId);
         name = parsed.name || '';
         email = parsed.email || '';
       }
+      if (purchaseUnit.amount) {
+        amount = purchaseUnit.amount.value || null;
+        currency = purchaseUnit.amount.currency_code || null;
+      }
     }
   } catch (e) {
     console.error('Failed to parse custom_id from order approved webhook:', e);
   }
-  
-  // Extract amount and currency
-  let amount = null;
-  let currency = null;
-  try {
-    if (webhookData.resource.purchase_units && webhookData.resource.purchase_units[0]?.amount) {
-      amount = webhookData.resource.purchase_units[0].amount.value || null;
-      currency = webhookData.resource.purchase_units[0].amount.currency_code || null;
-    }
-  } catch (e) {
-    console.error('Failed to extract amount from webhook:', e);
-  }
-  
+  // Always set description using getPlanDescription
+  description = getPlanDescription(amount, description);
+
   // Calculate savings amount
   const savings = calculateSavings(amount, description);
-  
-  // Check for duplicate (idempotency)
-  const { data: existingOrder } = await supabase
+
+  // Calculate expiry date based on plan duration (use description for now)
+  const expiryDate = calculateExpiryDate('', description);
+
+  // Check if order already exists and its status
+  const { data: existingOrder, error: fetchError } = await supabase
     .from('orders')
-    .select('id')
+    .select('id, status')
     .eq('paypal_order_id', orderId)
     .maybeSingle();
-  
-  if (existingOrder) {
-    console.log(`Order ${orderId} already exists, skipping creation`);
+  if (fetchError) {
+    console.error(`Error checking for existing order ${orderId}:`, fetchError);
     return;
   }
-  
-  // Create new order record
-  console.log(`Creating new order record for ${orderId}`);
-  const { data: order, error } = await supabase.from('orders').insert([
+
+  // Only set to PENDING if not already ACTIVE or COMPLETED
+  let newStatus = 'PENDING';
+  if (existingOrder && (existingOrder.status === 'ACTIVE' || existingOrder.status === 'COMPLETED')) {
+    newStatus = existingOrder.status;
+  }
+
+  // Upsert order into orders table for fast display
+  const { error: upsertError } = await supabase.from('orders').upsert([
     {
       paypal_order_id: orderId,
       name,
       email,
-      status: status, // Keep original PayPal status for now (will update to ACTIVE when payment completes)
+      status: newStatus,
       amount,
       currency,
-      description: description || 'Adobe CC Plan',
-      plan_name: description || 'Adobe CC Plan',
-      savings: savings, // Store calculated savings
-      original_status: status, // Store original PayPal status
+      description: description,
+      savings: savings,
+      expiry_date: expiryDate.toISOString(),
       paypal_data: webhookData,
+      original_status: status,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
-  ]).select().single();
-  
-  if (error) {
-    console.error('Failed to create order from CHECKOUT.ORDER.APPROVED webhook:', error);
+  ], { onConflict: 'paypal_order_id' });
+
+  if (upsertError) {
+    console.error(`Failed to upsert order for ${orderId} in handleOrderApproved:`, upsertError);
+    // Still store the webhook event for reference
+    await storeWebhookEvent(webhookData, supabase);
     return;
   }
-  
-  // Generate a token automatically for this order
-  await generateTokenForOrder(orderId, supabase);
-  
+
   // Store the webhook event for reference
   await storeWebhookEvent(webhookData, supabase);
 }
@@ -187,7 +206,7 @@ async function handlePaymentCompleted(webhookData: any, supabase: any) {
   const paymentStatus = webhookData.resource.status;
   const orderId = webhookData.resource.supplementary_data?.related_ids?.order_id || paymentId;
   const purchaseUnit = webhookData.resource.supplementary_data?.purchase_units?.[0] || webhookData.resource.purchase_units?.[0];
-  
+
   console.log(`Processing PAYMENT.CAPTURE.COMPLETED for order/payment ${orderId}`);
 
   // Extract name and email from custom_id
@@ -195,12 +214,12 @@ async function handlePaymentCompleted(webhookData: any, supabase: any) {
   let email = '';
   let customId = '';
   let description = '';
-  let planDuration = ''; // For tracking subscription length
-  
+  let planDuration = '';
+  // Extract amount and currency at the top
+  let amount = null;
+  let currency = null;
   try {
-    // Extract purchase description for duration calculation
     description = purchaseUnit?.description || '';
-    
     // Try to extract duration from description
     if (description) {
       const durationMatch = description.match(/(\d+)\s*(day|days|month|months|year|years)/i);
@@ -208,20 +227,24 @@ async function handlePaymentCompleted(webhookData: any, supabase: any) {
         planDuration = durationMatch[0];
       }
     }
-    
     customId = purchaseUnit?.custom_id || webhookData.resource.custom_id;
     if (customId) {
       const parsed = JSON.parse(customId);
       name = parsed.name || '';
       email = parsed.email || '';
     }
+    if (purchaseUnit?.amount) {
+      amount = purchaseUnit.amount.value || null;
+      currency = purchaseUnit.amount.currency_code || null;
+    } else {
+      amount = webhookData.resource.amount?.value || null;
+      currency = webhookData.resource.amount?.currency_code || null;
+    }
   } catch (e) {
     console.error('Failed to parse custom_id:', e);
   }
-
-  // Extract amount and currency
-  const amount = webhookData.resource.amount?.value || null;
-  const currency = webhookData.resource.amount?.currency_code || null;
+  // Always set description using getPlanDescription
+  description = getPlanDescription(amount, description);
 
   // Calculate savings amount
   const savings = calculateSavings(amount, description);
@@ -229,105 +252,99 @@ async function handlePaymentCompleted(webhookData: any, supabase: any) {
   // Calculate expiry date based on plan duration
   const expiryDate = calculateExpiryDate(planDuration, description);
 
-  // Check if order already exists
+  // Check if order already exists and its status
   const { data: existingOrder, error: fetchError } = await supabase
     .from('orders')
     .select('id, status, email, name')
     .eq('paypal_order_id', orderId)
     .maybeSingle();
-    
   if (fetchError) {
     console.error(`Error checking for existing order ${orderId}:`, fetchError);
     return;
   }
-  
+
+  // Only update to ACTIVE if not already ACTIVE or COMPLETED
+  let shouldUpdate = true;
+  if (existingOrder && (existingOrder.status === 'ACTIVE' || existingOrder.status === 'COMPLETED')) {
+    shouldUpdate = false;
+  }
+
   if (existingOrder) {
-    // Order exists, update it with payment status
-    console.log(`Updating existing order ${orderId} with payment status ACTIVE`);
-    
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({
-        status: 'ACTIVE', // Always set to ACTIVE for completed payments
-        description: description || 'Adobe CC Plan',
-        plan_name: description || 'Adobe CC Plan',
-        savings: savings, // Store calculated savings
-        expiry_date: expiryDate.toISOString(),
-        updated_at: new Date().toISOString(),
-        // Only update payment-specific fields
-        payment_id: paymentId,
-        payment_data: webhookData,
-        original_status: paymentStatus // Store original PayPal status
-      })
-      .eq('paypal_order_id', orderId);
-      
-    if (updateError) {
-      console.error(`Failed to update order status for ${orderId}:`, updateError);
-      return;
+    if (shouldUpdate) {
+      // Order exists, update it with payment status
+      console.log(`Updating existing order ${orderId} with payment status ACTIVE`);
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          status: 'ACTIVE',
+          description: description,
+          savings: savings,
+          expiry_date: expiryDate.toISOString(),
+          updated_at: new Date().toISOString(),
+          paypal_data: webhookData,
+          original_status: paymentStatus
+        })
+        .eq('paypal_order_id', orderId);
+      if (updateError) {
+        console.error(`Failed to update order status for ${orderId}:`, updateError);
+        return;
+      }
+    } else {
+      console.log(`Order ${orderId} already ACTIVE or COMPLETED, skipping status update.`);
     }
-    
     // Use existing order details for email
     const orderEmail = existingOrder.email || email;
     const orderName = existingOrder.name || name;
-    
-    // Check if a token exists for this order, if not create one
-    await generateTokenForOrder(orderId, supabase);
-    
+    // Assume guest checkout for now (isGuest = true)
+    const isGuest = true;
     // Send confirmation email if we have valid email and name
     if (orderEmail && orderName) {
       try {
-        await sendConfirmationEmail(orderEmail, orderName, orderId);
+        await sendConfirmationEmail(orderEmail, orderName, orderId, isGuest);
         console.log(`Confirmation email sent to ${orderEmail} for order ${orderId}`);
       } catch (emailError) {
         console.error(`Failed to send confirmation email for order ${orderId}:`, emailError);
       }
     }
-    
     return;
   }
-  
+
   // No existing order found, create a new one (this is a fallback in case ORDER.APPROVED wasn't received)
   console.log(`No existing order found for ${orderId}, creating new record`);
-  const { error: insertError } = await supabase.from('orders').insert([
+  const { error: insertError } = await supabase.from('orders').upsert([
     {
       paypal_order_id: orderId,
       name,
       email,
-      status: 'ACTIVE', // Set status to ACTIVE for new orders with completed payments
+      status: 'ACTIVE',
       amount,
       currency,
-      description: description || 'Adobe CC Plan',
-      plan_name: description || 'Adobe CC Plan',
-      savings: savings, // Store calculated savings
+      description: description,
+      savings: savings,
       expiry_date: expiryDate.toISOString(),
-      payment_id: paymentId,
       paypal_data: webhookData,
-      payment_data: webhookData,
-      original_status: paymentStatus, // Store original PayPal status
+      original_status: paymentStatus,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
-  ]);
-  
+  ], { onConflict: 'paypal_order_id' });
+
   if (insertError) {
     console.error(`Failed to create order for ${orderId}:`, insertError);
     return;
   }
-  
-  // Generate a token for this order
-  await generateTokenForOrder(orderId, supabase);
-  
+
   // Send confirmation email
   if (email && name) {
     try {
-      await sendConfirmationEmail(email, name, orderId);
+      await sendConfirmationEmail(email, name, orderId, true);
       console.log(`Confirmation email sent to ${email} for order ${orderId}`);
     } catch (emailError) {
       console.error(`Failed to send confirmation email for order ${orderId}:`, emailError);
     }
   }
-  }
-  
+}
+
 // Helper function to calculate expiry date based on plan duration
 function calculateExpiryDate(duration: string, description: string): Date {
   const now = new Date();
@@ -370,46 +387,6 @@ function calculateExpiryDate(duration: string, description: string): Date {
   expiryDate.setDate(expiryDate.getDate() + days);
   
   return expiryDate;
-}
-
-// Helper function to generate a token for an order
-async function generateTokenForOrder(orderId: string, supabase: any) {
-  try {
-    // Check if token already exists
-    const { data: existingToken } = await supabase
-      .from('order_tokens')
-      .select('token')
-      .eq('order_id', orderId)
-      .maybeSingle();
-    
-    if (existingToken?.token) {
-      console.log(`Token already exists for order ${orderId}`);
-      return;
-    }
-    
-    console.log(`Generating new token for order ${orderId}`);
-    // Generate a secure token
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24); // Token valid for 24 hours
-    
-    // Store the token
-    const { error } = await supabase
-      .from('order_tokens')
-      .insert([{
-        token,
-        order_id: orderId,
-        expires_at: expiresAt.toISOString(),
-      }]);
-      
-    if (error) {
-      console.error(`Error creating token for order ${orderId}:`, error);
-    } else {
-      console.log(`Successfully created token for order ${orderId}`);
-  }
-  } catch (error) {
-    console.error(`Failed to generate token for order ${orderId}:`, error);
-  }
 }
 
 // Helper function to store non-completed PayPal webhook events in database

@@ -161,112 +161,10 @@ export default function Home() {
             if (captureData.error) {
               throw new Error(captureData.error);
             }
-            
             // Set success status
             setPaymentStatus('success');
-            
-            // Redirect based on auth status
-            if (isUserSignedIn) {
-              // For logged-in users, redirect directly to success page
-              console.log('Redirecting authenticated user to success page');
+            // Redirect to success page for all users (no token logic)
               router.push(`/success/${data.orderID}`);
-            } else {
-              // For guest users, generate a token first
-              console.log('Generating token for guest user');
-              
-              // Function to try generating a token with retries
-              const generateTokenWithRetry = async (maxRetries = 7, delay = 2000) => {
-                let lastError = null;
-                
-                for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                  try {
-                    console.log(`Token generation attempt ${attempt}/${maxRetries}`);
-                    
-                    const tokenResponse = await fetch('/api/orders/token', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ orderId: data.orderID }),
-                    });
-                    
-                    // Parse response even if it's an error to check retryable flag
-                    const responseData = await tokenResponse.json();
-                    
-                    if (!tokenResponse.ok) {
-                      // Check if this is a retryable error (409 Conflict)
-                      if (tokenResponse.status === 409 && responseData.retryable) {
-                        console.log(`Token generation temporarily failed (attempt ${attempt}/${maxRetries}):`, responseData.details);
-                        
-                        // For longer waits on later attempts
-                        const waitTime = delay * Math.min(attempt * 1.5, 6); // Capped exponential backoff
-                        console.log(`Waiting ${waitTime}ms before next attempt`);
-                        
-                        await new Promise(resolve => setTimeout(resolve, waitTime));
-                        continue; // Try again
-                      }
-                      
-                      // Non-retryable error
-                      throw new Error(responseData.error || 'Token generation failed');
-                    }
-                    
-                    // Check if we received a valid token
-                    if (!responseData || !responseData.token) {
-                      throw new Error('Invalid token response');
-                    }
-                    
-                    // Success! Return the token
-                    return responseData.token;
-                  } catch (err: any) {
-                    lastError = err;
-                    
-                    if (attempt >= maxRetries) {
-                      console.error(`All ${maxRetries} token generation attempts failed`);
-                      throw err; // Re-throw if this was our last attempt
-                    }
-                    
-                    console.error(`Attempt ${attempt}/${maxRetries} failed:`, err.message || err);
-                    
-                    // Increase delay with each attempt
-                    const waitTime = delay * Math.min(attempt * 1.5, 6); // Capped exponential backoff
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                  }
-                }
-                
-                // This should never happen due to the throw in the loop, but TypeScript needs it
-                throw lastError || new Error('Max retries exceeded for token generation');
-              };
-              
-              try {
-                // Show loading state while generating token
-                setPaymentStatus('loading');
-                
-                // Try to generate token with retries
-                const token = await generateTokenWithRetry();
-                
-                if (!token) {
-                  throw new Error('Failed to generate token: received empty token');
-                }
-                
-                // Redirect with token
-                console.log('Redirecting guest user to success page with token');
-                router.push(`/success/${data.orderID}?token=${encodeURIComponent(token)}`);
-              } catch (tokenError: any) {
-                console.error('Error generating token:', tokenError);
-                
-                // Show error message to user instead of redirecting with invalid token
-                setPaymentStatus('error');
-                
-                // Give user option to try manual access
-                alert(`There was an issue generating your access token. Please note your order ID: ${data.orderID} and contact support. Alternatively, you can try accessing your order details in a few minutes.`);
-                
-                // Still redirect but without token - they'll get an auth error on the success page
-                // which is better than being stuck on checkout
-                setTimeout(() => {
-                  router.push(`/success/${data.orderID}`);
-                }, 3000);
-              }
-            }
           } catch (error) {
             console.error('Payment capture error:', error);
             setPaymentStatus('error');
@@ -803,7 +701,12 @@ export default function Home() {
                     required
                     placeholder="Your name"
                     value={name}
-                    onChange={e => !isUserSignedIn && setName(e.target.value)}
+                    onChange={e => {
+                      if (!isUserSignedIn) {
+                        const val = e.target.value;
+                        setName(val);
+                      }
+                    }}
                     autoComplete="name"
                     disabled={isUserSignedIn}
                     className={isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""}

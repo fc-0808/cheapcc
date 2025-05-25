@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-server';
 import React from 'react';
 import Link from 'next/link';
+import { getPlanDuration } from '@/utils/products';
 
 // Adobe's regular pricing (for savings calculation)
 const ADOBE_REGULAR_PRICING = {
@@ -26,7 +27,7 @@ function calculateOrderSavings(order: any): number {
   if (isNaN(orderAmount)) return 0;
   
   // Try to determine the regular price based on description or plan name
-  const description = order.description || order.plan_name || '';
+  const description = order.description || '';
   
   // Check if the order has savings already calculated
   if (order.savings && !isNaN(parseFloat(order.savings))) {
@@ -85,7 +86,7 @@ function calculateExpiryDateIfNeeded(order: any) {
   let days = 30;
   
   // Try to determine duration from description
-  const description = order.description || order.plan_name || '';
+  const description = order.description || '';
   if (description.includes('14 days')) {
     days = 14;
   } else if (description.includes('30 days') || description.includes('1 month')) {
@@ -100,25 +101,6 @@ function calculateExpiryDateIfNeeded(order: any) {
   
   expiryDate.setDate(createdAt.getDate() + days);
   return expiryDate.toISOString();
-}
-
-// Add a helper to infer plan duration
-function getPlanDuration(order: any): string {
-  const description = order.description || order.plan_name || '';
-  const amount = parseFloat(order.amount);
-  // Check description first
-  if (/14\s*-?\s*days?/i.test(description)) return '14 days';
-  if (/1\s*-?\s*month|30\s*-?\s*days?/i.test(description)) return '1 month';
-  if (/3\s*-?\s*months?|90\s*-?\s*days?/i.test(description)) return '3 months';
-  if (/6\s*-?\s*months?|180\s*-?\s*days?/i.test(description)) return '6 months';
-  if (/12\s*-?\s*months?|1\s*-?\s*year|365\s*-?\s*days?/i.test(description)) return '12 months';
-  // Fallback to amount
-  if (amount === 4.99) return '14 days';
-  if (amount === 14.99) return '1 month';
-  if (amount === 34.99) return '3 months';
-  if (amount === 64.99) return '6 months';
-  if (amount === 124.99) return '12 months';
-  return 'Unknown';
 }
 
 export default async function DashboardPage() {
@@ -229,7 +211,7 @@ export default async function DashboardPage() {
                 
                 return (
                 <div className="credential-card" key={order.id}>
-                  <h3>{order.plan_name || order.description || 'Adobe CC Plan'}</h3>
+                  <h3>{order.description || 'Adobe CC Plan'}</h3>
                   <ul className="credential-details">
                     <li>
                       <span className="detail-label">Order Number</span>

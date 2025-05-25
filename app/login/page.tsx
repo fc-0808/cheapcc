@@ -85,7 +85,7 @@ export default function LoginPage() {
           <div className="flex gap-2">
             <button
               formAction={login}
-              className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none"
+              className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer"
               type="submit"
             >
               Sign In
