@@ -1,35 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import paypal from '@paypal/checkout-server-sdk';
+import {
+  Client,
+  Environment,
+  LogLevel,
+  OrdersController,
+  Order,
+  CheckoutPaymentIntent
+} from '@paypal/paypal-server-sdk';
 import { PRICING_OPTIONS } from '@/utils/products';
-import { createServiceClient } from '@/utils/supabase/supabase-server';
 
-// PayPal client configuration
-const environment = new paypal.core.SandboxEnvironment(
-  process.env.PAYPAL_CLIENT_ID!,
-  process.env.PAYPAL_SECRET_KEY!
-);
-const client = new paypal.core.PayPalHttpClient(environment);
+const clientId = process.env.PAYPAL_CLIENT_ID!;
+const clientSecret = process.env.PAYPAL_SECRET_KEY!;
 
-// Type for PayPal order response
-interface PayPalOrderResponse {
-  result: {
-    id: string;
-    status: string;
-    [key: string]: any;
-  };
-}
+const paypalClient = new Client({
+  clientCredentialsAuthCredentials: {
+    oAuthClientId: clientId,
+    oAuthClientSecret: clientSecret
+  },
+  environment: Environment.Sandbox,
+  logging: {
+    logLevel: LogLevel.Info,
+    logRequest: { logBody: true },
+    logResponse: { logHeaders: true }
+  }
+});
+
+const ordersController = new OrdersController(paypalClient);
 
 export async function POST(request: NextRequest) {
-  // Initialize service role client for potential database operations
-  const supabase = await createServiceClient();
-  
   try {
-    // Get the pricing option ID from the request
     const { priceId, name, email } = await request.json();
-    
-    // Find the selected pricing option
     const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
-    
+
     if (!selectedOption) {
       return NextResponse.json(
         { error: 'Invalid pricing option' },
@@ -37,40 +39,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create order request
-    const orderRequest = new paypal.orders.OrdersCreateRequest();
-    orderRequest.requestBody({
-      intent: 'CAPTURE',
-      purchase_units: [
-        {
-          amount: {
-            currency_code: 'USD',
-            value: selectedOption.price.toFixed(2),
+    const collect = {
+      body: {
+        intent: CheckoutPaymentIntent.Capture,
+        purchaseUnits: [
+          {
+            amount: {
+              currencyCode: 'USD',
+              value: selectedOption.price.toFixed(2),
+            },
+            description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
+            customId: JSON.stringify({ name, email }),
           },
-          description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
-          custom_id: JSON.stringify({ name, email }),
-        },
-      ],
-      application_context: {
-        brand_name: 'Adobe Creative Cloud',
-        landing_page: 'NO_PREFERENCE',
-        user_action: 'PAY_NOW',
+        ],
       },
-    });
+      prefer: 'return=minimal'
+    }
 
-    // Call PayPal to create the order
-    const order = await client.execute(orderRequest) as PayPalOrderResponse;
+    const paypalApiResponse = await ordersController.createOrder(collect);
+    const orderData: Order = paypalApiResponse.result;
+
     return NextResponse.json({
-      id: order.result.id,
-      status: order.result.status,
+      id: orderData.id,
+      status: orderData.status,
       price: selectedOption.price,
       duration: selectedOption.duration,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating PayPal order:', error);
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to create order';
+    const errorDetails = error.response?.data?.details || error.response?.data;
+    const statusCode = error.response?.status || 500;
     return NextResponse.json(
-      { error: 'Failed to create order' },
-      { status: 500 }
+      { error: errorMessage, details: errorDetails },
+      { status: statusCode }
     );
   }
 } 

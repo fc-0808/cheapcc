@@ -1,33 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import paypal from '@paypal/checkout-server-sdk';
-import { createServiceClient } from '@/utils/supabase/supabase-server';
+import {
+  Client,
+  Environment,
+  LogLevel,
+  OrdersController,
+  Order
+} from '@paypal/paypal-server-sdk';
 
-// PayPal client configuration
-const environment = new paypal.core.SandboxEnvironment(
-  process.env.PAYPAL_CLIENT_ID!,
-  process.env.PAYPAL_SECRET_KEY!
-);
-const client = new paypal.core.PayPalHttpClient(environment);
+const clientId = process.env.PAYPAL_CLIENT_ID!;
+const clientSecret = process.env.PAYPAL_SECRET_KEY!;
 
-// Type for PayPal capture response
-interface PayPalCaptureResponse {
-  result: {
-    id: string;
-    status: string;
-    payer: any;
-    purchase_units: any[];
-    [key: string]: any;
-  };
-}
+const paypalClient = new Client({
+  clientCredentialsAuthCredentials: {
+    oAuthClientId: clientId,
+    oAuthClientSecret: clientSecret
+  },
+  environment: Environment.Sandbox,
+  logging: {
+    logLevel: LogLevel.Info,
+    logRequest: { logBody: true },
+    logResponse: { logHeaders: true }
+  }
+});
+
+const ordersController = new OrdersController(paypalClient);
 
 export async function POST(request: NextRequest) {
-  // Initialize service role client for potential database operations
-  const supabase = await createServiceClient();
-  
   try {
-    // Get order ID from request body
     const { orderID } = await request.json();
-    
+
     if (!orderID) {
       return NextResponse.json(
         { error: 'Order ID is required' },
@@ -35,29 +36,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create capture request
-    const captureRequest = new paypal.orders.OrdersCaptureRequest(orderID);
-    captureRequest.requestBody({});
+    const collect = {
+      id: orderID,
+      prefer: 'return=minimal'
+    }
 
-    // Call PayPal to capture the order
-    const capture = await client.execute(captureRequest) as PayPalCaptureResponse;
+    const paypalApiResponse = await ordersController.captureOrder(collect);
+    const captureData: Order = paypalApiResponse.result;
 
-    // Return capture details to the client
     return NextResponse.json({
-      id: capture.result.id,
-      status: capture.result.status,
-      payer: capture.result.payer,
-      purchase_units: capture.result.purchase_units,
+      id: captureData.id,
+      status: captureData.status,
+      payer: captureData.payer,
+      purchase_units: captureData.purchaseUnits,
     });
   } catch (error: any) {
     console.error('Error capturing PayPal order:', error);
-    
-    // Handle specific PayPal errors
-    const errorDetails = error.details ? JSON.stringify(error.details) : 'Unknown error';
-    
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to capture order';
+    const errorDetails = error.response?.data?.details || error.response?.data || (error.details ? JSON.stringify(error.details) : 'Unknown error details');
+    const statusCode = error.response?.status || 500;
     return NextResponse.json(
-      { error: 'Failed to capture order', details: errorDetails },
-      { status: 500 }
+      { error: errorMessage, details: errorDetails },
+      { status: statusCode }
     );
   }
 } 
