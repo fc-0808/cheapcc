@@ -4,14 +4,28 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/supabase-server'
 import { LoginSchema } from '@/lib/schemas'
-import { z } from 'zod'
+import { headers } from 'next/headers'
+import { checkRateLimitByIp, limiters } from '@/utils/rate-limiter'
+import { ZodError } from 'zod'
 
-function formatZodError(error: z.ZodError) {
+function formatZodError(error: ZodError) {
   const firstError = error.errors[0]
-  return `${firstError.path.join('.')}: ${firstError.message}`
+  return `${firstError.path.join('.') || 'Form'}: ${firstError.message}`
 }
 
 export async function login(formData: FormData): Promise<{ error?: string; } | void> {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1'
+
+  const { limited, retryAfter } = await checkRateLimitByIp(ip, limiters.login)
+  if (limited) {
+    const errorMessage = `Too many login attempts. Please try again ${retryAfter ? `in ${retryAfter} seconds` : 'later'}.`
+    // For Server Actions that update client-side state via useFormState, return the error.
+    // If you always redirect, then redirect.
+    return { error: errorMessage }
+    // redirect(`/login?error=${encodeURIComponent(errorMessage)}`) // Alternative
+  }
+
   const rawFormData = {
     email: formData.get('email'),
     password: formData.get('password'),
@@ -22,8 +36,8 @@ export async function login(formData: FormData): Promise<{ error?: string; } | v
 
   if (!validationResult.success) {
     const errorMessage = formatZodError(validationResult.error)
-    // Return error object instead of redirecting for client-side handling
-    return { error: errorMessage };
+    return { error: errorMessage }
+    // redirect(`/login?error=${encodeURIComponent(errorMessage)}`) // Alternative
   }
 
   // If you add reCAPTCHA to login:
@@ -43,7 +57,11 @@ export async function login(formData: FormData): Promise<{ error?: string; } | v
   })
 
   if (signInError) {
-    redirect(`/login?error=${encodeURIComponent(signInError.message)}`)
+    console.warn('Supabase SignIn Error:', signInError.message)
+    // It's often better to return a generic error for failed logins
+    // to avoid confirming if an email exists or not, unless Supabase already does this.
+    return { error: "Invalid login credentials. Please try again." }
+    // redirect(`/login?error=${encodeURIComponent(signInError.message)}`) // Alternative if more detail is desired
   }
   revalidatePath('/', 'layout')
   redirect('/dashboard')

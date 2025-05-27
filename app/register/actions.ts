@@ -5,16 +5,26 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/supabase-server'
 import { verifyRecaptcha } from '@/utils/recaptcha'
 import { SignupSchema } from '@/lib/schemas'
-import { z } from 'zod'
+import { headers } from 'next/headers'
+import { checkRateLimitByIp, limiters } from '@/utils/rate-limiter'
+import { ZodError } from 'zod'
 
 // Helper to format Zod errors for URL params or client-side display
-function formatZodError(error: z.ZodError) {
-  // For simplicity, taking the first error. You might want to concatenate.
+function formatZodError(error: ZodError) {
   const firstError = error.errors[0]
-  return `${firstError.path.join('.')}: ${firstError.message}`
+  return `${firstError.path.join('.') || 'Form'}: ${firstError.message}`
 }
 
-export async function signup(formData: FormData) {
+export async function signup(formData: FormData): Promise<{ error?: string } | void> {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1'
+
+  const { limited, retryAfter } = await checkRateLimitByIp(ip, limiters.signup)
+  if (limited) {
+    const errorMessage = `Too many signup attempts. Please try again ${retryAfter ? `in ${retryAfter} seconds` : 'later'}.`
+    redirect(`/register?error=${encodeURIComponent(errorMessage)}`)
+  }
+
   const rawFormData = {
     name: formData.get('name'),
     email: formData.get('email'),
@@ -32,6 +42,10 @@ export async function signup(formData: FormData) {
 
   const { name, email, password, recaptchaToken } = validationResult.data
 
+  if (!recaptchaToken || typeof recaptchaToken !== 'string') {
+    redirect('/register?error=Invalid+reCAPTCHA+token+format.')
+  }
+
   const isRecaptchaValid = await verifyRecaptcha(recaptchaToken)
   if (!isRecaptchaValid) {
     redirect('/register?error=Invalid+reCAPTCHA.+Please+try+again.')
@@ -48,6 +62,7 @@ export async function signup(formData: FormData) {
   })
 
   if (signUpError) {
+    console.error('Supabase SignUp Error:', signUpError.message)
     redirect(`/register?error=${encodeURIComponent(signUpError.message)}`)
   }
 
