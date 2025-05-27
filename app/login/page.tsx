@@ -1,9 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { login } from './actions';
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -18,7 +17,17 @@ export default function LoginPage() {
       setMessageType('success');
       window.history.replaceState({}, document.title, '/login');
     }
-    
+    if (searchParams.get('success') === 'password_reset') {
+      setMessage('Your password has been reset successfully. Please log in.');
+      setMessageType('success');
+      window.history.replaceState({}, document.title, '/login');
+    }
+    if (searchParams.get('info') === 'reset_link_sent') {
+      setMessage('If an account exists for this email, a password reset link has been sent.');
+      setMessageType('success');
+      window.history.replaceState({}, document.title, '/login');
+    }
+
     if (searchParams.get('error')) {
       setMessage(decodeURIComponent(searchParams.get('error') || ''));
       setMessageType('error');
@@ -61,7 +70,9 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-[#2c2d5a] mb-1">Password</label>
+            <div className="flex justify-between items-center mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-[#2c2d5a]">Password</label>
+            </div>
             <div className="relative">
               <input
                 id="password"
@@ -81,6 +92,11 @@ export default function LoginPage() {
                 <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
             </div>
+            <div className="mt-2 text-right">
+              <Link href="/forgot-password" legacyBehavior={false} className="text-sm text-[#ff3366] hover:underline font-medium">
+                Forgot password?
+              </Link>
+            </div>
           </div>
           <div className="flex gap-2">
             <button
@@ -94,7 +110,7 @@ export default function LoginPage() {
         </form>
         <div className="text-center mt-6 text-sm text-gray-500">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="text-[#ff3366] hover:underline font-medium">Register</Link>
+          <Link href="/register" legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">Register</Link>
         </div>
       </div>
     </main>
