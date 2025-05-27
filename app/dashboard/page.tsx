@@ -54,24 +54,6 @@ export default async function DashboardPage() {
   
   const recentOrders = orders.slice(0, 5);
 
-  // Before rendering, update expired orders to INACTIVE if needed
-  const now = new Date();
-  const expiredOrderIds = orders
-    .filter((order: any) => {
-      if (!order.expiry_date) return false;
-      const expiry = new Date(order.expiry_date);
-      return expiry < now && order.status !== 'INACTIVE';
-    })
-    .map((order: any) => order.id);
-
-  if (expiredOrderIds.length > 0) {
-    // Update all expired orders to INACTIVE
-    await supabase
-      .from('orders')
-      .update({ status: 'INACTIVE', updated_at: new Date().toISOString() })
-      .in('id', expiredOrderIds);
-  }
-
   return (
     <>
       <div className="dashboard-container">

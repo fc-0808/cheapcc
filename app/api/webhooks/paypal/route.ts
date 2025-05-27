@@ -6,9 +6,7 @@ import {
   calculateSavings, 
   getStandardPlanDescription, 
   calculateExpiryDate, 
-  OrderLike, 
-  getPricingOptionById, 
-  PRICING_OPTIONS 
+  OrderLike 
 } from '@/utils/products';
 
 export async function POST(request: NextRequest) {
