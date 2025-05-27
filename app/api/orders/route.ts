@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
               value: selectedOption.price.toFixed(2),
             },
             description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
-            customId: JSON.stringify({ name, email }),
+            customId: JSON.stringify({ name, email, priceId }),
           },
         ],
       },

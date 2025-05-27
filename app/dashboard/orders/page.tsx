@@ -2,25 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-server';
 import Link from 'next/link';
 import React from 'react';
-import { getPlanDuration } from '@/utils/products';
-
-// Helper to format currency
-function formatCurrency(amount: number) {
-  return `$${amount.toFixed(2)}`;
-}
-
-// Helper to check if a subscription is active
-function isActiveSubscription(order: any) {
-  if (order.status === 'ACTIVE' || order.status === 'COMPLETED') {
-    if (order.expiry_date) {
-      const now = new Date();
-      const expiry = new Date(order.expiry_date);
-      return expiry > now;
-    }
-    return true;
-  }
-  return false;
-}
+import { getPlanDuration, formatCurrency, isActiveSubscription, OrderLike } from '@/utils/products';
 
 export default async function OrdersPage() {
   const supabase = await createClient();

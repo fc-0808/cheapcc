@@ -2,106 +2,13 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-server';
 import React from 'react';
 import Link from 'next/link';
-import { getPlanDuration } from '@/utils/products';
-
-// Adobe's regular pricing (for savings calculation)
-const ADOBE_REGULAR_PRICING = {
-  '14 days': 23.99, // About $1.71/day for trial
-  '14-Day': 23.99, // Alternative name format
-  '1 month': 54.99,
-  '3 months': 164.97, // $54.99 x 3
-  '6 months': 329.94, // $54.99 x 6
-  '12 months': 599.88, // $54.99 x 12 (annual price for monthly subscription)
-};
-
-// Helper to format currency
-function formatCurrency(amount: number) {
-  return `$${amount.toFixed(2)}`;
-}
-
-// Helper to calculate savings for an order
-function calculateOrderSavings(order: any): number {
-  if (!order.amount) return 0;
-  
-  const orderAmount = parseFloat(order.amount);
-  if (isNaN(orderAmount)) return 0;
-  
-  // Try to determine the regular price based on description or plan name
-  const description = order.description || '';
-  
-  // Check if the order has savings already calculated
-  if (order.savings && !isNaN(parseFloat(order.savings))) {
-    return parseFloat(order.savings);
-  }
-  
-  // Calculate based on duration
-  let regularPrice = 0;
-  
-  if (description.includes('14 days') || description.includes('14-Day')) {
-    regularPrice = ADOBE_REGULAR_PRICING['14 days'];
-  } else if (description.includes('1 month') || description.includes('30 days')) {
-    regularPrice = ADOBE_REGULAR_PRICING['1 month'];
-  } else if (description.includes('3 month') || description.includes('90 days')) {
-    regularPrice = ADOBE_REGULAR_PRICING['3 months'];
-  } else if (description.includes('6 month') || description.includes('180 days')) {
-    regularPrice = ADOBE_REGULAR_PRICING['6 months'];
-  } else if (description.includes('12 month') || description.includes('1 year') || description.includes('365 days')) {
-    regularPrice = ADOBE_REGULAR_PRICING['12 months'];
-  } else {
-    // Default to 14-day price if we can't determine (instead of monthly)
-    regularPrice = ADOBE_REGULAR_PRICING['14 days'];
-  }
-  
-  const savings = regularPrice - orderAmount;
-  return savings > 0 ? savings : 0;
-}
-
-// Helper to check if a subscription is active
-function isActiveSubscription(order: any) {
-  // Consider both ACTIVE and COMPLETED statuses as active for backwards compatibility
-  if (order.status === 'ACTIVE' || order.status === 'COMPLETED') {
-    // If we have an expiry date, check if it's in the future
-    if (order.expiry_date) {
-      const now = new Date();
-      const expiry = new Date(order.expiry_date);
-      return expiry > now;
-    }
-    // Without expiry date, assume it's active (will be fixed by webhook handler in the future)
-    return true;
-  }
-  return false;
-}
-
-// Helper to calculate expiry date if missing
-function calculateExpiryDateIfNeeded(order: any) {
-  if (order.expiry_date) {
-    return order.expiry_date;
-  }
-  
-  // Calculate approximate expiry based on creation date
-  const createdAt = new Date(order.created_at);
-  const expiryDate = new Date(createdAt);
-  
-  // Default to 30 days from creation
-  let days = 30;
-  
-  // Try to determine duration from description
-  const description = order.description || '';
-  if (description.includes('14 days')) {
-    days = 14;
-  } else if (description.includes('30 days') || description.includes('1 month')) {
-    days = 30;
-  } else if (description.includes('90 days') || description.includes('3 month')) {
-    days = 90;
-  } else if (description.includes('180 days') || description.includes('6 month')) {
-    days = 180;
-  } else if (description.includes('365 days') || description.includes('1 year')) {
-    days = 365;
-  }
-  
-  expiryDate.setDate(createdAt.getDate() + days);
-  return expiryDate.toISOString();
-}
+import { 
+  getPlanDuration, 
+  calculateSavings, 
+  isActiveSubscription, 
+  formatCurrency, 
+  calculateExpiryDate, 
+} from '@/utils/products';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -143,7 +50,7 @@ export default async function DashboardPage() {
   const totalSpent = orders.reduce((sum: number, o: any) => sum + (parseFloat(o.amount) || 0), 0);
   
   // Calculate total savings properly by summing up the calculated savings for each order
-  const totalSavings = orders.reduce((sum: number, order) => sum + calculateOrderSavings(order), 0);
+  const totalSavings = orders.reduce((sum: number, order) => sum + calculateSavings(order), 0);
   
   const recentOrders = orders.slice(0, 5);
 
@@ -207,7 +114,7 @@ export default async function DashboardPage() {
             {activeOrders.length > 0 ? (
               activeOrders.map((order: any) => {
                 // Calculate expiry date if not present
-                const expiryDate = calculateExpiryDateIfNeeded(order);
+                const expiryDate = calculateExpiryDate(order);
                 
                 return (
                 <div className="credential-card" key={order.id}>
