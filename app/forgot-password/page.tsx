@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { requestPasswordReset } from './actions'; // We'll create this action next
 import { useSearchParams } from 'next/navigation';
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function ForgotPasswordPage() {
   const searchParams = useSearchParams();
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | ''>(null);
+  const [messageType, setMessageType] = useState<'success' | 'error' | '' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     const error = searchParams.get('error');
@@ -27,24 +30,32 @@ export default function ForgotPasswordPage() {
     }
   }, [searchParams]);
 
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!recaptchaToken) {
+      setMessage("Please complete the reCAPTCHA.");
+      setMessageType('error');
+      return;
+    }
     setIsLoading(true);
     setMessage('');
     setMessageType(null);
 
     const formData = new FormData(event.currentTarget);
+    formData.append('g-recaptcha-response', recaptchaToken);
     const result = await requestPasswordReset(formData);
 
     if (result?.error) {
       setMessage(result.error);
       setMessageType('error');
-    } else {
-      // Success message is handled by redirect in actions.ts
-      // or you can set a generic success message here if the action doesn't redirect
-      // For this example, we assume the action redirects or updates searchParams
     }
     setIsLoading(false);
+    recaptchaRef.current?.reset();
+    setRecaptchaToken(null);
   };
 
   return (
@@ -79,10 +90,17 @@ export default function ForgotPasswordPage() {
               required
             />
           </div>
+          <div className="flex justify-center">
+            <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                onChange={handleRecaptchaChange}
+              />
+          </div>
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !recaptchaToken}
               className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer disabled:opacity-50"
             >
               {isLoading ? 'Sending...' : 'Send Reset Link'}

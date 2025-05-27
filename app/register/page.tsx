@@ -1,8 +1,10 @@
 'use client';
+
 import Link from 'next/link';
 import { signup } from './actions';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function RegisterPage() {
   const searchParams = useSearchParams();
@@ -14,6 +16,8 @@ export default function RegisterPage() {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   // Password strength validation
   const [passwordRequirements, setPasswordRequirements] = useState({
@@ -73,6 +77,24 @@ export default function RegisterPage() {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!recaptchaToken) {
+      setErrorMessage("Please complete the reCAPTCHA.");
+      return;
+    }
+    setErrorMessage('');
+    const formData = new FormData(event.currentTarget);
+    formData.append('g-recaptcha-response', recaptchaToken);
+    await signup(formData);
+    recaptchaRef.current?.reset();
+    setRecaptchaToken(null);
+  };
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-8 sm:p-10 space-y-6">
@@ -108,7 +130,7 @@ export default function RegisterPage() {
         )}
 
         {/* Registration Form */}
-        <form className="space-y-5" action={signup}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="name"
@@ -225,10 +247,18 @@ export default function RegisterPage() {
             )}
           </div>
 
+          <div className="flex justify-center">
+             <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+                onChange={handleRecaptchaChange}
+              />
+          </div>
+
           <button
             type="submit"
             className="w-full py-3 px-4 bg-[#ff3366] text-white font-semibold rounded-lg hover:bg-[#e62e5c] transition-colors duration-300 focus:ring-4 focus:ring-[#ff3366]/50 focus:outline-none shadow-md hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer"
-            disabled={(confirmPasswordTouched && !passwordsMatch) || !isPasswordValid}
+            disabled={(confirmPasswordTouched && !passwordsMatch) || !isPasswordValid || !recaptchaToken}
           >
             Create Account
           </button>
