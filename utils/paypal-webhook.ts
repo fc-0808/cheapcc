@@ -1,23 +1,33 @@
 import crypto from 'crypto';
-import fs from 'fs/promises';
-import fetch from 'node-fetch';
+
+// In-memory cache for PayPal certificates
+const certCache = new Map<string, string>();
 
 /**
- * Download and cache the PayPal certificate
+ * Download and cache the PayPal certificate in memory.
+ * @param url - The URL of the certificate.
+ * @returns The certificate PEM string.
  */
-async function downloadAndCacheCert(url: string, cacheKey?: string): Promise<string> {
-  if (!cacheKey) {
-    cacheKey = url.replace(/\W+/g, '-');
+async function downloadAndCacheCert(url: string): Promise<string> {
+  // Check if the certificate is already in the cache
+  if (certCache.has(url)) {
+    return certCache.get(url)!;
   }
-  const filePath = `.paypal_cert_cache_${cacheKey}`;
-  // Try to read from cache
-  const cachedData = await fs.readFile(filePath, 'utf-8').catch(() => null);
-  if (cachedData) return cachedData;
-  // Download and cache
+
+  // If not in cache, download it
+  // Using global fetch (available in Node.js >= 18 and Next.js environments)
   const response = await fetch(url);
-  const data = await response.text();
-  await fs.writeFile(filePath, data);
-  return data;
+  if (!response.ok) {
+    throw new Error(`Failed to download PayPal certificate from ${url}. Status: ${response.status}`);
+  }
+  const certPem = await response.text();
+
+  // Store it in the cache
+  // For simplicity, no TTL is implemented here, but you could add one if needed.
+  // Certificates are typically valid for a long time.
+  certCache.set(url, certPem);
+
+  return certPem;
 }
 
 /**
@@ -47,7 +57,7 @@ function crc32Decimal(str: string): number {
  */
 export async function verifyPayPalWebhookSignature(
   requestBody: string,
-  headers: Headers
+  headers: Headers // Assuming using the global Headers type
 ): Promise<boolean> {
   try {
     const webhookId = process.env.PAYPAL_WEBHOOK_ID;
@@ -55,15 +65,15 @@ export async function verifyPayPalWebhookSignature(
     const transmissionTime = headers.get('paypal-transmission-time');
     const certUrl = headers.get('paypal-cert-url');
     const transmissionSig = headers.get('paypal-transmission-sig');
-    // Note: PayPal may use SHA256withRSA
-    // const authAlgo = headers.get('paypal-auth-algo');
+    // const authAlgo = headers.get('paypal-auth-algo'); // PayPal uses SHA256withRSA by default
 
     if (!webhookId || !transmissionId || !transmissionTime || !certUrl || !transmissionSig) {
-      console.error('Missing required PayPal webhook headers');
+      console.error('Missing required PayPal webhook headers. Cannot verify signature.');
       return false;
     }
 
     // Construct the signed message string
+    // The CRC32 calculation should use the raw request body.
     const crc = crc32Decimal(requestBody);
     const message = `${transmissionId}|${transmissionTime}|${webhookId}|${crc}`;
 
@@ -74,13 +84,13 @@ export async function verifyPayPalWebhookSignature(
     const signatureBuffer = Buffer.from(transmissionSig, 'base64');
 
     // Create a verification object
-    const verifier = crypto.createVerify('SHA256');
+    const verifier = crypto.createVerify('SHA256'); // Standard algorithm is SHA256withRSA
     verifier.update(message);
-    verifier.end();
+    // verifier.end(); // Not needed for verifier.verify
 
     const isValid = verifier.verify(certPem, signatureBuffer);
     if (!isValid) {
-      console.error('PayPal webhook signature verification failed');
+      console.warn('PayPal webhook signature verification failed. Message:', message, 'Cert URL:', certUrl);
     }
     return isValid;
   } catch (error) {
@@ -91,6 +101,8 @@ export async function verifyPayPalWebhookSignature(
 
 /**
  * Create a CRC32 checksum of the request body (hex string format)
+ * This function seems unused by verifyPayPalWebhookSignature if crc32Decimal is preferred.
+ * Keeping it for completeness if it's used elsewhere, otherwise it could be removed.
  */
 export function crc32(str: string): string {
   const table = new Uint32Array(256);
