@@ -99,6 +99,8 @@ export default function Home() {
   const emailRef = useRef(email);
   const selectedPriceRef = useRef(selectedPrice);
 
+  const [checkoutFormError, setCheckoutFormError] = useState<string | null>(null);
+
   // Function to render the PayPal button when conditions are right
   const renderPayPalButton = () => {
     if (!paypalButtonContainerRef.current) {
@@ -140,6 +142,7 @@ export default function Home() {
           console.log('[createOrder EXECUTION] Request Body String:', requestBodyString);
           try {
             setPaymentStatus('loading');
+            setCheckoutFormError(null);
             const response = await fetch('/api/orders', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -151,8 +154,9 @@ export default function Home() {
             }
             setOrderID(orderData.id);
             return orderData.id;
-          } catch (error) {
+          } catch (error: any) {
             console.error('Error in createOrder:', error);
+            setCheckoutFormError(error.message || 'An unexpected error occurred during order creation.');
             setPaymentStatus('error');
             throw error;
           }
@@ -185,6 +189,7 @@ export default function Home() {
         },
         onError: (err: Error) => {
           console.error('PayPal button error:', err);
+          setCheckoutFormError(`PayPal Error: ${err.message}. Please try again.`);
           setPaymentStatus('error');
         },
       }).render('#paypal-button-container');
@@ -805,6 +810,11 @@ export default function Home() {
                     There was an error processing your payment. Please try again.
               </div>
             )}
+                {checkoutFormError && (
+                  <div className="form-note bg-red-100 text-red-700 p-3 rounded-md text-sm my-2">
+                    {checkoutFormError}
+                  </div>
+                )}
                 <p className="form-disclaimer">
                   By completing your purchase, you agree to our<br />
                   <a href="/terms">Terms of Service</a> and{' '}

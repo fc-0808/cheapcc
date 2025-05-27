@@ -8,6 +8,8 @@ import {
   CheckoutPaymentIntent
 } from '@paypal/paypal-server-sdk';
 import { PRICING_OPTIONS } from '@/utils/products';
+import { CreateOrderSchema } from '@/lib/schemas';
+import { z } from 'zod';
 
 const clientId = process.env.PAYPAL_CLIENT_ID!;
 const clientSecret = process.env.PAYPAL_SECRET_KEY!;
@@ -28,35 +30,48 @@ const paypalClient = new Client({
 const ordersController = new OrdersController(paypalClient);
 
 export async function POST(request: NextRequest) {
+  let requestBody;
   try {
-    const { priceId, name, email } = await request.json();
-    const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
+    requestBody = await request.json();
+  } catch (e) {
+    return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+  }
 
-    if (!selectedOption) {
-      return NextResponse.json(
-        { error: 'Invalid pricing option' },
-        { status: 400 }
-      );
-    }
+  const validationResult = CreateOrderSchema.safeParse(requestBody);
 
-    const collect = {
-      body: {
-        intent: CheckoutPaymentIntent.Capture,
-        purchaseUnits: [
-          {
-            amount: {
-              currencyCode: 'USD',
-              value: selectedOption.price.toFixed(2),
-            },
-            description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
-            customId: JSON.stringify({ name, email, priceId }),
+  if (!validationResult.success) {
+    return NextResponse.json(
+      { error: 'Validation failed', issues: validationResult.error.format() },
+      { status: 400 }
+    );
+  }
+
+  const { priceId, name, email } = validationResult.data;
+  const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
+
+  if (!selectedOption) {
+    return NextResponse.json(
+      { error: 'Invalid pricing option after validation (should not happen)' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const paypalRequestBody = {
+      intent: CheckoutPaymentIntent.Capture,
+      purchaseUnits: [
+        {
+          amount: {
+            currencyCode: 'USD',
+            value: selectedOption.price.toFixed(2),
           },
-        ],
-      },
-      prefer: 'return=minimal'
-    }
+          description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
+          customId: JSON.stringify({ name, email, priceId }),
+        },
+      ],
+    };
 
-    const paypalApiResponse = await ordersController.createOrder(collect);
+    const paypalApiResponse = await ordersController.createOrder({ body: paypalRequestBody, prefer: 'return=minimal' });
     const orderData: Order = paypalApiResponse.result;
 
     return NextResponse.json({

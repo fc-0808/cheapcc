@@ -2,41 +2,64 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { login } from './actions';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+  const [messageType, setMessageType] = useState<'success' | 'error' | 'info' | ''>('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get('success') === 'register') {
-      setMessage('Registration successful! Please check your email to confirm your account.');
-      setMessageType('success');
-      window.history.replaceState({}, document.title, '/login');
-    }
-    if (searchParams.get('success') === 'password_reset') {
-      setMessage('Your password has been reset successfully. Please log in.');
-      setMessageType('success');
-      window.history.replaceState({}, document.title, '/login');
-    }
-    if (searchParams.get('info') === 'reset_link_sent') {
-      setMessage('If an account exists for this email, a password reset link has been sent.');
-      setMessageType('success');
-      window.history.replaceState({}, document.title, '/login');
-    }
+    const errorParam = searchParams.get('error');
+    const successParam = searchParams.get('success');
+    const infoParam = searchParams.get('info');
 
-    if (searchParams.get('error')) {
-      setMessage(decodeURIComponent(searchParams.get('error') || ''));
+    if (errorParam) {
+      setMessage(decodeURIComponent(errorParam));
       setMessageType('error');
+      window.history.replaceState({}, document.title, '/login');
+    } else if (successParam) {
+      if (successParam === 'register') {
+        setMessage('Registration successful! Please check your email to confirm your account.');
+      } else if (successParam === 'password_reset') {
+        setMessage('Your password has been reset successfully. Please log in.');
+      } else {
+         setMessage('Operation successful.');
+      }
+      setMessageType('success');
+      window.history.replaceState({}, document.title, '/login');
+    } else if (infoParam) {
+      if (infoParam === 'reset_link_sent') {
+         setMessage('If an account exists for this email, a password reset link has been sent.');
+         setMessageType('info');
+      }
       window.history.replaceState({}, document.title, '/login');
     }
   }, [searchParams]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+     event.preventDefault();
+     setIsLoading(true);
+     setMessage('');
+     setMessageType('');
+
+     const formData = new FormData(event.currentTarget);
+     const result = await login(formData);
+
+     setIsLoading(false);
+
+     if (result?.error) {
+         setMessage(result.error);
+         setMessageType('error');
+     }
   };
 
   return (
@@ -50,14 +73,15 @@ export default function LoginPage() {
         
         {message && (
           <div className={`mb-4 p-3 rounded-md text-sm font-medium ${
-            messageType === 'success' ? 'bg-green-100 text-green-700' : 
-            messageType === 'error' ? 'bg-red-100 text-red-700' : ''
+            messageType === 'success' ? 'bg-green-100 text-green-700' :
+            messageType === 'error' ? 'bg-red-100 text-red-700' :
+            messageType === 'info' ? 'bg-blue-100 text-blue-700' : ''
           }`}>
             {message}
           </div>
         )}
         
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[#2c2d5a] mb-1">Email address</label>
             <input
@@ -100,11 +124,11 @@ export default function LoginPage() {
           </div>
           <div className="flex gap-2">
             <button
-              formAction={login}
-              className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer"
               type="submit"
+              className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer disabled:opacity-60"
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
           </div>
         </form>

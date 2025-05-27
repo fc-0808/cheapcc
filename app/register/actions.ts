@@ -4,33 +4,41 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/supabase-server'
 import { verifyRecaptcha } from '@/utils/recaptcha'
+import { SignupSchema } from '@/lib/schemas'
+import { z } from 'zod'
+
+// Helper to format Zod errors for URL params or client-side display
+function formatZodError(error: z.ZodError) {
+  // For simplicity, taking the first error. You might want to concatenate.
+  const firstError = error.errors[0]
+  return `${firstError.path.join('.')}: ${firstError.message}`
+}
 
 export async function signup(formData: FormData) {
-  const supabase = await createClient()
-  const name = formData.get('name') as string
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-  const confirmPassword = formData.get('confirmPassword') as string
-  const recaptchaToken = formData.get('g-recaptcha-response') as string
-
-  // Server-side validation
-  if (!name || !email || !password || !confirmPassword) {
-    redirect('/register?error=All+fields+are+required')
-  }
-  if (password !== confirmPassword) {
-    redirect('/register?error=Passwords+do+not+match')
+  const rawFormData = {
+    name: formData.get('name'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+    confirmPassword: formData.get('confirmPassword'),
+    recaptchaToken: formData.get('g-recaptcha-response'),
   }
 
-  // Verify reCAPTCHA
-  if (!recaptchaToken) {
-    redirect('/register?error=Missing+reCAPTCHA+token')
+  const validationResult = SignupSchema.safeParse(rawFormData)
+
+  if (!validationResult.success) {
+    const errorMessage = formatZodError(validationResult.error)
+    redirect(`/register?error=${encodeURIComponent(errorMessage)}`)
   }
+
+  const { name, email, password, recaptchaToken } = validationResult.data
+
   const isRecaptchaValid = await verifyRecaptcha(recaptchaToken)
   if (!isRecaptchaValid) {
     redirect('/register?error=Invalid+reCAPTCHA.+Please+try+again.')
   }
 
-  const { error } = await supabase.auth.signUp({
+  const supabase = await createClient()
+  const { error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -39,8 +47,8 @@ export async function signup(formData: FormData) {
     },
   })
 
-  if (error) {
-    redirect(`/register?error=${encodeURIComponent(error.message)}`)
+  if (signUpError) {
+    redirect(`/register?error=${encodeURIComponent(signUpError.message)}`)
   }
 
   revalidatePath('/', 'layout')

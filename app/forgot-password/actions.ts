@@ -3,47 +3,50 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-server'; // Use server client
 import { verifyRecaptcha } from '@/utils/recaptcha'; // Import the verifier
+import { ForgotPasswordSchema } from '@/lib/schemas'; // Your Zod schema
+import { z } from 'zod';
 
-export async function requestPasswordReset(formData: FormData) {
-  const supabase = await createClient();
-  const email = formData.get('email') as string;
-  const recaptchaToken = formData.get('g-recaptcha-response') as string; // Get reCAPTCHA token
+function formatZodError(error: z.ZodError) {
+  const firstError = error.errors[0];
+  return `${firstError.path.join('.')}: ${firstError.message}`;
+}
 
-  if (!email) {
-    // This return will be caught by the client-side handleSubmit if it's not a redirect
-    return { error: 'Email address is required.' };
+// Modified to return error object for client-side display
+export async function requestPasswordReset(formData: FormData): Promise<{ error?: string } | void> {
+  const rawFormData = {
+    email: formData.get('email'),
+    recaptchaToken: formData.get('g-recaptcha-response'),
+  };
+
+  const validationResult = ForgotPasswordSchema.safeParse(rawFormData);
+
+  if (!validationResult.success) {
+    const errorMessage = formatZodError(validationResult.error);
+    // Instead of redirecting, return the error for the client page to handle
+    return { error: errorMessage };
   }
 
-  // Verify reCAPTCHA
-  if (!recaptchaToken) {
-     return { error: 'Missing reCAPTCHA token.' };
-  }
+  const { email, recaptchaToken } = validationResult.data;
+
   const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
   if (!isRecaptchaValid) {
     return { error: 'Invalid reCAPTCHA. Please try again.' };
   }
 
-  // Construct the redirect URL for after the user clicks the link in the email.
-  // This URL should point to the page where they can enter their new password.
-  // Ensure NEXT_PUBLIC_BASE_URL is set in your .env file (e.g., http://localhost:3000)
+  const supabase = await createClient();
   const redirectUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/update-password`;
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: redirectUrl,
   });
 
-  if (error) {
-    // Don't reveal if the email exists or not for security reasons
-    // Log the actual error on the server for debugging
-    console.error('Password reset request error:', error.message);
-    // Instead of redirecting with an error, return it so the client can display it
-    // This prevents losing form state if reCAPTCHA was valid but email sending failed.
-    // For a better UX, you might want a more generic success message even on Supabase errors
-    // to prevent email enumeration, but for now, this gives more direct feedback.
-     return { error: "Could not send password reset email. Please try again or contact support." };
+  if (resetError) {
+    console.error('Password reset request error:', resetError.message);
+    // To prevent email enumeration, we will redirect to a generic success page.
+    // The client will not see this specific error unless you choose to return it.
+    // return { error: "Could not send password reset email. Please try again or contact support." };
   }
 
-  // For security, always show a generic success message to prevent email enumeration.
-  // The client-side will display "If an account with that email exists..."
+  // Always redirect to a generic info page to prevent email enumeration.
   redirect('/login?info=reset_link_sent');
 } 

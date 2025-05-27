@@ -2,76 +2,69 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/supabase-client";
+import { updateProfile, changeUserPasswordOnProfile } from "./actions"; // Import server actions
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
 
   const [profileMessage, setProfileMessage] = useState("");
-  const [profileMessageType, setProfileMessageType] = useState("");
+  const [profileMessageType, setProfileMessageType] = useState<"success" | "error" | "">("");
   const [passwordMessage, setPasswordMessage] = useState("");
-  const [passwordMessageType, setPasswordMessageType] = useState("");
+  const [passwordMessageType, setPasswordMessageType] = useState<"success" | "error" | "warning" | "">("");
 
-  const [currentPassword, setCurrentPassword] = useState("");
+  // Current password is not needed for supabase.auth.updateUser({password: newPassword})
+  // const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  // const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [newPasswordTouched, setNewPasswordTouched] = useState(false);
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
-  const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const passwordsMatch = newPassword === confirmPassword || !confirmPasswordTouched; // Simplified match logic
 
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
     hasUppercase: false,
     hasLowercase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
   });
 
-  const isNewPasswordValid = Object.values(passwordRequirements).every((req) => req);
+  const isNewPasswordClientValid = Object.values(passwordRequirements).every((req) => req);
 
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     async function loadProfile() {
-      try {
-        setIsLoading(true);
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+      setIsLoading(true);
+      const { data: { user },  error: userError } = await supabase.auth.getUser();
 
-        if (userError || !user) {
-          router.push("/login");
-          return;
-        }
-
-        setEmail(user.email || "");
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("name")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          setProfileMessage(`Failed to load profile: ${profileError.message}`);
-          setProfileMessageType("error");
-          setName(user.user_metadata?.name || user.email?.split("@")[0] || "");
-          return;
-        }
-
-        setName(profileData?.name || user.user_metadata?.name || user.email?.split("@")[0] || "");
-      } catch (error) {
-        setProfileMessage("An error occurred while loading your profile.");
-        setProfileMessageType("error");
-      } finally {
-        setIsLoading(false);
+      if (userError || !user) {
+        router.push("/login");
+        return;
       }
+
+      setEmail(user.email || "");
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        setProfileMessage(`Failed to load profile: ${profileError.message}`);
+        setProfileMessageType("error");
+      }
+      setName(profileData?.name || user.user_metadata?.name || user.email?.split("@")[0] || "");
+      setIsLoading(false);
     }
     loadProfile();
   }, [router, supabase]);
@@ -82,117 +75,92 @@ export default function ProfilePage() {
         minLength: newPassword.length >= 8,
         hasUppercase: /[A-Z]/.test(newPassword),
         hasLowercase: /[a-z]/.test(newPassword),
+        hasNumber: /[0-9]/.test(newPassword),
+        hasSpecialChar: /[^a-zA-Z0-9]/.test(newPassword),
       });
     } else {
-      setPasswordRequirements({ minLength: false, hasUppercase: false, hasLowercase: false });
+      // Reset if password field is cleared
+      setPasswordRequirements({ minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecialChar: false });
     }
   }, [newPassword, newPasswordTouched]);
 
-  useEffect(() => {
-    if (confirmPasswordTouched) {
-      setPasswordsMatch(newPassword === confirmPassword);
-    } else {
-      setPasswordsMatch(true);
-    }
-  }, [newPassword, confirmPassword, confirmPasswordTouched]);
 
-  const handleProfileUpdate = async (e: React.FormEvent) => {
+  const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim()) {
       setProfileMessage("Name cannot be empty.");
       setProfileMessageType("error");
       return;
     }
-    setIsSubmitting(true);
+    setIsSubmittingProfile(true);
     setProfileMessage("");
+    setProfileMessageType("");
 
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+    const formData = new FormData(e.currentTarget);
+    const result = await updateProfile(formData); // Call server action
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ name, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-      if (profileError) throw profileError;
-
-      const { error: metadataError } = await supabase.auth.updateUser({ data: { name } });
-      if (metadataError) console.warn("Failed to update user metadata:", metadataError);
-
-      setProfileMessage("Profile updated successfully!");
-      setProfileMessageType("success");
-    } catch (error: any) {
-      setProfileMessage(error.message || "Failed to update profile.");
+    if (result.error) {
+      setProfileMessage(result.error);
       setProfileMessageType("error");
-    } finally {
-      setIsSubmitting(false);
+    } else if (result.success) {
+      setProfileMessage(result.message || "Profile updated successfully!");
+      setProfileMessageType("success");
+      // Optionally re-fetch profile or update name state if server action doesn't revalidate enough
     }
+    setIsSubmittingProfile(false);
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPasswordMessage("");
+    setPasswordMessageType("");
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordMessage("All password fields are required.");
+    if (!newPassword || !confirmPassword) {
+      setPasswordMessage("New password and confirmation are required.");
       setPasswordMessageType("error");
       return;
     }
-    if (!isNewPasswordValid) {
+    if (!isNewPasswordClientValid) {
       setPasswordMessage("New password does not meet all requirements.");
       setPasswordMessageType("warning");
       return;
     }
-    if (!passwordsMatch) {
+    if (newPassword !== confirmPassword) {
       setPasswordMessage("New passwords do not match.");
       setPasswordMessageType("error");
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) {
-        if (error.message.includes("password should be different")) {
-          setPasswordMessage("New password must be different from the current password.");
-        } else if (
-          error.message.toLowerCase().includes("old password") ||
-          error.message.toLowerCase().includes("current password")
-        ) {
-          setPasswordMessage("Current password is incorrect or verification failed.");
-        } else {
-          setPasswordMessage(error.message || "Failed to update password.");
-        }
-        setPasswordMessageType("error");
-        return;
-      }
+    setIsSubmittingPassword(true);
+    const formData = new FormData(e.currentTarget);
+    // currentPassword is not needed for this server action
+    // formData.append('currentPassword', currentPassword);
+    formData.append('newPassword', newPassword);
+    formData.append('confirmPassword', confirmPassword);
 
-      setPasswordMessage("Password changed successfully!");
+    const result = await changeUserPasswordOnProfile(formData); // Call server action
+
+    if (result.error) {
+      setPasswordMessage(result.error);
+      setPasswordMessageType("error");
+    } else if (result.success) {
+      setPasswordMessage(result.message || "Password changed successfully!");
       setPasswordMessageType("success");
-      setCurrentPassword("");
+      // Clear password fields
+      // setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setNewPasswordTouched(false);
       setConfirmPasswordTouched(false);
-      setShowCurrentPassword(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
-    } catch (error: any) {
-      setPasswordMessage(error.message || "An unexpected error occurred.");
-      setPasswordMessageType("error");
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmittingPassword(false);
   };
 
   const PasswordRequirementItem: React.FC<{ met: boolean; text: string }> = ({ met, text }) => (
-    <p className={`requirement${met ? " met" : ""}`}>
-      <i className={`fas ${met ? "fa-check-circle" : "fa-times-circle"} icon`}></i> {text}
+    <p className={`requirement text-xs flex items-center gap-1.5 ${met ? "text-green-600" : "text-red-500"}`}>
+      <i className={`fas ${met ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> {text}
     </p>
   );
 
@@ -211,6 +179,7 @@ export default function ProfilePage() {
           <i className="fas fa-user-cog icon"></i> My Profile
         </h1>
 
+        {/* Personal Information Form */}
         <div className="profile-form-section">
           <h2 className="profile-section-heading">
             <i className="fas fa-id-card icon"></i> Personal Information
@@ -220,6 +189,7 @@ export default function ProfilePage() {
               <label htmlFor="name">Full Name</label>
               <input
                 id="name"
+                name="name" // Name attribute for FormData
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -230,7 +200,7 @@ export default function ProfilePage() {
             <div>
               <label htmlFor="email">Email Address</label>
               <input id="email" type="email" value={email} disabled />
-              <p className="input-hint">Email address cannot be changed.</p>
+              <p className="input-hint text-xs text-gray-500 mt-1">Email address cannot be changed here.</p>
             </div>
             {profileMessage && (
               <div className={`profile-message ${profileMessageType}`}>
@@ -248,24 +218,27 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 className="btn-submit btn-update-profile"
-                disabled={isSubmitting}
+                disabled={isSubmittingProfile}
               >
-                {isSubmitting ? "Updating..." : "Update Profile"}
+                {isSubmittingProfile ? "Updating..." : "Update Profile"}
               </button>
             </div>
           </form>
         </div>
 
+        {/* Change Password Form */}
         <div className="profile-form-section">
           <h2 className="profile-section-heading">
             <i className="fas fa-key icon"></i> Change Password
           </h2>
           <form onSubmit={handlePasswordChange} className="profile-form space-y-6">
+            {/* Current Password field - Supabase doesn't require it for updateUser password change
             <div>
               <label htmlFor="currentPassword">Current Password</label>
               <div className="password-input-wrapper">
                 <input
                   id="currentPassword"
+                  name="currentPassword"
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -281,11 +254,13 @@ export default function ProfilePage() {
                 </button>
               </div>
             </div>
+            */}
             <div>
               <label htmlFor="newPassword">New Password</label>
               <div className="password-input-wrapper">
                 <input
                   id="newPassword"
+                  name="newPassword" // Name attribute for FormData
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => {
@@ -295,8 +270,8 @@ export default function ProfilePage() {
                   required
                   placeholder="Enter new password"
                   className={
-                    newPasswordTouched && !isNewPasswordValid
-                      ? "border-yellow-500 focus:border-yellow-500"
+                    newPasswordTouched && !isNewPasswordClientValid
+                      ? "border-yellow-500 focus:border-yellow-500 bg-yellow-50"
                       : ""
                   }
                 />
@@ -309,8 +284,7 @@ export default function ProfilePage() {
                 </button>
               </div>
               {newPasswordTouched && (
-                <div className="password-requirements-info">
-                  <p className="heading">Password must contain:</p>
+                <div className="password-requirements-info mt-2 space-y-0.5">
                   <PasswordRequirementItem
                     met={passwordRequirements.minLength}
                     text="At least 8 characters"
@@ -323,6 +297,14 @@ export default function ProfilePage() {
                     met={passwordRequirements.hasLowercase}
                     text="One lowercase letter (a-z)"
                   />
+                   <PasswordRequirementItem
+                    met={passwordRequirements.hasNumber}
+                    text="One number (0-9)"
+                  />
+                   <PasswordRequirementItem
+                    met={passwordRequirements.hasSpecialChar}
+                    text="One special character"
+                  />
                 </div>
               )}
             </div>
@@ -331,6 +313,7 @@ export default function ProfilePage() {
               <div className="password-input-wrapper">
                 <input
                   id="confirmPassword"
+                  name="confirmPassword" // Name attribute for FormData
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => {
@@ -341,7 +324,7 @@ export default function ProfilePage() {
                   placeholder="Confirm new password"
                   className={
                     confirmPasswordTouched && !passwordsMatch
-                      ? "border-red-500 focus:border-red-500"
+                      ? "border-red-500 focus:border-red-500 bg-red-50"
                       : ""
                   }
                 />
@@ -354,7 +337,7 @@ export default function ProfilePage() {
                 </button>
               </div>
               {confirmPasswordTouched && !passwordsMatch && (
-                <p className="input-hint text-red-600 mt-1">Passwords do not match.</p>
+                <p className="input-hint text-xs text-red-600 mt-1">New passwords do not match.</p>
               )}
             </div>
             {passwordMessage && (
@@ -365,7 +348,7 @@ export default function ProfilePage() {
                       ? "fa-check-circle"
                       : passwordMessageType === "warning"
                       ? "fa-exclamation-triangle"
-                      : "fa-times-circle"
+                      : "fa-times-circle" // Use times-circle for errors
                   } icon`}
                 ></i>
                 {passwordMessage}
@@ -376,11 +359,12 @@ export default function ProfilePage() {
                 type="submit"
                 className="btn-submit btn-change-password"
                 disabled={
-                  isSubmitting ||
-                  (newPasswordTouched && (!isNewPasswordValid || (confirmPasswordTouched && !passwordsMatch)))
+                  isSubmittingPassword ||
+                  !newPassword || // Ensure new password is not empty
+                  (newPasswordTouched && (!isNewPasswordClientValid || !passwordsMatch))
                 }
               >
-                {isSubmitting ? "Changing..." : "Change Password"}
+                {isSubmittingPassword ? "Changing..." : "Change Password"}
               </button>
             </div>
           </form>
