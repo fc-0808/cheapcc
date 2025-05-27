@@ -2791,7 +2791,7 @@ input:focus, select:focus, textarea:focus {
 .profile-page-container {
   min-height: calc(100vh - var(--header-height, 70px));
   background-color: var(--gray-50);
-  padding-top: 2.5rem;
+  padding-top: calc(var(--header-height, 70px) + 2.5rem);
   padding-bottom: 3rem;
   display: flex;
   justify-content: center;
