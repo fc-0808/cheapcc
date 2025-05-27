@@ -23,7 +23,9 @@ export default function RegisterPage() {
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
     hasUppercase: false,
-    hasLowercase: false
+    hasLowercase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
   });
 
   // Calculate overall password validity
@@ -50,7 +52,9 @@ export default function RegisterPage() {
       setPasswordRequirements({
         minLength: password.length >= 8,
         hasUppercase: /[A-Z]/.test(password),
-        hasLowercase: /[a-z]/.test(password)
+        hasLowercase: /[a-z]/.test(password),
+        hasNumber: /[0-9]/.test(password),
+        hasSpecialChar: /[^a-zA-Z0-9]/.test(password),
       });
     }
   }, [password, passwordTouched]);
@@ -208,6 +212,14 @@ export default function RegisterPage() {
                   <p className={passwordRequirements.hasLowercase ? 'text-green-600' : 'text-gray-500'}>
                     <i className={`fas ${passwordRequirements.hasLowercase ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
                     One lowercase letter
+                  </p>
+                  <p className={passwordRequirements.hasNumber ? 'text-green-600' : 'text-gray-500'}>
+                    <i className={`fas ${passwordRequirements.hasNumber ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
+                    One number (0-9)
+                  </p>
+                  <p className={passwordRequirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}>
+                    <i className={`fas ${passwordRequirements.hasSpecialChar ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
+                    One special character
                   </p>
                 </div>
               </div>
