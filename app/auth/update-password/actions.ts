@@ -18,7 +18,7 @@ function formatZodError(error: ZodError) {
 
 export async function updatePassword(formData: FormData): Promise<{ error?: string } | void> {
   const actionName = "updatePasswordViaRecovery";
-  const headersList = await headers(); // Correct: headers() is not async
+  const headersList = await headers();
   const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
   
   const logContext = { action: actionName, ip, source: "app/auth/update-password/actions.ts" };

@@ -19,7 +19,7 @@ function formatZodError(error: ZodError) {
 
 export async function login(formData: FormData): Promise<{ error?: string; } | void> {
   const actionName = "login";
-  const headersList = await headers(); // Corrected: Await headers()
+  const headersList = await headers(); // Ensure await is here
   const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
   const submittedEmail = formData.get('email') as string || 'N/A';
 

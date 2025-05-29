@@ -61,6 +61,15 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # Resend (for email)
 RESEND_API_KEY=your_resend_api_key
+
+# Application Base URL (IMPORTANT for auth redirects)
+# For local development, typically http://localhost:3000
+# For production, your actual production URL
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+
+# Google reCAPTCHA
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key_here
+RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key_here
 ```
 
 ### 4. Set up a publicly accessible URL

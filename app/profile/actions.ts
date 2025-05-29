@@ -19,7 +19,7 @@ function formatZodError(error: ZodError) {
 
 export async function updateProfile(formData: FormData): Promise<{ error?: string; success?: boolean, message?: string }> {
   const actionName = "updateProfile";
-  const headersList = await headers(); // Corrected: Add await back
+  const headersList = await headers(); // Ensure await is here
   const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
   let userIdForLog = "N/A_USER_AUTH_FAILED";
 
@@ -110,7 +110,7 @@ export async function updateProfile(formData: FormData): Promise<{ error?: strin
 
 export async function changeUserPasswordOnProfile(formData: FormData): Promise<{ error?: string; success?: boolean, message?: string }> {
   const actionName = "changeUserPasswordOnProfile";
-  const headersList = await headers(); // Corrected: Add await back
+  const headersList = await headers(); // Ensure await is here
   const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
   let userIdForLog = "N/A_USER_AUTH_FAILED";
   
