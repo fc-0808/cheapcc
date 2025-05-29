@@ -1,4 +1,6 @@
+// app/profile/page.tsx
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/supabase-client";
@@ -260,7 +262,7 @@ export default function ProfilePage() {
               <div className="password-input-wrapper">
                 <input
                   id="newPassword"
-                  name="newPassword" // Name attribute for FormData
+                  name="newPassword"
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => {
@@ -269,11 +271,11 @@ export default function ProfilePage() {
                   }}
                   required
                   placeholder="Enter new password"
-                  className={
+                  className={`password-input-field ${
                     newPasswordTouched && !isNewPasswordClientValid
                       ? "border-yellow-500 focus:border-yellow-500 bg-yellow-50"
                       : ""
-                  }
+                  }`}
                 />
                 <button
                   type="button"
@@ -313,7 +315,7 @@ export default function ProfilePage() {
               <div className="password-input-wrapper">
                 <input
                   id="confirmPassword"
-                  name="confirmPassword" // Name attribute for FormData
+                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => {
@@ -322,11 +324,11 @@ export default function ProfilePage() {
                   }}
                   required
                   placeholder="Confirm new password"
-                  className={
+                  className={`password-input-field ${
                     confirmPasswordTouched && !passwordsMatch
                       ? "border-red-500 focus:border-red-500 bg-red-50"
                       : ""
-                  }
+                  }`}
                 />
                 <button
                   type="button"

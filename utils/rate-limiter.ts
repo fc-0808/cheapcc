@@ -47,6 +47,12 @@ const passwordUpdateLimiter = new RateLimiterMemory({
   keyPrefix: 'rlflx_pw_update',
 });
 
+// Profile Update Limiter (e.g., 10 requests per 5 minutes per IP)
+const profileUpdateLimiter = new RateLimiterMemory({
+  points: 10,
+  duration: 5 * 60, // 5 minutes in seconds
+  keyPrefix: 'rlflx_profile_update',
+});
 
 // --- Generic Consume Function ---
 async function consumeRateLimit(
@@ -61,8 +67,13 @@ async function consumeRateLimit(
       const retryAfter = Math.ceil(rlRejected.msBeforeNext / 1000);
       return { limited: true, retryAfter };
     }
-    console.error('Unexpected rate limit rejection:', rlRejected);
-    return { limited: true, retryAfter: DEFAULT_RETRY_SECONDS }; // Fallback retryAfter
+    console.error(JSON.stringify({
+        message: "Unexpected rate limit rejection type or scenario.",
+        keyUsed: key, // Log the key that caused the issue
+        rejectionDetails: rlRejected, // Log the actual rejection object
+        source: "consumeRateLimit_internal_error"
+    }, null, 2));
+    return { limited: true, retryAfter: limiter.duration > 0 ? limiter.duration : DEFAULT_RETRY_SECONDS };
   }
 }
 
@@ -72,9 +83,10 @@ export async function checkRateLimit(
   req: NextRequest,
   limiterInstance: RateLimiterMemory
 ): Promise<{ limited: boolean; retryAfter?: number }> {
-  // Use req.headers.get('x-forwarded-for') first as it's common in proxy setups (like Vercel)
-  // Fallback to req.ip or a default.
-  const ip = req.headers.get('x-forwarded-for') ?? req.ip ?? '127.0.0.1';
+  // Prioritize x-forwarded-for as Vercel/ngrok would set this.
+  // req.ip might be undefined or the proxy's IP.
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 
+             '127.0.0.1'; // Ultimate fallback
   return consumeRateLimit(limiterInstance, ip);
 }
 
@@ -93,4 +105,5 @@ export const limiters = {
   signup: signupLimiter,
   passwordResetRequest: passwordResetRequestLimiter,
   passwordUpdate: passwordUpdateLimiter,
+  profileUpdate: profileUpdateLimiter,
 }; 

@@ -2903,21 +2903,56 @@ input:focus, select:focus, textarea:focus {
 /* Password input with toggle */
 .profile-form .password-input-wrapper {
   position: relative;
+  /* display: flex; /* Keep this if you like its effect on the input itself */
+  /* align-items: center; /* Keep this if you like its effect on the input itself */
 }
+
+/* Style the input field - ensure consistent padding, especially on the right for the button */
+.profile-form input[type="password"],
+.profile-form input[type="text"].password-input-field /* Add a class if you change type to text */ {
+  width: 100%;
+  padding: 0.8rem 2.5rem 0.8rem 1rem; /* Ensure enough padding-right for the button */
+  /* Your other input styles: border, border-radius, font-size, color, background-color, transition */
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--white);
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+  line-height: 1.5; /* Or your input's line-height */
+}
+
+/* Style the toggle button */
 .profile-form .password-toggle-btn {
   position: absolute;
-  top: 50%;
-  right: 0.8rem;
-  transform: translateY(-50%);
-  background: none;
+  top: 50%; /* Position the top of the button at the vertical midpoint of the wrapper */
+  right: 0.25rem; /* Adjust for desired spacing from the right edge */
+  transform: translateY(-50%); /* Shift the button up by half its own height */
+  
+  /* Button styling */
+  background: transparent;
   border: none;
-  color: var(--gray-400);
+  padding: 0.4rem; /* Minimal padding around the icon to make it clickable */
   cursor: pointer;
-  padding: 0.25rem;
-  font-size: 1.1rem;
+  color: var(--gray-400);
+  outline: none;
+  
+  /* For centering the icon *within* the button and controlling button height */
+  display: inline-flex; /* Important for shrink-to-fit behavior */
+  align-items: center;
+  justify-content: center;
+  line-height: 0; /* Crucial: Prevents the button from taking extra line height from the icon */
 }
+
 .profile-form .password-toggle-btn:hover {
   color: var(--primary);
+}
+
+/* Style the Font Awesome icon within the button */
+.profile-form .password-toggle-btn i.fas {
+  font-size: 1rem; /* Adjust icon size if needed. Your previous was 1.1rem, can revert if preferred */
+  display: block; /* Helps if the icon font has weird spacing */
+  /* line-height: 1; /* Typically not needed if parent has line-height: 0 and is flex centered */
 }
 
 /* Password requirements styling */
@@ -3217,4 +3252,76 @@ input:focus, select:focus, textarea:focus {
 /* Ensure FontAwesome icons are styled if not already globally */
 .faq-page .fas {
   line-height: inherit;
+}
+
+/* === Profile Page Password Input Specific Styles === */
+
+.profile-form .password-input-wrapper {
+  position: relative; /* Still useful for potential pseudo-elements or other positioned children if any */
+  display: flex;     /* Make the wrapper a flex container */
+  align-items: center; /* Vertically align children (input and button) */
+  border: 1px solid var(--gray-300); /* Move border to the wrapper */
+  border-radius: var(--radius-md);    /* Move radius to the wrapper */
+  background-color: var(--white);     /* Move background to the wrapper */
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+/* Apply focus styles to the wrapper when the input inside is focused */
+.profile-form .password-input-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+  outline: none;
+}
+
+/* Style the input field itself */
+.profile-form input[type="password"].password-input-field,
+.profile-form input[type="text"].password-input-field {
+  flex-grow: 1; /* Allow the input to take up available space */
+  width: auto;  /* Override previous width: 100% if set */
+  
+  /* Minimal padding, especially on the right as the button is now a sibling */
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+  padding-left: 1rem;
+  padding-right: 0.5rem; /* Reduce right padding */
+  
+  border: none; /* Remove individual border from input */
+  border-radius: 0; /* Remove individual radius from input */
+  background-color: transparent; /* Make input transparent to show wrapper's background */
+  
+  font-size: 1rem;
+  color: var(--text);
+  line-height: 1.5; 
+  box-sizing: border-box;
+  outline: none; /* Remove default focus outline, rely on wrapper's focus-within */
+}
+
+/* Style the toggle button for password visibility */
+.profile-form .password-toggle-btn {
+  /* Button is now a flex item, not absolutely positioned */
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  
+  flex-shrink: 0; /* Prevent the button from shrinking if input text is long */
+  
+  background: transparent;
+  border: none;
+  padding: 0 0.75rem; /* Adjust padding as needed, this is horizontal for click area */
+  /* The height of the button will be constrained by the wrapper's flex alignment */
+  
+  cursor: pointer;
+  color: var(--gray-400);
+  outline: none;
+  align-self: stretch; /* Make button take full height of the flex container (wrapper) */
+}
+
+.profile-form .password-toggle-btn:hover {
+  color: var(--primary);
+}
+
+/* Style the Font Awesome icon within the button */
+.profile-form .password-toggle-btn i.fas {
+  font-size: 1rem; 
+  /* Vertical alignment is handled by the button being a flex container itself and align-self: stretch */
 }
