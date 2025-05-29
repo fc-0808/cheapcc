@@ -2957,26 +2957,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Password requirements styling */
 .password-requirements-info {
-  margin-top: 0.75rem;
-  font-size: 0.85rem;
-}
-.password-requirements-info .heading {
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 0.35rem;
-}
-.password-requirements-info .requirement {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--text-muted);
-  margin-bottom: 0.2rem;
-}
-.password-requirements-info .requirement.met {
-  color: var(--success);
-}
-.password-requirements-info .requirement .icon {
-  font-size: 0.8rem;
+  margin-top: 0.75rem; /* Spacing for the entire block of requirements */
+  /* Tailwind 'space-y-0.5' on the div in JSX will handle spacing between individual items */
 }
 
 /* Buttons */

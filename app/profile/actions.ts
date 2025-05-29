@@ -44,53 +44,53 @@ export async function updateProfile(formData: FormData): Promise<{ error?: strin
       const errorMessage = `Too many profile update attempts. Please try again ${retryAfter ? `in ${retryAfter} seconds` : 'later'}.`;
       console.warn(JSON.stringify({ ...logContext, event: "rate_limit_exceeded", retryAfter }, null, 2));
       return { error: errorMessage };
-    }
+  }
 
-    const rawFormData = {
-      name: formData.get('name'),
-    };
+  const rawFormData = {
+    name: formData.get('name'),
+  };
 
-    const validationResult = UpdateProfileSchema.safeParse(rawFormData);
+  const validationResult = UpdateProfileSchema.safeParse(rawFormData);
 
-    if (!validationResult.success) {
+  if (!validationResult.success) {
       const errorMessage = formatZodError(validationResult.error);
       console.warn(JSON.stringify({
         ...logContext, event: "validation_failed", error: errorMessage,
         formDataName: rawFormData.name
       }, null, 2));
       return { error: errorMessage };
-    }
+  }
 
-    const { name } = validationResult.data;
+  const { name } = validationResult.data;
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({ name: name, updated_at: new Date().toISOString() })
-      .eq('id', user.id);
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ name: name, updated_at: new Date().toISOString() })
+    .eq('id', user.id);
 
-    if (profileError) {
+  if (profileError) {
       console.error(JSON.stringify({
         ...logContext, event: "supabase_profiles_update_error", name,
         dbError: profileError.message, dbErrorCode: profileError.code,
       }, null, 2));
       return { error: `Failed to update profile in database: ${profileError.message}` };
-    }
+  }
 
-    const { error: metadataError } = await supabase.auth.updateUser({
-      data: { name: name }
-    });
+  const { error: metadataError } = await supabase.auth.updateUser({
+    data: { name: name }
+  });
 
-    if (metadataError) {
+  if (metadataError) {
       console.warn(JSON.stringify({
         ...logContext, event: "supabase_auth_metadata_update_error", name,
         metadataError: metadataError.message,
       }, null, 2));
-    }
+  }
 
     console.info(JSON.stringify({ ...logContext, event: "profile_update_successful", newName: name }, null, 2));
-    revalidatePath('/profile');
+  revalidatePath('/profile');
     revalidatePath('/dashboard');
-    return { success: true, message: "Profile updated successfully!" };
+  return { success: true, message: "Profile updated successfully!" };
 
   } catch (error: any) {
      if (error.message === 'NEXT_REDIRECT' || (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))) {
@@ -135,39 +135,39 @@ export async function changeUserPasswordOnProfile(formData: FormData): Promise<{
       const errorMessage = `Too many password change attempts. Please try again ${retryAfter ? `in ${retryAfter} seconds` : 'later'}.`;
       console.warn(JSON.stringify({ ...logContext, event: "rate_limit_exceeded", retryAfter }, null, 2));
       return { error: errorMessage };
-    }
+  }
 
-    const rawFormData = {
-      newPassword: formData.get('newPassword'),
-      confirmPassword: formData.get('confirmPassword'),
-    };
+  const rawFormData = {
+    newPassword: formData.get('newPassword'),
+    confirmPassword: formData.get('confirmPassword'),
+  };
 
     const validationResult = ProfileUpdatePasswordSchema.safeParse(rawFormData);
 
-    if (!validationResult.success) {
+  if (!validationResult.success) {
       const errorMessage = formatZodError(validationResult.error);
       console.warn(JSON.stringify({
         ...logContext, event: "validation_failed", error: errorMessage,
       }, null, 2));
       return { error: errorMessage };
-    }
+  }
 
     const { newPassword } = validationResult.data;
 
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
 
-    if (updateError) {
+  if (updateError) {
       console.error(JSON.stringify({
         ...logContext, event: "supabase_auth_password_update_error",
         supabaseError: updateError.message, supabaseStatus: updateError.status,
       }, null, 2));
-      return { error: `Failed to change password: ${updateError.message}` };
-    }
+    return { error: `Failed to change password: ${updateError.message}` };
+  }
 
     console.info(JSON.stringify({ ...logContext, event: "profile_password_change_successful" }, null, 2));
-    revalidatePath('/profile');
+  revalidatePath('/profile');
     return { success: true, message: "Password changed successfully! Other active sessions have been signed out." };
 
   } catch (error: any) {
@@ -184,4 +184,4 @@ export async function changeUserPasswordOnProfile(formData: FormData): Promise<{
     }, null, 2));
     return { error: unexpectedErrorMessage };
   }
-}
+} 

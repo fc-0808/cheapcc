@@ -18,18 +18,13 @@ export default function ProfilePage() {
   const [passwordMessage, setPasswordMessage] = useState("");
   const [passwordMessageType, setPasswordMessageType] = useState<"success" | "error" | "warning" | "">("");
 
-  // Current password is not needed for supabase.auth.updateUser({password: newPassword})
-  // const [currentPassword, setCurrentPassword] = useState("");
+  // State for the new password form
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  // const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [newPasswordTouched, setNewPasswordTouched] = useState(false);
+  const [newPasswordTouched, setNewPasswordTouched] = useState(false); // To show requirements after first interaction
   const [confirmPasswordTouched, setConfirmPasswordTouched] = useState(false);
-  const passwordsMatch = newPassword === confirmPassword || !confirmPasswordTouched; // Simplified match logic
 
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
@@ -40,10 +35,12 @@ export default function ProfilePage() {
   });
 
   const isNewPasswordClientValid = Object.values(passwordRequirements).every((req) => req);
+  const passwordsMatch = newPassword === confirmPassword || !confirmPasswordTouched; // Used for confirm password validation
 
   const router = useRouter();
   const supabase = createClient();
 
+  // Effect to load user profile data
   useEffect(() => {
     async function loadProfile() {
       setIsLoading(true);
@@ -71,21 +68,18 @@ export default function ProfilePage() {
     loadProfile();
   }, [router, supabase]);
 
+  // CRITICAL: useEffect for password strength calculation
+  // This effect now ONLY depends on `newPassword`.
+  // It will recalculate `passwordRequirements` every time `newPassword` changes.
   useEffect(() => {
-    if (newPasswordTouched) {
-      setPasswordRequirements({
-        minLength: newPassword.length >= 8,
-        hasUppercase: /[A-Z]/.test(newPassword),
-        hasLowercase: /[a-z]/.test(newPassword),
-        hasNumber: /[0-9]/.test(newPassword),
-        hasSpecialChar: /[^a-zA-Z0-9]/.test(newPassword),
-      });
-    } else {
-      // Reset if password field is cleared
-      setPasswordRequirements({ minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecialChar: false });
-    }
-  }, [newPassword, newPasswordTouched]);
-
+    setPasswordRequirements({
+      minLength: newPassword.length >= 8,
+      hasUppercase: /[A-Z]/.test(newPassword),
+      hasLowercase: /[a-z]/.test(newPassword),
+      hasNumber: /[0-9]/.test(newPassword),
+      hasSpecialChar: /[^a-zA-Z0-9]/.test(newPassword),
+    });
+  }, [newPassword]); // Dependency array ONLY contains newPassword
 
   const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -99,7 +93,7 @@ export default function ProfilePage() {
     setProfileMessageType("");
 
     const formData = new FormData(e.currentTarget);
-    const result = await updateProfile(formData); // Call server action
+    const result = await updateProfile(formData);
 
     if (result.error) {
       setProfileMessage(result.error);
@@ -107,12 +101,11 @@ export default function ProfilePage() {
     } else if (result.success) {
       setProfileMessage(result.message || "Profile updated successfully!");
       setProfileMessageType("success");
-      // Optionally re-fetch profile or update name state if server action doesn't revalidate enough
     }
     setIsSubmittingProfile(false);
   };
 
-  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handlePasswordChangeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPasswordMessage("");
     setPasswordMessageType("");
@@ -135,12 +128,10 @@ export default function ProfilePage() {
 
     setIsSubmittingPassword(true);
     const formData = new FormData(e.currentTarget);
-    // currentPassword is not needed for this server action
-    // formData.append('currentPassword', currentPassword);
     formData.append('newPassword', newPassword);
     formData.append('confirmPassword', confirmPassword);
 
-    const result = await changeUserPasswordOnProfile(formData); // Call server action
+    const result = await changeUserPasswordOnProfile(formData);
 
     if (result.error) {
       setPasswordMessage(result.error);
@@ -148,23 +139,26 @@ export default function ProfilePage() {
     } else if (result.success) {
       setPasswordMessage(result.message || "Password changed successfully!");
       setPasswordMessageType("success");
-      // Clear password fields
-      // setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setNewPasswordTouched(false);
+      setNewPasswordTouched(false); // Reset for next time
       setConfirmPasswordTouched(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
+      // passwordRequirements will update automatically due to newPassword being ""
     }
     setIsSubmittingPassword(false);
   };
 
-  const PasswordRequirementItem: React.FC<{ met: boolean; text: string }> = ({ met, text }) => (
-    <p className={`requirement text-xs flex items-center gap-1.5 ${met ? "text-green-600" : "text-red-500"}`}>
-      <i className={`fas ${met ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> {text}
-    </p>
-  );
+  // onChange handler for the "New Password" input field
+  const handleNewPasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewPassword(e.target.value);
+    // Set touched to true on the first interaction so the requirements UI becomes visible.
+    // It will remain true for subsequent typing in the same session.
+    if (!newPasswordTouched) {
+      setNewPasswordTouched(true);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -188,20 +182,27 @@ export default function ProfilePage() {
           </h2>
           <form onSubmit={handleProfileUpdate} className="profile-form space-y-6">
             <div>
-              <label htmlFor="name">Full Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
               <input
                 id="name"
-                name="name" // Name attribute for FormData
+                name="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="Enter your full name"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
               />
             </div>
             <div>
-              <label htmlFor="email">Email Address</label>
-              <input id="email" type="email" value={email} disabled />
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <input 
+                id="email" 
+                type="email" 
+                value={email} 
+                disabled 
+                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+              />
               <p className="input-hint text-xs text-gray-500 mt-1">Email address cannot be changed here.</p>
             </div>
             {profileMessage && (
@@ -233,88 +234,58 @@ export default function ProfilePage() {
           <h2 className="profile-section-heading">
             <i className="fas fa-key icon"></i> Change Password
           </h2>
-          <form onSubmit={handlePasswordChange} className="profile-form space-y-6">
-            {/* Current Password field - Supabase doesn't require it for updateUser password change
+          <form onSubmit={handlePasswordChangeSubmit} className="profile-form space-y-6">
             <div>
-              <label htmlFor="currentPassword">Current Password</label>
-              <div className="password-input-wrapper">
+              <label htmlFor="newPasswordProfile" className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+              <div className="relative">
                 <input
-                  id="currentPassword"
-                  name="currentPassword"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                  placeholder="Enter your current password"
-                />
-                <button
-                  type="button"
-                  className="password-toggle-btn"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                >
-                  <i className={`fas ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
-                </button>
-              </div>
-            </div>
-            */}
-            <div>
-              <label htmlFor="newPassword">New Password</label>
-              <div className="password-input-wrapper">
-                <input
-                  id="newPassword"
+                  id="newPasswordProfile"
                   name="newPassword"
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
-                  onChange={(e) => {
-                    setNewPassword(e.target.value);
-                    setNewPasswordTouched(true);
-                  }}
+                  onChange={handleNewPasswordInputChange} // Use the dedicated handler
                   required
                   placeholder="Enter new password"
-                  className={`password-input-field ${
+                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${
                     newPasswordTouched && !isNewPasswordClientValid
-                      ? "border-yellow-500 focus:border-yellow-500 bg-yellow-50"
-                      : ""
+                      ? "border-yellow-500 bg-yellow-50 focus:border-yellow-500" // Keep custom validation styles
+                      : "border-gray-300 focus:border-[#ff3366]"
                   }`}
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
                   onClick={() => setShowNewPassword(!showNewPassword)}
                 >
                   <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
                 </button>
               </div>
+              {/* Direct rendering of password requirements, shown if newPasswordTouched is true */}
               {newPasswordTouched && (
                 <div className="password-requirements-info mt-2 space-y-0.5">
-                  <PasswordRequirementItem
-                    met={passwordRequirements.minLength}
-                    text="At least 8 characters"
-                  />
-                  <PasswordRequirementItem
-                    met={passwordRequirements.hasUppercase}
-                    text="One uppercase letter (A-Z)"
-                  />
-                  <PasswordRequirementItem
-                    met={passwordRequirements.hasLowercase}
-                    text="One lowercase letter (a-z)"
-                  />
-                   <PasswordRequirementItem
-                    met={passwordRequirements.hasNumber}
-                    text="One number (0-9)"
-                  />
-                   <PasswordRequirementItem
-                    met={passwordRequirements.hasSpecialChar}
-                    text="One special character"
-                  />
+                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.minLength ? "text-green-600" : "text-red-500"}`}>
+                    <i className={`fas ${passwordRequirements.minLength ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> At least 8 characters
+                  </p>
+                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasUppercase ? "text-green-600" : "text-red-500"}`}>
+                    <i className={`fas ${passwordRequirements.hasUppercase ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One uppercase letter (A-Z)
+                  </p>
+                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasLowercase ? "text-green-600" : "text-red-500"}`}>
+                    <i className={`fas ${passwordRequirements.hasLowercase ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One lowercase letter (a-z)
+                  </p>
+                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasNumber ? "text-green-600" : "text-red-500"}`}>
+                    <i className={`fas ${passwordRequirements.hasNumber ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One number (0-9)
+                  </p>
+                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasSpecialChar ? "text-green-600" : "text-red-500"}`}>
+                    <i className={`fas ${passwordRequirements.hasSpecialChar ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One special character
+                  </p>
                 </div>
               )}
             </div>
             <div>
-              <label htmlFor="confirmPassword">Confirm New Password</label>
-              <div className="password-input-wrapper">
+              <label htmlFor="confirmPasswordProfile" className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+              <div className="relative">
                 <input
-                  id="confirmPassword"
+                  id="confirmPasswordProfile"
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
@@ -324,15 +295,15 @@ export default function ProfilePage() {
                   }}
                   required
                   placeholder="Confirm new password"
-                  className={`password-input-field ${
+                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${
                     confirmPasswordTouched && !passwordsMatch
-                      ? "border-red-500 focus:border-red-500 bg-red-50"
-                      : ""
+                      ? "border-red-500 bg-red-50 focus:border-red-500" // Keep custom validation styles
+                      : "border-gray-300 focus:border-[#ff3366]"
                   }`}
                 />
                 <button
                   type="button"
-                  className="password-toggle-btn"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
@@ -350,7 +321,7 @@ export default function ProfilePage() {
                       ? "fa-check-circle"
                       : passwordMessageType === "warning"
                       ? "fa-exclamation-triangle"
-                      : "fa-times-circle" // Use times-circle for errors
+                      : "fa-times-circle"
                   } icon`}
                 ></i>
                 {passwordMessage}
@@ -362,7 +333,7 @@ export default function ProfilePage() {
                 className="btn-submit btn-change-password"
                 disabled={
                   isSubmittingPassword ||
-                  !newPassword || // Ensure new password is not empty
+                  !newPassword || // Basic check: newPassword should not be empty
                   (newPasswordTouched && (!isNewPasswordClientValid || !passwordsMatch))
                 }
               >

@@ -46,23 +46,25 @@ export default function RegisterPage() {
     }
   }, [password, confirmPassword, confirmPasswordTouched]);
 
-  // Validate password strength
+  // UPDATED useEffect for password strength calculation
   useEffect(() => {
-    if (passwordTouched) {
-      setPasswordRequirements({
-        minLength: password.length >= 8,
-        hasUppercase: /[A-Z]/.test(password),
-        hasLowercase: /[a-z]/.test(password),
-        hasNumber: /[0-9]/.test(password),
-        hasSpecialChar: /[^a-zA-Z0-9]/.test(password),
-      });
-    }
-  }, [password, passwordTouched]);
+    // Always calculate requirements based on the current password.
+    // The display of these requirements in JSX is controlled by passwordTouched.
+    setPasswordRequirements({
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[^a-zA-Z0-9]/.test(password),
+    });
+  }, [password]); // Only depends on password
 
   // Custom password input handler with validation
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
-    setPasswordTouched(true);
+    if (!passwordTouched) { // Ensure passwordTouched is set on first interaction
+        setPasswordTouched(true);
+    }
   };
 
   // Custom confirm password input handler with validation
@@ -185,7 +187,7 @@ export default function RegisterPage() {
                 name="password"
                 value={password}
                 onChange={handlePasswordChange}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${passwordTouched && !isPasswordValid ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200'}`}
+                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${passwordTouched && !isPasswordValid ? 'border-yellow-500 bg-yellow-50 focus:border-yellow-500' : 'border-gray-200 focus:border-[#ff3366]'}`}
                 required
               />
               <button 
@@ -240,7 +242,7 @@ export default function RegisterPage() {
                 name="confirmPassword"
                 value={confirmPassword}
                 onChange={handleConfirmPasswordChange}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${!passwordsMatch && confirmPasswordTouched ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}
+                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${!passwordsMatch && confirmPasswordTouched ? 'border-red-500 bg-red-50 focus:border-red-500' : 'border-gray-200 focus:border-[#ff3366]'}`}
                 required
               />
               <button 

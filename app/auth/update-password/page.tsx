@@ -19,6 +19,10 @@ export default function UpdatePasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSessionReady, setIsSessionReady] = useState(false); // To ensure user is in password recovery mode
 
+  // State for password visibility
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   // Password strength state (optional, for client-side UX)
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
@@ -130,17 +134,26 @@ export default function UpdatePasswordPage() {
         {isSessionReady || searchParams.get('error') ? ( // Show form if in recovery mode or if there's an error message from a redirect
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-[#2c2d5a] mb-1">New Password</label>
+              <label htmlFor="newPasswordAuthUpdate" className="block text-sm font-medium text-[#2c2d5a] mb-1">New Password</label>
+              <div className="relative">
               <input
-                id="newPassword"
-                name="newPassword" // Name attribute is important for FormData
-                type="password"
+                  id="newPasswordAuthUpdate"
+                  name="newPassword"
+                  type={showNewPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10"
                 required
                 placeholder="Enter new password"
               />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                </button>
+              </div>
             </div>
              {newPassword.length > 0 && ( // Show requirements only when user starts typing
                 <div className="mt-2 text-xs space-y-0.5 text-gray-600">
@@ -152,17 +165,26 @@ export default function UpdatePasswordPage() {
                 </div>
             )}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#2c2d5a] mb-1">Confirm New Password</label>
+              <label htmlFor="confirmPasswordAuthUpdate" className="block text-sm font-medium text-[#2c2d5a] mb-1">Confirm New Password</label>
+              <div className="relative">
               <input
-                id="confirmPassword"
-                name="confirmPassword" // Name attribute for FormData
-                type="password"
+                  id="confirmPasswordAuthUpdate"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10"
                 required
                 placeholder="Confirm new password"
               />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                </button>
+              </div>
             </div>
              {confirmPassword.length > 0 && newPassword !== confirmPassword && (
                 <p className="text-xs text-red-500">Passwords do not match.</p>
