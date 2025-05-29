@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import Script from "next/script";
-import { PRODUCT, PRICING_OPTIONS } from "@/utils/products";
-import { useSearchParams, useRouter } from 'next/navigation';
+import { PRICING_OPTIONS } from "@/utils/products";
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
 import type { Session } from '@supabase/supabase-js';
+import UrlMessageDisplay from "@/components/UrlMessageDisplay";
 
 // --- Testimonials Data ---
 const TESTIMONIALS = [
@@ -39,12 +40,9 @@ export default function Home() {
   const router = useRouter();
   const [selectedPrice, setSelectedPrice] = useState<string>('1m');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
-  const [orderID, setOrderID] = useState<string | null>(null);
   const [sdkReady, setSdkReady] = useState<boolean>(false);
-  const [sdkError, setSdkError] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
-  const [successMessage, setSuccessMessage] = useState<string>('');
   const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
   const [canPay, setCanPay] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -89,7 +87,7 @@ export default function Home() {
   const [faqVisible, setFaqVisible] = useState(false);
   const [testimonialsVisible, setTestimonialsVisible] = useState(false);
 
-  const searchParams = useSearchParams();
+  // Removed useSearchParams() call from here
 
   // Validate email format
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
@@ -152,7 +150,6 @@ export default function Home() {
             if (orderData.error) {
               throw new Error(orderData.error);
             }
-            setOrderID(orderData.id);
             return orderData.id;
           } catch (error: any) {
             console.error('Error in createOrder:', error);
@@ -203,9 +200,7 @@ export default function Home() {
   const handlePayPalLoad = () => {
     console.log('PayPal SDK loaded successfully');
     setSdkReady(true);
-    setSdkError(false);
     
-    // If auth is already checked and we should render, do it now
     if (isAuthChecked.current && shouldRenderPayPal.current) {
       console.log('Auth was already checked, rendering PayPal button immediately after SDK load');
       setTimeout(renderPayPalButton, 0);
@@ -214,7 +209,6 @@ export default function Home() {
 
   const handlePayPalError = () => {
     console.error('PayPal SDK failed to load');
-    setSdkError(true);
   };
   
   // Component initialization & cleanup effect
@@ -437,25 +431,13 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll);
   }, [benefitsVisible, pricingVisible, checkoutVisible, faqVisible, testimonialsVisible]);
 
-  useEffect(() => {
-    if (searchParams.get('success') === 'confirmed') {
-      setSuccessMessage('Successfully confirmed!');
-      window.history.replaceState({}, document.title, '/');
-      
-      // Auto-hide the message after 5 seconds
-      const timer = setTimeout(() => {
-        setSuccessMessage('');
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
+  // Removed the useEffect that depended on searchParams for successMessage
+  // as it's now in HomePageMessages.
 
   // Add this effect to show the popup when user scrolls to checkout
   useEffect(() => {
     if (checkoutVisible && !isUserSignedIn && !hasPopupBeenShown) {
       console.log('User scrolled to checkout section, showing login popup');
-      // Delay popup slightly for better UX (let the section render first)
       setTimeout(() => setShowLoginPopup(true), 500);
       setHasPopupBeenShown(true);
     }
@@ -506,15 +488,10 @@ export default function Home() {
         </div>
       )}
       
-      {/* Display success message if present */}
-      {successMessage && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-green-100 text-green-700 px-6 py-3 rounded-md shadow-lg">
-          <div className="flex items-center">
-            <i className="fas fa-check-circle mr-2" />
-            {successMessage}
-          </div>
-        </div>
-      )}
+      {/* Use Suspense to wrap the client component */}
+      <Suspense fallback={<div>Loading messages...</div>}>
+        <UrlMessageDisplay />
+      </Suspense>
 
       {/* Hero Section */}
       <section className="hero">

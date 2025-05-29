@@ -1,34 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { requestPasswordReset } from './actions'; // We'll create this action next
-import { useSearchParams } from 'next/navigation';
 import ReCAPTCHA from "react-google-recaptcha";
+import ForgotPasswordMessages from '@/components/ForgotPasswordMessages';
 
 export default function ForgotPasswordPage() {
-  const searchParams = useSearchParams();
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | '' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  useEffect(() => {
-    const error = searchParams.get('error');
-    const success = searchParams.get('success');
-
-    if (error) {
-      setMessage(decodeURIComponent(error));
-      setMessageType('error');
-      window.history.replaceState({}, document.title, '/forgot-password');
-    }
-    if (success) {
-      setMessage('If an account with that email exists, a password reset link has been sent.');
-      setMessageType('success');
-      window.history.replaceState({}, document.title, '/forgot-password');
-    }
-  }, [searchParams]);
+  // Local state for form submission feedback, distinct from URL param messages
+  const [formSubmissionMessage, setFormSubmissionMessage] = useState('');
+  const [formSubmissionMessageType, setFormSubmissionMessageType] = useState<'success' | 'error' | '' | null>(null);
 
   const handleRecaptchaChange = (token: string | null) => {
     setRecaptchaToken(token);
@@ -37,21 +22,21 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!recaptchaToken) {
-      setMessage("Please complete the reCAPTCHA.");
-      setMessageType('error');
+      setFormSubmissionMessage("Please complete the reCAPTCHA.");
+      setFormSubmissionMessageType('error');
       return;
     }
     setIsLoading(true);
-    setMessage('');
-    setMessageType(null);
+    setFormSubmissionMessage('');
+    setFormSubmissionMessageType(null);
 
     const formData = new FormData(event.currentTarget);
     formData.append('g-recaptcha-response', recaptchaToken);
     const result = await requestPasswordReset(formData);
 
     if (result?.error) {
-      setMessage(result.error);
-      setMessageType('error');
+      setFormSubmissionMessage(result.error);
+      setFormSubmissionMessageType('error');
     }
     setIsLoading(false);
     recaptchaRef.current?.reset();
@@ -69,12 +54,18 @@ export default function ForgotPasswordPage() {
           Enter your email address and we&apos;ll send you a link to reset your password.
         </p>
 
-        {message && (
+        {/* Component for messages from URL parameters */}
+        <Suspense fallback={<div className="mb-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading...</div>}>
+          <ForgotPasswordMessages />
+        </Suspense>
+
+        {/* For direct form submission feedback */}
+        {formSubmissionMessage && (
           <div className={`mb-4 p-3 rounded-md text-sm font-medium ${
-            messageType === 'success' ? 'bg-green-100 text-green-700' :
-            messageType === 'error' ? 'bg-red-100 text-red-700' : ''
+            formSubmissionMessageType === 'success' ? 'bg-green-100 text-green-700' :
+            formSubmissionMessageType === 'error' ? 'bg-red-100 text-red-700' : ''
           }`}>
-            {message}
+            {formSubmissionMessage}
           </div>
         )}
 

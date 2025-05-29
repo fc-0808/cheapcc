@@ -2,12 +2,11 @@
 
 import Link from 'next/link';
 import { signup } from './actions';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import ReCAPTCHA from "react-google-recaptcha";
+import RegisterPageURLMessages from '@/components/RegisterPageURLMessages';
 
 export default function RegisterPage() {
-  const searchParams = useSearchParams();
   const [errorMessage, setErrorMessage] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,14 +29,6 @@ export default function RegisterPage() {
 
   // Calculate overall password validity
   const isPasswordValid = Object.values(passwordRequirements).every(req => req);
-
-  useEffect(() => {
-    const error = searchParams.get('error');
-    if (error) {
-      setErrorMessage(decodeURIComponent(error));
-      window.history.replaceState({}, document.title, '/register');
-    }
-  }, [searchParams]);
 
   // Check if passwords match whenever either password changes
   useEffect(() => {
@@ -129,6 +120,12 @@ export default function RegisterPage() {
           </p>
         </div>
 
+        {/* Component to display messages from URL parameters */}
+        <Suspense fallback={<div className="mb-4 p-3 rounded-md text-sm font-medium bg-gray-100">Loading messages...</div>}>
+          <RegisterPageURLMessages />
+        </Suspense>
+
+        {/* Display client-side validation error messages */}
         {errorMessage && (
           <div className="mb-4 p-3 rounded-md text-sm font-medium bg-red-100 text-red-700">
             {errorMessage}

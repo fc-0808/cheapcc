@@ -1,45 +1,17 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { login } from './actions';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import LoginPageURLMessages from '@/components/LoginPageURLMessages';
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | 'info' | ''>('');
+  const [formMessage, setFormMessage] = useState('');
+  const [formMessageType, setFormMessageType] = useState<'success' | 'error' | 'info' | ''>('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const errorParam = searchParams.get('error');
-    const successParam = searchParams.get('success');
-    const infoParam = searchParams.get('info');
-
-    if (errorParam) {
-      setMessage(decodeURIComponent(errorParam));
-      setMessageType('error');
-      window.history.replaceState({}, document.title, '/login');
-    } else if (successParam) {
-      if (successParam === 'register') {
-        setMessage('Registration successful! Please check your email to confirm your account.');
-      } else if (successParam === 'password_reset') {
-        setMessage('Your password has been reset successfully. Please log in.');
-      } else {
-         setMessage('Operation successful.');
-      }
-      setMessageType('success');
-      window.history.replaceState({}, document.title, '/login');
-    } else if (infoParam) {
-      if (infoParam === 'reset_link_sent') {
-         setMessage('If an account exists for this email, a password reset link has been sent.');
-         setMessageType('info');
-      }
-      window.history.replaceState({}, document.title, '/login');
-    }
-  }, [searchParams]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -48,8 +20,8 @@ export default function LoginPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
      event.preventDefault();
      setIsLoading(true);
-     setMessage('');
-     setMessageType('');
+     setFormMessage('');
+     setFormMessageType('');
 
      const formData = new FormData(event.currentTarget);
      const result = await login(formData);
@@ -57,8 +29,8 @@ export default function LoginPage() {
      setIsLoading(false);
 
      if (result?.error) {
-         setMessage(result.error);
-         setMessageType('error');
+         setFormMessage(result.error);
+         setFormMessageType('error');
      }
   };
 
@@ -71,13 +43,17 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-[#2c2d5a] mb-2 text-center">Sign in to your account</h1>
         <p className="text-gray-500 text-center mb-6 text-sm">Welcome back! Please enter your details.</p>
         
-        {message && (
+        <Suspense fallback={<div className="mb-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading messages...</div>}>
+          <LoginPageURLMessages />
+        </Suspense>
+        
+        {formMessage && (
           <div className={`mb-4 p-3 rounded-md text-sm font-medium ${
-            messageType === 'success' ? 'bg-green-100 text-green-700' :
-            messageType === 'error' ? 'bg-red-100 text-red-700' :
-            messageType === 'info' ? 'bg-blue-100 text-blue-700' : ''
+            formMessageType === 'success' ? 'bg-green-100 text-green-700' :
+            formMessageType === 'error' ? 'bg-red-100 text-red-700' :
+            formMessageType === 'info' ? 'bg-blue-100 text-blue-700' : ''
           }`}>
-            {message}
+            {formMessage}
           </div>
         )}
         

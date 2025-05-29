@@ -1,21 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
 import { updatePassword } from './actions'; // Server action
 import Link from 'next/link';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import UpdatePasswordMessages from '@/components/UpdatePasswordMessages';
 
 export default function UpdatePasswordPage() {
   const supabase = createClient();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | '' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSessionReady, setIsSessionReady] = useState(false); // Controls form display
 
@@ -33,27 +31,6 @@ export default function UpdatePasswordPage() {
   });
   const isNewPasswordClientValid = Object.values(passwordRequirements).every(req => req);
 
-  // Effect for handling messages from URL parameters (e.g., after server action redirects)
-  useEffect(() => {
-    const errorParam = searchParams.get('error');
-    const successParam = searchParams.get('success');
-
-    if (errorParam) {
-      setMessage(decodeURIComponent(errorParam));
-      setMessageType('error');
-      // Clean the URL to prevent re-processing these params
-      window.history.replaceState({}, document.title, '/auth/update-password'); // Use fixed path
-    } else if (successParam === 'password_reset_successful_redirect_from_action') {
-      setMessage('Password updated successfully! You can now log in.');
-      setMessageType('success');
-      window.history.replaceState({}, document.title, '/auth/update-password'); // Use fixed path
-      const timer = setTimeout(() => {
-        router.push('/login?success=password_reset');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams, router]); // router.pathname is not needed if just clearing params for current page
-
   // Effect for Supabase auth state changes, including PASSWORD_RECOVERY event
   useEffect(() => {
     const handleAuthStateChange = (event: AuthChangeEvent, session: Session | null) => {
@@ -61,13 +38,8 @@ export default function UpdatePasswordPage() {
       if (event === 'PASSWORD_RECOVERY') {
         console.log('PASSWORD_RECOVERY event received. Setting isSessionReady to true.');
         setIsSessionReady(true);
-        // Set a helpful message if no error/other success message is already displayed
-        if (!messageType && !searchParams.get('error')) { // Check messageType and avoid overriding URL error
-          setMessage('You can now set your new password.');
-          setMessageType('success');
-        }
-      } else if (event === 'INITIAL_SESSION' && !session && !searchParams.get('error')) {
-          console.log('UpdatePasswordPage: Initial session is null, no error in URL. Awaiting PASSWORD_RECOVERY or link might be invalid.');
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        console.log('UpdatePasswordPage: Initial session is null, no error in URL. Awaiting PASSWORD_RECOVERY or link might be invalid.');
       }
     };
 
@@ -87,10 +59,7 @@ export default function UpdatePasswordPage() {
       console.log('UpdatePasswordPage: Unsubscribing from auth state changes.');
       authListener.subscription.unsubscribe();
     };
-    // Dependencies:
-    // - supabase: Stable client instance.
-    // - messageType, searchParams: To make informed decisions about setting messages.
-  }, [supabase, messageType, searchParams]);
+  }, [supabase]);
 
   // Client-side password validation for UX
   useEffect(() => {
@@ -106,18 +75,12 @@ export default function UpdatePasswordPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
-    setMessage('');
-    setMessageType(null);
 
     if (newPassword !== confirmPassword) {
-      setMessage('Passwords do not match.');
-      setMessageType('error');
       setIsLoading(false);
       return;
     }
     if (!isNewPasswordClientValid) {
-        setMessage('New password does not meet all requirements.');
-        setMessageType('error');
         setIsLoading(false);
         return;
     }
@@ -137,16 +100,12 @@ export default function UpdatePasswordPage() {
         </a>
         <h1 className="text-2xl font-bold text-[#2c2d5a] mb-2 text-center">Set Your New Password</h1>
 
-        {message && messageType && (
-          <div className={`my-4 p-3 rounded-md text-sm font-medium ${
-            messageType === 'success' ? 'bg-green-100 text-green-700' :
-            messageType === 'error' ? 'bg-red-100 text-red-700' : ''
-          }`}>
-            {message}
-          </div>
-        )}
+        {/* Component for messages from URL parameters */}
+        <Suspense fallback={<div className="my-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading messages...</div>}>
+          <UpdatePasswordMessages />
+        </Suspense>
 
-        {isSessionReady || searchParams.get('error') ? (
+        {isSessionReady ? (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="newPasswordAuthUpdate" className="block text-sm font-medium text-[#2c2d5a] mb-1">New Password</label>
@@ -217,7 +176,7 @@ export default function UpdatePasswordPage() {
             </div>
           </form>
         ) : (
-           !messageType && <p className="text-center text-gray-500 py-4">Verifying reset link or session...</p>
+           <p className="text-center text-gray-500 py-4">Verifying reset link or session...</p>
         )}
          <div className="text-center mt-6 text-sm text-gray-500">
             Back to{' '}
