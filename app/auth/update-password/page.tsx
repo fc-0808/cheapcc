@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
-import { updatePassword } from './actions'; // Server action
+import { updatePassword } from './actions';
 import Link from 'next/link';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import UpdatePasswordMessages from '@/components/UpdatePasswordMessages';
@@ -15,15 +15,13 @@ export default function UpdatePasswordPage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSessionReady, setIsSessionReady] = useState(false); // Controls form display
+  
+  const [verificationStatus, setVerificationStatus] = useState<'verifying' | 'ready' | 'error' | 'info'>('verifying');
   const [pageMessage, setPageMessage] = useState<string | null>(null);
-  const [pageMessageType, setPageMessageType] = useState<'error' | 'info' | null>(null);
 
-  // State for password visibility
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Password strength state (optional, for client-side UX)
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
     hasUppercase: false,
@@ -33,70 +31,63 @@ export default function UpdatePasswordPage() {
   });
   const isNewPasswordClientValid = Object.values(passwordRequirements).every(req => req);
 
-  // Effect for Supabase auth state changes, including PASSWORD_RECOVERY event
   useEffect(() => {
     let mounted = true;
-    let verifTimeoutId: NodeJS.Timeout | null = null;
+    let verificationTimeoutId: NodeJS.Timeout | null = null;
     console.log('UpdatePasswordPage: useEffect for auth state change mounted.');
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!mounted) return;
-      console.log(`UpdatePasswordPage: Auth event: ${event}`, session ? `Session User ID: ${session.user?.id?.substring(0,5)}` : 'No session');
+      console.log(`UpdatePasswordPage: Auth event: ${event}`, session ? `User ID: ${session.user?.id?.substring(0,5)}` : 'No session');
 
       if (event === "PASSWORD_RECOVERY") {
-        console.log("UpdatePasswordPage: PASSWORD_RECOVERY event received. Session is active for password update.");
-        if (verifTimeoutId) clearTimeout(verifTimeoutId);
+        console.log("UpdatePasswordPage: PASSWORD_RECOVERY event. Ready to update password.");
+        if (verificationTimeoutId) clearTimeout(verificationTimeoutId);
+        setVerificationStatus('ready');
         setPageMessage(null);
-        setPageMessageType(null);
-        setIsSessionReady(true);
-      } else if (event === "INITIAL_SESSION" && !session) {
-         // This might happen if the link is bad or already used.
-         // The fragment check below will set an error earlier if no fragment.
-         console.log("UpdatePasswordPage: INITIAL_SESSION with no session. Waiting for fragment processing or timeout.");
-      } else if (event === "SIGNED_IN" && session && typeof window !== 'undefined' && !window.location.hash.includes('type=recovery')) {
-        // This means user is already signed in normally, not via recovery.
-        // This page is not for normally signed-in users to change password (that's on /profile)
-        console.log("UpdatePasswordPage: User is already signed in (not recovery). Showing info message.");
+      } else if (event === "SIGNED_IN" && session && verificationStatus !== 'ready') {
+        // This case handles if a user is already fully signed in and navigates here.
+        console.log("UpdatePasswordPage: User is SIGNED_IN (not via PASSWORD_RECOVERY for this page).");
+        setVerificationStatus('info');
         setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
-        setPageMessageType("info");
-        setIsSessionReady(false); // Form should not be shown
-        if (verifTimeoutId) clearTimeout(verifTimeoutId); // Clear timeout if user is already signed in
+      } else if ((event === "INITIAL_SESSION" && !session) || event === "SIGNED_OUT") {
+        if (verificationStatus === 'verifying' && typeof window !== 'undefined' && !window.location.hash.includes('type=recovery')) {
+            // Only set error if still verifying and no recovery hash (e.g. direct navigation)
+            console.log("UpdatePasswordPage: Initial session is null or signed out, and no recovery hash present.");
+            setVerificationStatus('error');
+            setPageMessage("Invalid or expired password reset link. Please request a new one if needed.");
+        }
       }
-      // Other events like SIGNED_OUT or TOKEN_REFRESHED might occur, but they don't necessarily
-      // mean the recovery flow failed unless they happen *instead* of PASSWORD_RECOVERY
-      // when a recovery token is expected. The timeout helps catch cases where PASSWORD_RECOVERY is missed.
     });
-
-    // Check for fragment immediately. Supabase client also does this, but this provides quicker UI feedback.
-    // The PASSWORD_RECOVERY event is the ultimate confirmation.
-    if (typeof window !== 'undefined') {
-      if (!window.location.hash.includes('type=recovery') || !window.location.hash.includes('access_token')) {
-        console.warn("UpdatePasswordPage: No valid recovery fragment in URL on mount. Link may be invalid or already used.");
-        setPageMessage("Invalid or expired password reset link. Please request a new one if needed.");
-        setPageMessageType("error");
-        setIsSessionReady(false); // Form should not be shown
-      } else {
-        // Fragment exists, set a timeout to display an error if PASSWORD_RECOVERY event isn't received.
-        verifTimeoutId = setTimeout(() => {
-          if (mounted && !isSessionReady) {
-            console.warn("UpdatePasswordPage: Timeout reached, PASSWORD_RECOVERY event not detected despite fragment. Possible issue with token or Supabase client processing.");
-            setPageMessage("Failed to verify password reset link. It might be expired, already used, or there was an issue processing it. Please try requesting a reset again.");
-            setPageMessageType("error");
-            // isSessionReady remains false
-          }
-        }, 7000); // 7 seconds timeout
-      }
+    
+    // Initial check when component mounts
+    if (typeof window !== 'undefined' && verificationStatus === 'verifying') {
+        if (window.location.hash.includes('type=recovery') && window.location.hash.includes('access_token')) {
+            // Valid fragment structure found, Supabase client will process it. Wait for PASSWORD_RECOVERY event.
+            console.log("UpdatePasswordPage: Recovery fragment found in URL. Waiting for Supabase client processing.");
+            verificationTimeoutId = setTimeout(() => {
+                if (mounted && verificationStatus === 'verifying') {
+                    console.warn("UpdatePasswordPage: Timeout waiting for PASSWORD_RECOVERY event. Link might be invalid/expired or client processing issue.");
+                    setVerificationStatus('error');
+                    setPageMessage("Could not verify the password reset link. It may be invalid, expired, or already used. Please request a new one.");
+                }
+            }, 8000); // 8 seconds timeout
+        } else {
+            // No valid recovery fragment found on mount.
+            console.log("UpdatePasswordPage: No valid recovery fragment in URL on mount. Invalid access.");
+            setVerificationStatus('error');
+            setPageMessage("Invalid password reset link. Please use the link from your email or request a new reset.");
+        }
     }
 
     return () => {
       mounted = false;
-      if (verifTimeoutId) clearTimeout(verifTimeoutId);
-      console.log('UpdatePasswordPage: Unsubscribing from auth state changes.');
-      authListener.subscription.unsubscribe();
+      if (verificationTimeoutId) clearTimeout(verificationTimeoutId);
+      authListener?.subscription?.unsubscribe();
+      console.log('UpdatePasswordPage: Unsubscribed from auth state changes.');
     };
-  }, [supabase]); // Only supabase as dependency
+  }, [supabase, verificationStatus]); // React to changes in verificationStatus to manage timeouts correctly.
 
-  // Client-side password validation for UX
   useEffect(() => {
     setPasswordRequirements({
       minLength: newPassword.length >= 8,
@@ -109,39 +100,37 @@ export default function UpdatePasswordPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    setPageMessage(null); // Clear previous messages
-    setPageMessageType(null);
+    
+    // Clear previous client-side messages
+    setPageMessage(null); 
 
     if (newPassword !== confirmPassword) {
-      setPageMessage("Passwords do not match.");
-      setPageMessageType("error");
+      setPageMessage("Passwords do not match."); // Show client-side error
+      // setPageMessageType("error"); // If you had a separate type state
       return;
     }
     if (!isNewPasswordClientValid) {
-      setPageMessage("Password does not meet all requirements.");
-      setPageMessageType("error");
+      setPageMessage("Password does not meet all requirements."); // Show client-side error
+      // setPageMessageType("error");
       return;
     }
-
+    
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
-    // Server action `updatePassword` will handle actual submission and redirects.
-    // Errors from it will appear as URL parameters, handled by UpdatePasswordMessages.
-    // Client-side errors are handled by pageMessage.
-    try {
-        await updatePassword(formData);
-        // If updatePassword does not redirect (e.g. returns an error object - though current one redirects),
-        // then we'd handle its return value here.
-        // For now, we assume it redirects on success/error.
-    } catch (e) {
-        // This catch is for client-side errors during the call, less likely.
-        console.error("Client-side error calling updatePassword action:", e);
-        setPageMessage("An unexpected client-side error occurred.");
-        setPageMessageType("error");
-    } finally {
-        setIsLoading(false); // Ensure loading state is reset if catch is hit or if server action didn't redirect (unlikely)
-    }
+    
+    // The server action will handle redirects or return an error that populates URL params.
+    // If it were to return an error object directly to the client:
+    // const result = await updatePassword(formData);
+    // if (result?.error) {
+    //   setPageMessage(result.error);
+    //   setPageMessageType("error");
+    //   setIsLoading(false);
+    // }
+    // However, the current action redirects.
+    await updatePassword(formData);
+
+    // If action redirects, this might not be reached or component unmounts.
+    // setIsLoading(false); 
   };
 
   return (
@@ -153,105 +142,109 @@ export default function UpdatePasswordPage() {
         <h1 className="text-2xl font-bold text-[#2c2d5a] mb-2 text-center">Set Your New Password</h1>
 
         {/* Component for messages from URL parameters */}
-        <Suspense fallback={<div className="my-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading messages...</div>}>
-          <UpdatePasswordMessages />
+        <Suspense fallback={<div className="my-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading...</div>}>
+          <UpdatePasswordMessages /> {/* Handles messages from URL params if server action redirects back here with error */}
         </Suspense>
 
-        {/* For client-side messages */}
-        {pageMessage && (
+        {pageMessage && verificationStatus !== 'ready' && (
           <div className={`my-4 p-3 rounded-md text-sm font-medium ${
-            pageMessageType === 'error' ? 'bg-red-100 text-red-700' :
-            pageMessageType === 'info' ? 'bg-blue-100 text-blue-700' : ''
+            verificationStatus === 'error' ? 'bg-red-100 text-red-700' :
+            verificationStatus === 'info' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
           }`}>
             {pageMessage}
           </div>
         )}
 
-        {isSessionReady && !pageMessage && ( // Only show form if session is ready AND no overriding page error
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label htmlFor="newPasswordAuthUpdate" className="block text-sm font-medium text-[#2c2d5a] mb-1">New Password</label>
-              <div className="relative">
-                <input
-                  id="newPasswordAuthUpdate"
-                  name="newPassword"
-                  type={showNewPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10"
-                  required
-                  placeholder="Enter new password"
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  aria-label={showNewPassword ? "Hide new password" : "Show new password"}
-                  disabled={isLoading}
-                >
-                  <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
-                </button>
-              </div>
-            </div>
-            {newPassword.length > 0 && (
-              <div className="mt-2 text-xs space-y-0.5 text-gray-600">
-                <p className={passwordRequirements.minLength ? 'text-green-600' : 'text-red-500'}>• At least 8 characters</p>
-                <p className={passwordRequirements.hasUppercase ? 'text-green-600' : 'text-red-500'}>• At least one uppercase letter</p>
-                <p className={passwordRequirements.hasLowercase ? 'text-green-600' : 'text-red-500'}>• At least one lowercase letter</p>
-                <p className={passwordRequirements.hasNumber ? 'text-green-600' : 'text-red-500'}>• At least one number</p>
-                <p className={passwordRequirements.hasSpecialChar ? 'text-green-600' : 'text-red-500'}>• At least one special character</p>
+        {verificationStatus === 'ready' ? (
+          <>
+            {pageMessage && ( /* For client-side validation errors from handleSubmit */
+              <div className="my-4 p-3 rounded-md text-sm font-medium bg-red-100 text-red-700">
+                {pageMessage}
               </div>
             )}
-            <div>
-              <label htmlFor="confirmPasswordAuthUpdate" className="block text-sm font-medium text-[#2c2d5a] mb-1">Confirm New Password</label>
-              <div className="relative">
-                <input
-                  id="confirmPasswordAuthUpdate"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10"
-                  required
-                  placeholder="Confirm new password"
-                  disabled={isLoading}
-                />
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="newPasswordAuthUpdate" className="block text-sm font-medium text-[#2c2d5a] mb-1">New Password</label>
+                <div className="relative">
+                  <input
+                    id="newPasswordAuthUpdate"
+                    name="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10"
+                    required
+                    placeholder="Enter new password"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                    disabled={isLoading}
+                  >
+                    <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  </button>
+                </div>
+              </div>
+              {newPassword.length > 0 && (
+                  <div className="mt-2 text-xs space-y-0.5 text-gray-600">
+                      <p className={passwordRequirements.minLength ? 'text-green-600' : 'text-red-500'}>• At least 8 characters</p>
+                      <p className={passwordRequirements.hasUppercase ? 'text-green-600' : 'text-red-500'}>• At least one uppercase letter</p>
+                      <p className={passwordRequirements.hasLowercase ? 'text-green-600' : 'text-red-500'}>• At least one lowercase letter</p>
+                      <p className={passwordRequirements.hasNumber ? 'text-green-600' : 'text-red-500'}>• At least one number</p>
+                      <p className={passwordRequirements.hasSpecialChar ? 'text-green-600' : 'text-red-500'}>• At least one special character</p>
+                  </div>
+              )}
+              <div>
+                <label htmlFor="confirmPasswordAuthUpdate" className="block text-sm font-medium text-[#2c2d5a] mb-1">Confirm New Password</label>
+                <div className="relative">
+                  <input
+                    id="confirmPasswordAuthUpdate"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10"
+                    required
+                    placeholder="Confirm new password"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show new password"}
+                    disabled={isLoading}
+                  >
+                    <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  </button>
+                </div>
+              </div>
+              {confirmPassword.length > 0 && newPassword.length > 0 && newPassword !== confirmPassword && (
+                  <p className="text-xs text-red-500 -mt-3">Passwords do not match.</p> 
+              )}
+              <div>
                 <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show new password"}
-                  disabled={isLoading}
+                  type="submit"
+                  disabled={isLoading || !isNewPasswordClientValid || (newPassword.length > 0 && newPassword !== confirmPassword) }
+                  className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer disabled:opacity-50"
                 >
-                  <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  {isLoading ? 'Updating...' : 'Update Password'}
                 </button>
               </div>
-            </div>
-            {newPassword.length > 0 && confirmPassword.length > 0 && newPassword !== confirmPassword && (
-              <p className="text-xs text-red-500 -mt-3">Passwords do not match.</p>
-            )}
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading || !isNewPasswordClientValid || (newPassword.length > 0 && newPassword !== confirmPassword) }
-                className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer disabled:opacity-50"
-              >
-                {isLoading ? 'Updating...' : 'Update Password'}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {!isSessionReady && !pageMessage && ( // Show verifying message only if no error has been set yet and session isn't ready
-           <p className="text-center text-gray-500 py-4">Verifying reset link or session...</p>
-        )}
-
+            </form>
+          </>
+        ) : verificationStatus === 'verifying' && !pageMessage ? (
+          <p className="text-center text-gray-500 py-4">Verifying reset link or session...</p>
+        ) : null }
+        
         <div className="text-center mt-6 text-sm text-gray-500">
-          Back to{' '}
-          <Link href="/login" className="text-[#ff3366] hover:underline font-medium">
-              Log In
-          </Link>
+            Back to{' '}
+            <Link href="/login" className="text-[#ff3366] hover:underline font-medium">
+                Log In
+            </Link>
         </div>
       </div>
     </main>

@@ -67,12 +67,11 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
     }, null, 2));
     
     await supabase.auth.signOut();
-    console.info(JSON.stringify({ ...logContext, event: "recovery_session_signed_out" }, null, 2));
+    console.info(JSON.stringify({ ...logContext, event: "recovery_session_cleared_after_password_update" }, null, 2));
     
     redirect('/login?success=password_reset');
 
   } catch (error: any) {
-    // **** THIS IS THE CRITICAL CORRECTED CATCH BLOCK ****
     if (error.message === 'NEXT_REDIRECT' || (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))) {
       console.info(JSON.stringify({ ...logContext, event: "intentional_redirect_caught", redirectType: error.message, digest: error.digest }, null, 2));
       throw error;
