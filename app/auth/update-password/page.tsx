@@ -31,79 +31,104 @@ export default function UpdatePasswordPage() {
   });
   const isNewPasswordClientValid = Object.values(passwordRequirements).every(req => req);
 
-  // Ref to track if PASSWORD_RECOVERY event has been received
   const isInRecoveryModeRef = useRef(false);
+  const hasCheckedInitialFragmentRef = useRef(false); // To ensure initial fragment check runs once
 
   useEffect(() => {
     let mounted = true;
     let verificationTimeoutId: NodeJS.Timeout | null = null;
-    console.log('UpdatePasswordPage: useEffect for auth state change mounted.');
+
+    console.log('UpdatePasswordPage: useEffect for auth handling mounted/updated.');
+
+    const processRecoveryAttempt = () => {
+      if (typeof window !== 'undefined' && window.location.hash.includes('type=recovery') && window.location.hash.includes('access_token')) {
+        console.log("UpdatePasswordPage: Recovery fragment detected. Actively waiting for PASSWORD_RECOVERY event.");
+        verificationTimeoutId = setTimeout(() => {
+          if (mounted && !isInRecoveryModeRef.current && verificationStatus === 'verifying') {
+            console.warn("UpdatePasswordPage: Timeout waiting for PASSWORD_RECOVERY. Link might be invalid/expired.");
+            setVerificationStatus('error');
+            setPageMessage("Could not verify the password reset link. It may be invalid, expired, or already used. Please request a new one.");
+          }
+        }, 8000);
+      } else {
+        console.log("UpdatePasswordPage: No recovery fragment. Checking for existing session for non-recovery access.");
+        supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+          if (!mounted) return;
+          if (session && !isInRecoveryModeRef.current) { // Check isInRecoveryModeRef here too
+            console.log("UpdatePasswordPage: No recovery fragment, but an active session exists. Showing info message.");
+            setVerificationStatus('info');
+            setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
+          } else if (!session) {
+            console.log("UpdatePasswordPage: No recovery fragment and no active session. Invalid access.");
+            setVerificationStatus('error');
+            setPageMessage("Invalid password reset link. Please use the link from your email or request a new reset.");
+          }
+        });
+      }
+    };
+
+    if (!hasCheckedInitialFragmentRef.current && verificationStatus === 'verifying') {
+      processRecoveryAttempt();
+      hasCheckedInitialFragmentRef.current = true;
+    }
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!mounted) return;
-      console.log(`UpdatePasswordPage: Auth event: ${event}`, session ? `User ID: ${session.user?.id?.substring(0,5)}` : 'No session');
+      console.log(`UpdatePasswordPage: Auth event: ${event}`, session ? `User ID: ${session.user?.id?.substring(0,5)}` : 'No session', `Current isInRecoveryMode: ${isInRecoveryModeRef.current}`);
 
       if (event === "PASSWORD_RECOVERY") {
-        console.log("UpdatePasswordPage: PASSWORD_RECOVERY event. Ready to update password.");
-        isInRecoveryModeRef.current = true; // Set recovery mode flag
+        console.log("UpdatePasswordPage: PASSWORD_RECOVERY event received. Setting to ready.");
+        isInRecoveryModeRef.current = true;
         if (verificationTimeoutId) clearTimeout(verificationTimeoutId);
         setVerificationStatus('ready');
         setPageMessage(null);
       } else if (event === "SIGNED_IN" && session) {
-        // Only show "already logged in" info if NOT in recovery mode.
-        if (!isInRecoveryModeRef.current && verificationStatus !== 'ready') {
-            // Check if this SIGNED_IN event is unrelated to a recovery flow (e.g., user navigated here while already logged in)
-            // The recovery hash check is an additional safeguard if `isInRecoveryModeRef` somehow isn't set yet but fragment exists.
-            // However, `PASSWORD_RECOVERY` should ideally set `isInRecoveryModeRef` first.
-             if (typeof window !== 'undefined' && !window.location.hash.includes('type=recovery')) {
-                console.log("UpdatePasswordPage: User is SIGNED_IN (not via PASSWORD_RECOVERY for this page).");
-                setVerificationStatus('info');
-                setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
-            }
+        console.log("UpdatePasswordPage: SIGNED_IN event received.");
+        if (!isInRecoveryModeRef.current &&
+            typeof window !== 'undefined' &&
+            !window.location.hash.includes('type=recovery')) {
+          console.log("UpdatePasswordPage: SIGNED_IN event, but not in recovery mode and no recovery fragment. Showing info.");
+          setVerificationStatus('info');
+          setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
         }
-        // If isInRecoveryModeRef.current is true, this SIGNED_IN event is part of the recovery flow,
-        // and the page should remain in 'ready' state for password update.
-      } else if ((event === "INITIAL_SESSION" && !session) || event === "SIGNED_OUT") {
-        // If still 'verifying', not in recovery mode, and no recovery hash, then it's an error.
-        if (verificationStatus === 'verifying' && !isInRecoveryModeRef.current && typeof window !== 'undefined' && !window.location.hash.includes('type=recovery')) {
-            console.log("UpdatePasswordPage: Initial session is null or signed out, and no recovery hash/mode. Invalid link.");
+      } else if (event === "INITIAL_SESSION") {
+        console.log("UpdatePasswordPage: INITIAL_SESSION event.", session ? "Session present." : "No session.");
+        if (!session && !isInRecoveryModeRef.current &&
+            typeof window !== 'undefined' &&
+            !window.location.hash.includes('type=recovery') &&
+            verificationStatus === 'verifying') {
+          console.log("UpdatePasswordPage: INITIAL_SESSION is null, not recovery. Setting error.");
+          setVerificationStatus('error');
+          setPageMessage("Invalid or expired password reset link.");
+        } else if (session && !isInRecoveryModeRef.current &&
+                   typeof window !== 'undefined' &&
+                   !window.location.hash.includes('type=recovery') &&
+                   verificationStatus === 'verifying') {
+          console.log("UpdatePasswordPage: INITIAL_SESSION has user, not recovery. Setting info.");
+          setVerificationStatus('info');
+          setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
+        }
+      } else if (event === "SIGNED_OUT") {
+        console.log("UpdatePasswordPage: SIGNED_OUT event received.");
+        if (isInRecoveryModeRef.current) {
+          isInRecoveryModeRef.current = false;
+        }
+        if (verificationStatus === 'verifying' &&
+            typeof window !== 'undefined' &&
+            !window.location.hash.includes('type=recovery')) {
             setVerificationStatus('error');
-            setPageMessage("Invalid or expired password reset link. Please request a new one if needed.");
-        }
-        // If a user signs out (e.g., after successful password update by action.ts), reset recovery flag
-        if (event === "SIGNED_OUT" && isInRecoveryModeRef.current) {
-            isInRecoveryModeRef.current = false;
+            setPageMessage("Your session has ended or the link is invalid. Please try again.");
         }
       }
     });
-    
-    // Initial check when component mounts (to handle URL fragment)
-    if (typeof window !== 'undefined' && verificationStatus === 'verifying') {
-        if (window.location.hash.includes('type=recovery') && window.location.hash.includes('access_token')) {
-            console.log("UpdatePasswordPage: Recovery fragment found in URL. Waiting for Supabase client processing.");
-            verificationTimeoutId = setTimeout(() => {
-                if (mounted && verificationStatus === 'verifying' && !isInRecoveryModeRef.current) { // Check recovery flag here too
-                    console.warn("UpdatePasswordPage: Timeout waiting for PASSWORD_RECOVERY event. Link might be invalid/expired or client processing issue.");
-                    setVerificationStatus('error');
-                    setPageMessage("Could not verify the password reset link. It may be invalid, expired, or already used. Please request a new one.");
-                }
-            }, 8000); // 8 seconds timeout
-        } else {
-            // No valid recovery fragment found on mount, and not already in another state.
-            console.log("UpdatePasswordPage: No valid recovery fragment in URL on mount. Invalid access.");
-            setVerificationStatus('error');
-            setPageMessage("Invalid password reset link. Please use the link from your email or request a new reset.");
-        }
-    }
 
     return () => {
       mounted = false;
       if (verificationTimeoutId) clearTimeout(verificationTimeoutId);
       authListener?.subscription?.unsubscribe();
-      // Optionally reset isInRecoveryModeRef.current = false; here if needed on full unmount
-      console.log('UpdatePasswordPage: Unsubscribed from auth state changes.');
+      console.log('UpdatePasswordPage: useEffect for auth handling unmounted.');
     };
-  }, [supabase, verificationStatus]); // Keep verificationStatus as it's used in the initial mount check logic.
+  }, [supabase, verificationStatus]);
 
   useEffect(() => {
     setPasswordRequirements({
@@ -130,12 +155,8 @@ export default function UpdatePasswordPage() {
     
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
-    
-    // The server action will handle redirects.
-    // If an error occurs that prevents redirect (e.g. server action returns an error object),
-    // it would typically be handled here, but current action redirects.
     await updatePassword(formData);
-    // setIsLoading(false); // This might not be reached if action always redirects
+    // setIsLoading(false); // Might not be reached if action always redirects
   };
 
   return (
@@ -150,6 +171,7 @@ export default function UpdatePasswordPage() {
           <UpdatePasswordMessages />
         </Suspense>
 
+        {/* Display messages set by client-side logic (e.g., initial link errors, timeout) */}
         {pageMessage && (verificationStatus === 'error' || verificationStatus === 'info') && (
           <div className={`my-4 p-3 rounded-md text-sm font-medium ${
             verificationStatus === 'error' ? 'bg-red-100 text-red-700' :
@@ -161,7 +183,8 @@ export default function UpdatePasswordPage() {
 
         {verificationStatus === 'ready' ? (
           <>
-            {pageMessage && ( /* For client-side validation errors from handleSubmit */
+            {/* Display client-side validation errors from handleSubmit */}
+            {pageMessage && verificationStatus === 'ready' && ( 
               <div className="my-4 p-3 rounded-md text-sm font-medium bg-red-100 text-red-700">
                 {pageMessage}
               </div>
@@ -240,8 +263,11 @@ export default function UpdatePasswordPage() {
               </div>
             </form>
           </>
-        ) : verificationStatus === 'verifying' && !pageMessage ? (
-          <p className="text-center text-gray-500 py-4">Verifying reset link or session...</p>
+        ) : verificationStatus === 'verifying' && !pageMessage ? ( // Only show "Verifying" if no other message is already set
+          <div className="text-center py-4">
+             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#ff3366] mx-auto mb-3"></div>
+             <p className="text-gray-500">Verifying reset link...</p>
+          </div>
         ) : null }
         
         <div className="text-center mt-6 text-sm text-gray-500">
