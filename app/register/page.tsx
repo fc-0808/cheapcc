@@ -18,6 +18,9 @@ export default function RegisterPage() {
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
+  // --- New state for loading indicator ---
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Password strength validation
   const [passwordRequirements, setPasswordRequirements] = useState({
     minLength: false,
@@ -85,11 +88,35 @@ export default function RegisterPage() {
       return;
     }
     setErrorMessage('');
+    setIsSubmitting(true); // --- Set loading state to true ---
+
     const formData = new FormData(event.currentTarget);
     formData.append('g-recaptcha-response', recaptchaToken);
-    await signup(formData);
-    recaptchaRef.current?.reset();
-    setRecaptchaToken(null);
+
+    try {
+      // The signup action will redirect on success or specific errors,
+      // so the component might unmount.
+      await signup(formData);
+      // If signup action returns (e.g. on an unhandled error that doesn't redirect),
+      // reset submitting state. Most of the time, redirect will prevent this.
+      // No explicit error is returned to the client by the current `signup` action
+      // if it doesn't redirect; it relies on redirects for all outcomes.
+    } catch (error: any) {
+        // This catch block might not be reached if `signup` always redirects
+        // or if errors within server actions are handled differently by Next.js.
+        // For robustness, ensure any client-displayable error from `signup` would be handled.
+        // Currently, your `signup` action redirects on error.
+        console.error("Client-side error during signup (should be rare if action redirects):", error);
+        setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+        // This finally block might not execute as expected if a redirect happens.
+        // However, if the signup action was to return an error object instead of redirecting,
+        // this would be the place to set isSubmitting to false.
+        // For now, the primary UX for loading is while waiting for the server action to complete.
+        setIsSubmitting(false); // --- Reset loading state ---
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
+    }
   };
 
   return (
@@ -149,6 +176,7 @@ export default function RegisterPage() {
               className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
               required
               placeholder="Your Full Name"
+              disabled={isSubmitting} // --- Disable input when submitting ---
             />
           </div>
 
@@ -167,6 +195,7 @@ export default function RegisterPage() {
               className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
               required
               placeholder="you@example.com"
+              disabled={isSubmitting} // --- Disable input when submitting ---
             />
           </div>
 
@@ -186,11 +215,13 @@ export default function RegisterPage() {
                 onChange={handlePasswordChange}
                 className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${passwordTouched && !isPasswordValid ? 'border-yellow-500 bg-yellow-50 focus:border-yellow-500' : 'border-gray-200 focus:border-[#ff3366]'}`}
                 required
+                disabled={isSubmitting} // --- Disable input when submitting ---
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
                 onClick={togglePasswordVisibility}
+                disabled={isSubmitting} // --- Disable button when submitting ---
               >
                 <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
@@ -241,11 +272,13 @@ export default function RegisterPage() {
                 onChange={handleConfirmPasswordChange}
                 className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${!passwordsMatch && confirmPasswordTouched ? 'border-red-500 bg-red-50 focus:border-red-500' : 'border-gray-200 focus:border-[#ff3366]'}`}
                 required
+                disabled={isSubmitting} // --- Disable input when submitting ---
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
                 onClick={toggleConfirmPasswordVisibility}
+                disabled={isSubmitting} // --- Disable button when submitting ---
               >
                 <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
@@ -263,15 +296,17 @@ export default function RegisterPage() {
                 ref={recaptchaRef}
                 sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
                 onChange={handleRecaptchaChange}
+                // Note: ReCAPTCHA itself doesn't have a direct disabled prop in the same way.
+                // The form submission will be blocked by the button's disabled state if isSubmitting.
               />
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 px-4 bg-[#ff3366] text-white font-semibold rounded-lg hover:bg-[#e62e5c] transition-colors duration-300 focus:ring-4 focus:ring-[#ff3366]/50 focus:outline-none shadow-md hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer"
-            disabled={(confirmPasswordTouched && !passwordsMatch) || !isPasswordValid || !recaptchaToken}
+            className="w-full py-3 px-4 bg-[#ff3366] text-white font-semibold rounded-lg hover:bg-[#e62e5c] transition-colors duration-300 focus:ring-4 focus:ring-[#ff3366]/50 focus:outline-none shadow-md hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 disabled:hover:-translate-y-0"
+            disabled={isSubmitting || (confirmPasswordTouched && !passwordsMatch) || !isPasswordValid || !recaptchaToken}
           >
-            Create Account
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
