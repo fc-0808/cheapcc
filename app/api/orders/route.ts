@@ -14,9 +14,10 @@ import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 const clientId = process.env.PAYPAL_CLIENT_ID!;
 const clientSecret = process.env.PAYPAL_SECRET_KEY!;
 
-// Determine PayPal environment based on Node environment or a specific PayPal env var
-const paypalEnv = process.env.NODE_ENV === 'production' 
-                  ? Environment.Production 
+// Updated: Determine PayPal environment based on PAYPAL_API_MODE,
+// defaulting to Sandbox if not set or if NODE_ENV is not 'production'.
+const paypalApiEnv = process.env.PAYPAL_API_MODE === 'live'
+                  ? Environment.Production
                   : Environment.Sandbox;
 
 if (!clientId || !clientSecret) {
@@ -31,7 +32,7 @@ const paypalClient = new Client({
     oAuthClientId: clientId,
     oAuthClientSecret: clientSecret
   },
-  environment: paypalEnv,
+  environment: paypalApiEnv,
   logging: {
     logLevel: LogLevel.Info, // Consider LogLevel.Error for production to reduce noise
     logRequest: { logBody: process.env.NODE_ENV !== 'production' }, // Log request body only in dev
@@ -151,26 +152,33 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     const durationMs = Date.now() - requestStartTime;
+    // Ensure full PayPal error is available for logging, especially in production for debugging
+    const paypalErrorDetails = error.response?.data || error.details || {};
+
     const errorContext = {
         message: "Error creating PayPal order in /api/orders.",
         priceId: priceIdSubmitted,
-        userEmail: emailSubmitted, // Log PII carefully
+        userEmail: emailSubmitted,
         errorMessage: error.message,
-        errorStack: error.stack?.substring(0, 500), // Truncate stack
+        errorStack: error.stack?.substring(0, 500),
         paypalResponseStatus: error.response?.status,
-        paypalResponseData: error.response?.data, // Be cautious, could be large/sensitive
+        // Log more detailed PayPal response, even in prod for better debugging
+        paypalResponseDataFull: paypalErrorDetails,
         durationMs,
         source: "app/api/orders/route.ts POST (catch)"
     };
     console.error(JSON.stringify(errorContext, null, 2));
 
     const userErrorMessage = 'Failed to create order. Please try again or contact support if the issue persists.';
-    // Only include PayPal's message in details if it's safe and not too verbose
-    const errorDetails = process.env.NODE_ENV !== 'production' && error.response?.data?.message ? error.response.data.message : undefined;
+    // Provide more specific details from PayPal if available and not in production,
+    // or if specifically enabled for production debugging.
+    const errorDetailsForClient = process.env.NODE_ENV !== 'production' && paypalErrorDetails.message
+                                  ? paypalErrorDetails.message
+                                  : undefined;
     const statusCode = error.response?.status || 500;
 
     return NextResponse.json(
-      { error: userErrorMessage, details: errorDetails },
+      { error: userErrorMessage, details: errorDetailsForClient },
       { status: statusCode }
     );
   }

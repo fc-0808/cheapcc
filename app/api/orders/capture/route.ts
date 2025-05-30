@@ -13,8 +13,8 @@ import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 const clientId = process.env.PAYPAL_CLIENT_ID!;
 const clientSecret = process.env.PAYPAL_SECRET_KEY!;
 
-const paypalEnv = process.env.NODE_ENV === 'production' 
-                  ? Environment.Production 
+const paypalApiEnv = process.env.PAYPAL_API_MODE === 'live'
+                  ? Environment.Production
                   : Environment.Sandbox;
 
 if (!clientId || !clientSecret) {
@@ -29,7 +29,7 @@ const paypalClient = new Client({
     oAuthClientId: clientId,
     oAuthClientSecret: clientSecret
   },
-  environment: paypalEnv,
+  environment: paypalApiEnv,
   logging: {
     logLevel: LogLevel.Info,
     logRequest: { logBody: process.env.NODE_ENV !== 'production' },
@@ -121,6 +121,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     const durationMs = Date.now() - requestStartTime;
+    // Ensure full PayPal error is available for logging
+    const paypalErrorDetails = error.response?.data || error.details || {};
+
     const errorContext = {
         message: 'Error capturing PayPal order in /api/orders/capture.',
         ip: clientIp,
@@ -128,24 +131,20 @@ export async function POST(request: NextRequest) {
         errorMessage: error.message,
         errorStack: error.stack?.substring(0,500),
         paypalResponseStatus: error.response?.status,
-        paypalResponseData: process.env.NODE_ENV !== 'production' ? error.response?.data : undefined,
+        paypalResponseDataFull: paypalErrorDetails, // Log full details
         durationMs,
         source: "app/api/orders/capture/route.ts POST (catch)"
     };
     console.error(JSON.stringify(errorContext, null, 2));
-    
-    if (error.response && error.response.data && process.env.NODE_ENV !== 'production') {
-        console.error('PayPal Capture Error Details (Dev):', JSON.stringify(error.response.data, null, 2));
-    } else if (error.details && process.env.NODE_ENV !== 'production') {
-        console.error('PayPal Capture Error Details (Dev - alternative):', JSON.stringify(error.details, null, 2));
-    }
 
     const userErrorMessage = 'Failed to capture payment. If funds were deducted, please contact support.';
-    const errorDetails = process.env.NODE_ENV !== 'production' && error.response?.data?.message ? error.response.data.message : undefined;
+    const errorDetailsForClient = process.env.NODE_ENV !== 'production' && paypalErrorDetails.message
+                                  ? paypalErrorDetails.message
+                                  : undefined;
     const statusCode = error.response?.status || 500;
 
     return NextResponse.json(
-      { error: userErrorMessage, details: errorDetails },
+      { error: userErrorMessage, details: errorDetailsForClient },
       { status: statusCode }
     );
   }
