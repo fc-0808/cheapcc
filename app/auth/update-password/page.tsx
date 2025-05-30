@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
 import { updatePassword } from './actions';
@@ -31,6 +31,9 @@ export default function UpdatePasswordPage() {
   });
   const isNewPasswordClientValid = Object.values(passwordRequirements).every(req => req);
 
+  // Ref to track if PASSWORD_RECOVERY event has been received
+  const isInRecoveryModeRef = useRef(false);
+
   useEffect(() => {
     let mounted = true;
     let verificationTimeoutId: NodeJS.Timeout | null = null;
@@ -42,38 +45,51 @@ export default function UpdatePasswordPage() {
 
       if (event === "PASSWORD_RECOVERY") {
         console.log("UpdatePasswordPage: PASSWORD_RECOVERY event. Ready to update password.");
+        isInRecoveryModeRef.current = true; // Set recovery mode flag
         if (verificationTimeoutId) clearTimeout(verificationTimeoutId);
         setVerificationStatus('ready');
         setPageMessage(null);
-      } else if (event === "SIGNED_IN" && session && verificationStatus !== 'ready') {
-        // This case handles if a user is already fully signed in and navigates here.
-        console.log("UpdatePasswordPage: User is SIGNED_IN (not via PASSWORD_RECOVERY for this page).");
-        setVerificationStatus('info');
-        setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
+      } else if (event === "SIGNED_IN" && session) {
+        // Only show "already logged in" info if NOT in recovery mode.
+        if (!isInRecoveryModeRef.current && verificationStatus !== 'ready') {
+            // Check if this SIGNED_IN event is unrelated to a recovery flow (e.g., user navigated here while already logged in)
+            // The recovery hash check is an additional safeguard if `isInRecoveryModeRef` somehow isn't set yet but fragment exists.
+            // However, `PASSWORD_RECOVERY` should ideally set `isInRecoveryModeRef` first.
+             if (typeof window !== 'undefined' && !window.location.hash.includes('type=recovery')) {
+                console.log("UpdatePasswordPage: User is SIGNED_IN (not via PASSWORD_RECOVERY for this page).");
+                setVerificationStatus('info');
+                setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
+            }
+        }
+        // If isInRecoveryModeRef.current is true, this SIGNED_IN event is part of the recovery flow,
+        // and the page should remain in 'ready' state for password update.
       } else if ((event === "INITIAL_SESSION" && !session) || event === "SIGNED_OUT") {
-        if (verificationStatus === 'verifying' && typeof window !== 'undefined' && !window.location.hash.includes('type=recovery')) {
-            // Only set error if still verifying and no recovery hash (e.g. direct navigation)
-            console.log("UpdatePasswordPage: Initial session is null or signed out, and no recovery hash present.");
+        // If still 'verifying', not in recovery mode, and no recovery hash, then it's an error.
+        if (verificationStatus === 'verifying' && !isInRecoveryModeRef.current && typeof window !== 'undefined' && !window.location.hash.includes('type=recovery')) {
+            console.log("UpdatePasswordPage: Initial session is null or signed out, and no recovery hash/mode. Invalid link.");
             setVerificationStatus('error');
             setPageMessage("Invalid or expired password reset link. Please request a new one if needed.");
+        }
+        // If a user signs out (e.g., after successful password update by action.ts), reset recovery flag
+        if (event === "SIGNED_OUT" && isInRecoveryModeRef.current) {
+            isInRecoveryModeRef.current = false;
         }
       }
     });
     
-    // Initial check when component mounts
+    // Initial check when component mounts (to handle URL fragment)
     if (typeof window !== 'undefined' && verificationStatus === 'verifying') {
         if (window.location.hash.includes('type=recovery') && window.location.hash.includes('access_token')) {
-            // Valid fragment structure found, Supabase client will process it. Wait for PASSWORD_RECOVERY event.
             console.log("UpdatePasswordPage: Recovery fragment found in URL. Waiting for Supabase client processing.");
             verificationTimeoutId = setTimeout(() => {
-                if (mounted && verificationStatus === 'verifying') {
+                if (mounted && verificationStatus === 'verifying' && !isInRecoveryModeRef.current) { // Check recovery flag here too
                     console.warn("UpdatePasswordPage: Timeout waiting for PASSWORD_RECOVERY event. Link might be invalid/expired or client processing issue.");
                     setVerificationStatus('error');
                     setPageMessage("Could not verify the password reset link. It may be invalid, expired, or already used. Please request a new one.");
                 }
             }, 8000); // 8 seconds timeout
         } else {
-            // No valid recovery fragment found on mount.
+            // No valid recovery fragment found on mount, and not already in another state.
             console.log("UpdatePasswordPage: No valid recovery fragment in URL on mount. Invalid access.");
             setVerificationStatus('error');
             setPageMessage("Invalid password reset link. Please use the link from your email or request a new reset.");
@@ -84,9 +100,10 @@ export default function UpdatePasswordPage() {
       mounted = false;
       if (verificationTimeoutId) clearTimeout(verificationTimeoutId);
       authListener?.subscription?.unsubscribe();
+      // Optionally reset isInRecoveryModeRef.current = false; here if needed on full unmount
       console.log('UpdatePasswordPage: Unsubscribed from auth state changes.');
     };
-  }, [supabase, verificationStatus]); // React to changes in verificationStatus to manage timeouts correctly.
+  }, [supabase, verificationStatus]); // Keep verificationStatus as it's used in the initial mount check logic.
 
   useEffect(() => {
     setPasswordRequirements({
@@ -100,37 +117,25 @@ export default function UpdatePasswordPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    
-    // Clear previous client-side messages
     setPageMessage(null); 
 
     if (newPassword !== confirmPassword) {
-      setPageMessage("Passwords do not match."); // Show client-side error
-      // setPageMessageType("error"); // If you had a separate type state
+      setPageMessage("Passwords do not match.");
       return;
     }
     if (!isNewPasswordClientValid) {
-      setPageMessage("Password does not meet all requirements."); // Show client-side error
-      // setPageMessageType("error");
+      setPageMessage("Password does not meet all requirements.");
       return;
     }
     
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
     
-    // The server action will handle redirects or return an error that populates URL params.
-    // If it were to return an error object directly to the client:
-    // const result = await updatePassword(formData);
-    // if (result?.error) {
-    //   setPageMessage(result.error);
-    //   setPageMessageType("error");
-    //   setIsLoading(false);
-    // }
-    // However, the current action redirects.
+    // The server action will handle redirects.
+    // If an error occurs that prevents redirect (e.g. server action returns an error object),
+    // it would typically be handled here, but current action redirects.
     await updatePassword(formData);
-
-    // If action redirects, this might not be reached or component unmounts.
-    // setIsLoading(false); 
+    // setIsLoading(false); // This might not be reached if action always redirects
   };
 
   return (
@@ -141,15 +146,14 @@ export default function UpdatePasswordPage() {
         </a>
         <h1 className="text-2xl font-bold text-[#2c2d5a] mb-2 text-center">Set Your New Password</h1>
 
-        {/* Component for messages from URL parameters */}
         <Suspense fallback={<div className="my-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading...</div>}>
-          <UpdatePasswordMessages /> {/* Handles messages from URL params if server action redirects back here with error */}
+          <UpdatePasswordMessages />
         </Suspense>
 
-        {pageMessage && verificationStatus !== 'ready' && (
+        {pageMessage && (verificationStatus === 'error' || verificationStatus === 'info') && (
           <div className={`my-4 p-3 rounded-md text-sm font-medium ${
             verificationStatus === 'error' ? 'bg-red-100 text-red-700' :
-            verificationStatus === 'info' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
+            verificationStatus === 'info' ? 'bg-blue-100 text-blue-700' : ''
           }`}>
             {pageMessage}
           </div>
