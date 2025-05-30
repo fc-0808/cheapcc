@@ -66,6 +66,9 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
         ...logContext, event: "password_update_successful", userId: updateData.user?.id
     }, null, 2));
     
+    await supabase.auth.signOut();
+    console.info(JSON.stringify({ ...logContext, event: "recovery_session_signed_out" }, null, 2));
+    
     redirect('/login?success=password_reset');
 
   } catch (error: any) {
