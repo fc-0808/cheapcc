@@ -21,7 +21,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.sandbox.paypal.com" crossOrigin="anonymous" />
         {/* Font Awesome for icons */}
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossOrigin="anonymous" referrerPolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
       </head>
       <body className="antialiased bg-white text-[#171717]">
         {/* Header - always logged out state for server component */}
