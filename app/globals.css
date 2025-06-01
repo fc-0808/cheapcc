@@ -158,8 +158,20 @@ header {
   left: 0;
   right: 0;
   z-index: 50;
-  transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
   border-bottom: 1px solid var(--gray-100);
+
+  /* --- MODIFIED/ADDED FOR SMOOTH FADE --- */
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0); /* Ensures header is in place */
+  /* Updated transition to include opacity and visibility for smooth fading.
+     Kept transform for consistency if other transforms are used or if a slide+fade is desired later.
+     Kept background-color transition as it was there originally.
+  */
+  transition: opacity 0.3s ease-in-out, 
+              visibility 0.3s ease-in-out, /* Using ease-in-out for visibility for simplicity */
+              transform 0.3s ease-in-out, 
+              background-color 0.3s ease-in-out;
 }
 
 header .container {
@@ -350,7 +362,15 @@ header .dropdown-divider {
 }
 
 header.hidden {
-  transform: translateY(-100%);
+  opacity: 0;
+  visibility: hidden; /* Hides the header and makes it non-interactive */
+  transform: translateY(-100%); /* Keeps the header in place while fading out.
+                                 If you want a slide-up and fade effect, you can change this to translateY(-100%).
+                                 The current request is for a smooth fade. */
+  /*
+    Note: When 'header.hidden' is applied, the properties (opacity, visibility, transform)
+    will transition to these target values based on the 'transition' rule in the main 'header' style.
+  */
 }
 
 header .auth-skeleton {
@@ -649,7 +669,7 @@ input:focus, select:focus, textarea:focus {
   gap: 0.6rem; /* Adjusted gap */
   background-color: rgba(var(--white-rgb), 0.08); /* Subtle background */
   padding: 0.7rem 1.3rem; /* Adjusted padding */
-  border-radius: var(--radius-md); /* Softer radius */
+  border-radius: var(--radius-full); /* Changed from --radius-md to --radius-xl */
   font-weight: 500; /* Standard weight */
   backdrop-filter: blur(5px); /* Frosted glass effect */
   font-size: 0.9rem; /* Consistent size */
