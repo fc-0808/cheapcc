@@ -32,7 +32,7 @@ export default function Home() {
   
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [hasPopupBeenShown, setHasPopupBeenShown] = useState(false);
-
+  
   const paypalButtonContainerRef = useRef<HTMLDivElement>(null);
   
   // Refs to hold the latest values for PayPal callbacks
@@ -114,7 +114,7 @@ export default function Home() {
               throw new Error(captureData.error || `Failed to capture order (status: ${response.status})`);
             }
             setPaymentStatus('success');
-            router.push(`/success/${data.orderID}`);
+              router.push(`/success/${data.orderID}`);
           } catch (error: any) {
             console.error('Payment capture error:', error);
             setCheckoutFormError(error.message || 'An error occurred while capturing the payment.');
@@ -147,13 +147,13 @@ export default function Home() {
     console.error('PayPal SDK failed to load (app/page.tsx)');
     setCheckoutFormError("Failed to load PayPal. Please refresh the page or try again later.");
   };
-
+  
   // Component initialization
   useEffect(() => {
     setIsInitialized(true);
     if (typeof window !== 'undefined' && window.paypal && !sdkReady) {
         console.log('PayPal SDK already present on window, calling handlePayPalLoad.');
-        handlePayPalLoad();
+      handlePayPalLoad();
     }
     return () => {
       if (paypalButtonContainerRef.current) {
@@ -161,7 +161,7 @@ export default function Home() {
       }
     };
   }, [sdkReady]);
-
+  
   // Update canPay
   useEffect(() => {
     const shouldAllowPayment = isUserSignedIn || (name.trim() !== '' && isValidEmail(email));
@@ -220,7 +220,7 @@ export default function Home() {
       authListener?.subscription.unsubscribe();
     };
   }, []);
-  
+
   // Scroll listener for checkout visibility (for login popup)
   useEffect(() => {
     function onScroll() {
@@ -241,7 +241,7 @@ export default function Home() {
       setHasPopupBeenShown(true);
     }
   }, [checkoutVisible, isUserSignedIn, hasPopupBeenShown]);
-
+  
   const handleRegisterClick = () => {
     setShowLoginPopup(false);
     router.push('/register');

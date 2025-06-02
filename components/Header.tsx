@@ -10,14 +10,17 @@ export default function Header() {
   const [showHeader, setShowHeader] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -82,6 +85,14 @@ export default function Header() {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
+      
+      // Handle clicks outside mobile menu
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && isMobileMenuOpen) {
+        const mobileToggle = document.getElementById('mobile-menu-toggle');
+        if (mobileToggle && !mobileToggle.contains(event.target as Node)) {
+            setIsMobileMenuOpen(false);
+        }
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -91,18 +102,23 @@ export default function Header() {
       authListener?.subscription?.unsubscribe();
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [pathname]);
+  }, [pathname, isMobileMenuOpen, authChecked]);
 
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
     setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
     router.push('/');
   };
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+  
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -110,6 +126,7 @@ export default function Header() {
       e.preventDefault();
       window.location.href = '/';
     }
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -121,7 +138,20 @@ export default function Header() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-4">
+        {/* Mobile menu toggle button - visible on small screens */}
+        <div className="md:hidden">
+          <button
+            id="mobile-menu-toggle"
+            onClick={toggleMobileMenu}
+            className="p-2 rounded-md text-gray-500 hover:bg-gray-100"
+            aria-label="Toggle mobile menu"
+          >
+            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
+          </button>
+        </div>
+        
+        {/* Desktop navigation - hidden on small screens */}
+        <div className="hidden md:flex items-center gap-4">
           {!authChecked ? (
             <div className="auth-skeleton"></div>
           ) : user ? (
@@ -171,6 +201,51 @@ export default function Header() {
           )}
         </div>
       </div>
+      
+      {/* Mobile dropdown menu - shown when hamburger is clicked */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden" id="mobile-menu" ref={mobileMenuRef}>
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white shadow-lg">
+            {!authChecked ? (
+              <div className="px-3 py-2">
+                <div className="animate-pulse bg-gray-200 h-8 w-full rounded mb-2"></div>
+                <div className="animate-pulse bg-gray-200 h-8 w-full rounded"></div>
+              </div>
+            ) : user ? (
+              <>
+                <div className="px-3 py-2">
+                  <span className="block text-sm font-medium text-gray-600 truncate">{user.email}</span>
+                </div>
+                <Link href="/dashboard" className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                  <i className="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </Link>
+                <Link href="/profile" className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                  <i className="fas fa-user-edit mr-2"></i> Profile
+                </Link>
+                <button onClick={handleLogout} className="w-full text-left block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                  <i className="fas fa-sign-out-alt mr-2"></i> Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                  Log In
+                </Link>
+                <Link href="/register" className="block px-3 py-2 rounded text-base font-medium bg-pink-50 text-[#ff3366] hover:bg-pink-100">
+                  Register
+                </Link>
+              </>
+            )}
+            <div className="my-2 h-px bg-gray-200"></div>
+            <Link href="/#pricing" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+              Pricing
+            </Link>
+            <Link href="/faq" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+              FAQ
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 } 

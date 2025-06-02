@@ -52,38 +52,39 @@ export default function HomeFAQSection() {
   }, []);
 
   return (
-    <section className="faq py-20 bg-white" id="faq">
-      <div className="container" ref={faqRef}>
-        <div className={`section-heading text-center mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">Frequently Asked Questions</h2>
-          <p className="text-lg text-gray-500">Quick answers to common questions about our Adobe Creative Cloud subscriptions</p>
+    <section className="faq py-10 sm:py-16 md:py-20 bg-white" id="faq">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={faqRef}>
+        <div className={`section-heading text-center mb-8 sm:mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2c2d5a] mb-2">Frequently Asked Questions</h2>
+          <p className="text-base sm:text-lg text-gray-500">Quick answers to common questions about our Adobe Creative Cloud subscriptions</p>
         </div>
-        <div className={`faq-accordion stagger-item ${isVisible ? 'visible' : ''}`}>
+        <div className={`faq-accordion max-w-3xl mx-auto stagger-item ${isVisible ? 'visible' : ''}`}>
           {HOME_FAQS.map((item, idx) => (
             <div
-              key={idx} // Use index as key if questions can repeat, otherwise a unique ID is better
-              className={`faq-item ${openFaq === idx ? 'active' : ''}`}
+              key={idx}
+              className={`faq-item border border-gray-200 rounded-lg mb-4 shadow-sm ${openFaq === idx ? 'active bg-white' : 'bg-gray-50'}`}
               onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
               tabIndex={0}
               role="button"
               aria-expanded={openFaq === idx}
               onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setOpenFaq(openFaq === idx ? null : idx)}
             >
-              <div className="faq-question">
-                <h3>{item.q}</h3>
-                <span className={`faq-icon ${openFaq === idx ? 'open' : ''}`}><i className="fas fa-chevron-down" /></span>
+              <div className="faq-question p-4 sm:p-5 flex justify-between items-center cursor-pointer">
+                <h3 className="text-base sm:text-lg font-medium text-[#2c2d5a] pr-8">{item.q}</h3>
+                <span className={`faq-icon flex-shrink-0 text-[#ff3366] transition-transform duration-200 ${openFaq === idx ? 'transform rotate-180' : ''}`}>
+                  <i className="fas fa-chevron-down" />
+                </span>
               </div>
               <div
-                className={`faq-answer ${openFaq === idx ? 'open' : ''}`}
-                style={{ maxHeight: openFaq === idx ? 300 : 0, opacity: openFaq === idx ? 1 : 0 }}
+                className={`faq-answer overflow-hidden transition-all duration-300 ${openFaq === idx ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
               >
-                <p>{item.a}</p>
+                <p className="px-4 sm:px-5 pb-4 sm:pb-5 text-sm sm:text-base text-gray-600">{item.a}</p>
               </div>
             </div>
           ))}
         </div>
-        <div className="view-all-faqs text-center mt-10">
-          <a href="/faq" className="btn btn-outline inline-flex items-center gap-2 px-6 py-2 rounded-full border border-[#b9a7d1] text-[#2c2d5a] font-semibold hover:bg-[#f3f4f6] transition">
+        <div className="view-all-faqs text-center mt-8 sm:mt-10">
+          <a href="/faq" className="btn btn-outline inline-flex items-center gap-2 px-4 sm:px-6 py-2 rounded-full border border-[#b9a7d1] text-[#2c2d5a] text-sm sm:text-base font-semibold hover:bg-[#f3f4f6] transition">
             <span>View All FAQs</span> <i className="fas fa-arrow-right" />
           </a>
         </div>
