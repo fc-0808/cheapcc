@@ -1,3 +1,4 @@
+// app/auth/update-password/page.tsx
 'use client';
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
@@ -7,6 +8,13 @@ import { updatePassword } from './actions';
 import Link from 'next/link';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import UpdatePasswordMessages from '@/components/UpdatePasswordMessages';
+
+// Helper for conditional logging (example)
+const logDev = (...args: any[]) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
 
 export default function UpdatePasswordPage() {
   const supabase = createClient();
@@ -36,30 +44,27 @@ export default function UpdatePasswordPage() {
 
   useEffect(() => {
     let mounted = true;
-    console.log('UpdatePasswordPage: Auth effect initiated. Current status:', verificationStatus);
+    logDev('UpdatePasswordPage: Auth effect initiated. Current status:', verificationStatus);
 
-    // Clear any previous timeout when the effect runs or re-runs.
     if (verificationTimeoutRef.current) {
       clearTimeout(verificationTimeoutRef.current);
       verificationTimeoutRef.current = null;
-      console.log("UpdatePasswordPage: Cleared previous timeout.");
+      logDev("UpdatePasswordPage: Cleared previous timeout.");
     }
 
-    // Set a timeout only if we are in the initial 'verifying' state and not yet confirmed in recovery mode.
-    // This timeout acts as a fallback if Supabase doesn't emit PASSWORD_RECOVERY.
     if (verificationStatus === 'verifying' && !isInRecoveryModeRef.current) {
-      console.log("UpdatePasswordPage: Status is 'verifying' and not in recovery mode. Setting timeout for PASSWORD_RECOVERY or session check.");
+      logDev("UpdatePasswordPage: Status is 'verifying' and not in recovery mode. Setting timeout.");
       verificationTimeoutRef.current = setTimeout(() => {
         if (mounted && verificationStatus === 'verifying' && !isInRecoveryModeRef.current) {
-          console.warn("UpdatePasswordPage: Timeout reached. PASSWORD_RECOVERY event not received. Checking current session.");
+          logDev("UpdatePasswordPage: Timeout reached. PASSWORD_RECOVERY event not received. Checking current session.");
           supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
             if (!mounted) return;
-            if (session && !isInRecoveryModeRef.current) { // Check ref again to be absolutely sure
-              console.log("UpdatePasswordPage: Timeout - No recovery confirmation, but an active session found. Setting to 'info'.");
+            if (session && !isInRecoveryModeRef.current) {
+              logDev("UpdatePasswordPage: Timeout - No recovery confirmation, but an active session found. Setting to 'info'.");
               setVerificationStatus('info');
               setPageMessage("This page is for password recovery. To change your password while logged in, please go to your profile page.");
             } else if (!session && !isInRecoveryModeRef.current) {
-              console.log("UpdatePasswordPage: Timeout - No recovery confirmation, and no active session. Setting to 'error'.");
+              logDev("UpdatePasswordPage: Timeout - No recovery confirmation, and no active session. Setting to 'error'.");
               setVerificationStatus('error');
               setPageMessage("Could not verify the password reset link. It may be invalid, expired, or already used. Please request a new one.");
             }
@@ -70,54 +75,46 @@ export default function UpdatePasswordPage() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!mounted) return;
-      // Log current states *before* any changes by this handler
-      console.log(`UpdatePasswordPage: Auth event: ${event}. Session: ${session ? 'Yes' : 'No'}. RecoveryModeRef: ${isInRecoveryModeRef.current}. CurrentVerificationStatus: ${verificationStatus}`);
+      logDev(`UpdatePasswordPage: Auth event: ${event}. Session: ${!!session}. RecoveryModeRef: ${isInRecoveryModeRef.current}. CurrentVerificationStatus: ${verificationStatus}`);
 
       if (event === "PASSWORD_RECOVERY") {
-        console.log("UpdatePasswordPage: PASSWORD_RECOVERY event received. Setting to 'ready'.");
+        logDev("UpdatePasswordPage: PASSWORD_RECOVERY event received. Setting to 'ready'.");
         if (verificationTimeoutRef.current) {
           clearTimeout(verificationTimeoutRef.current);
           verificationTimeoutRef.current = null;
-          console.log("UpdatePasswordPage: Cleared timeout due to PASSWORD_RECOVERY.");
+          logDev("UpdatePasswordPage: Cleared timeout due to PASSWORD_RECOVERY.");
         }
         isInRecoveryModeRef.current = true;
         setVerificationStatus('ready');
         setPageMessage(null);
       } else if (isInRecoveryModeRef.current) {
-        // If PASSWORD_RECOVERY has set us in recovery mode, most other events should not pull us out of 'ready' state.
+        // If PASSWORD_RECOVERY has set us in recovery mode
         if (event === "SIGNED_OUT") {
-          console.log("UpdatePasswordPage: SIGNED_OUT event received while in confirmed recovery mode. Resetting.");
-          isInRecoveryModeRef.current = false;
-          setVerificationStatus('info'); // Or 'error', but usually means server action redirected
-          setPageMessage("Password updated. Redirecting..."); // Or a generic session ended message
+          // This usually means the server action (updatePassword) has completed and signed the user out.
+          // The server action itself should handle the redirect.
+          logDev("UpdatePasswordPage: SIGNED_OUT event received while in confirmed recovery mode. Likely post-update.");
+          // Optionally, set a message here, though redirect from action is primary.
+          // setVerificationStatus('info');
+          // setPageMessage("Password updated successfully. Redirecting to login...");
         } else {
-          console.log(`UpdatePasswordPage: Event ${event} received while in recovery mode. Maintaining 'ready' state or allowing Supabase to manage session.`);
-           if(verificationStatus !== 'ready') setVerificationStatus('ready');
+          logDev(`UpdatePasswordPage: Event ${event} received while in recovery mode. Maintaining 'ready' state or allowing Supabase to manage session.`);
+           if(verificationStatus !== 'ready') setVerificationStatus('ready'); // Ensure 'ready' if somehow it changed
         }
-      } else {
-        // Not in confirmed recovery mode yet (isInRecoveryModeRef.current is false)
-        if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "USER_UPDATED") {
-          // If a session event occurs and we are NOT in recovery mode,
-          // AND the timeout is still pending (meaning PASSWORD_RECOVERY hasn't fired yet),
-          // we let the timeout logic eventually decide.
-          // However, if the timeout has already fired and set an error/info state, that should persist.
-          if (session && verificationStatus === 'verifying') {
-            console.log(`UpdatePasswordPage: ${event} with session. Still 'verifying'. Timeout will handle if no PASSWORD_RECOVERY.`);
-          } else if (!session && verificationStatus === 'verifying') {
-            console.log(`UpdatePasswordPage: ${event} with NO session. Still 'verifying'. Timeout will handle if no PASSWORD_RECOVERY.`);
+      } else { // Not in confirmed recovery mode yet (isInRecoveryModeRef.current is false)
+          if (verificationStatus === 'verifying') { // Only update status if we are still in the initial 'verifying' phase
+            if (session && (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "USER_UPDATED")) {
+              logDev(`UpdatePasswordPage: ${event} with session received while 'verifying'. Timeout will determine final state if PASSWORD_RECOVERY doesn't fire.`);
+              // The timeout logic will handle transitioning to 'info' if no PASSWORD_RECOVERY event.
+            } else if (event === "SIGNED_OUT") {
+              logDev("UpdatePasswordPage: SIGNED_OUT event (and not in recovery mode). Setting to 'error'.");
+              if (verificationTimeoutRef.current) {
+                clearTimeout(verificationTimeoutRef.current);
+                verificationTimeoutRef.current = null;
+              }
+              setVerificationStatus('error');
+              setPageMessage("Your session has ended or the link is invalid. Please start the password reset process again.");
+            }
           }
-          // If verificationStatus is already 'info' or 'error' (e.g. from timeout), don't change it here
-          // unless it's a specific transition we want.
-        } else if (event === "SIGNED_OUT") {
-          console.log("UpdatePasswordPage: SIGNED_OUT event (and not in recovery mode).");
-          if (verificationTimeoutRef.current) {
-            clearTimeout(verificationTimeoutRef.current);
-            verificationTimeoutRef.current = null;
-          }
-          // This likely means an invalid state or link if user was expecting recovery
-          setVerificationStatus('error');
-          setPageMessage("Your session has ended or the link is invalid. Please start the password reset process again.");
-        }
       }
     });
 
@@ -125,13 +122,11 @@ export default function UpdatePasswordPage() {
       mounted = false;
       if (verificationTimeoutRef.current) {
         clearTimeout(verificationTimeoutRef.current);
-        console.log("UpdatePasswordPage: Cleared timeout on unmount.");
+        logDev("UpdatePasswordPage: Cleared timeout on unmount.");
       }
       authListener?.subscription?.unsubscribe();
-      console.log('UpdatePasswordPage: Auth effect unmounted.');
+      logDev('UpdatePasswordPage: Auth effect unmounted.');
     };
-  // Add verificationStatus to dependency array. When it changes, the effect re-runs.
-  // The timeout clearing and conditional setting logic inside should prevent multiple timeouts.
   }, [supabase, router, verificationStatus]);
 
 
@@ -160,11 +155,14 @@ export default function UpdatePasswordPage() {
     
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
+    // The server action `updatePassword` will handle success/error and redirects.
+    // The client doesn't need to do much with the return value here as redirects are server-initiated.
     await updatePassword(formData);
-    // Server action handles redirects.
+    // If the action doesn't redirect (e.g., unhandled error), setIsLoading might need to be reset here.
+    // However, the current actions redirect on all significant outcomes.
+    // setIsLoading(false); // Potentially needed if actions could return without redirecting
   };
 
-  // ... JSX remains the same
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-12 px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">

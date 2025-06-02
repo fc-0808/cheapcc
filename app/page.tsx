@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef, Suspense } from "react";
+import React, { useEffect, useState, useRef, Suspense, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
 import type { Session } from '@supabase/supabase-js';
@@ -53,13 +53,13 @@ export default function Home() {
 
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
   
-  // Function to render the PayPal button
-  const renderPayPalButton = () => {
+  // Memoize renderPayPalButton with useCallback
+  const renderPayPalButton = useCallback(() => {
     if (!paypalButtonContainerRef.current) {
       console.log('PayPal button container not found, cannot render.');
       return;
     }
-    paypalButtonContainerRef.current.innerHTML = ''; // Clear existing
+    paypalButtonContainerRef.current.innerHTML = ''; // Clear existing buttons first
 
     console.log('Attempting to render PayPal button...');
     if (typeof window !== 'undefined' && window.paypal) {
@@ -136,7 +136,7 @@ export default function Home() {
       console.error('PayPal SDK not available on window object during render attempt.');
       setCheckoutFormError('PayPal is not ready. Please wait a moment or refresh the page.');
     }
-  };
+  }, [router, setCheckoutFormError, setPaymentStatus]); // nameRef, emailRef, selectedPriceRef are stable refs
 
   const handlePayPalLoad = () => {
     console.log('PayPal SDK loaded successfully (app/page.tsx)');
@@ -288,8 +288,6 @@ export default function Home() {
             setName={setName}
             email={email}
             setEmail={setEmail}
-            nameRef={nameRef}
-            emailRef={emailRef}
             canPay={canPay}
             paymentStatus={paymentStatus}
             setPaymentStatus={setPaymentStatus}
