@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const INITIAL_COUNTERS = [
-  { id: 'customers', value: 0, target: 150, label: 'Happy Customers', icon: 'fas fa-users', suffix: '+' },
-  { id: 'activations', value: 0, target: 250, label: 'Successful Activations', icon: 'fas fa-check-circle', suffix: '+' },
+  { id: 'customers', value: 0, target: 500, label: 'Happy Customers', icon: 'fas fa-users', suffix: '+' },
+  { id: 'activations', value: 0, target: 1500, label: 'Successful Activations', icon: 'fas fa-check-circle', suffix: '+' },
   { id: 'satisfaction', value: 0, target: 99, label: 'Customer Satisfaction', icon: 'fas fa-star', suffix: '%' },
   { id: 'support', value: 0, target: 24, label: 'Support Availability', icon: 'fas fa-headset', suffix: '/7' },
 ];
