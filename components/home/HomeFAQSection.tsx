@@ -62,23 +62,33 @@ export default function HomeFAQSection() {
           {HOME_FAQS.map((item, idx) => (
             <div
               key={idx}
-              className={`faq-item border border-gray-200 rounded-lg mb-4 shadow-sm ${openFaq === idx ? 'active bg-white' : 'bg-gray-50'}`}
-              onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-              tabIndex={0}
-              role="button"
-              aria-expanded={openFaq === idx}
-              onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setOpenFaq(openFaq === idx ? null : idx)}
+              className={`faq-item border border-gray-200 rounded-lg mb-4 shadow-sm overflow-hidden ${openFaq === idx ? 'active bg-white' : 'bg-gray-50'}`} // Added overflow-hidden to parent
             >
-              <div className="faq-question p-4 sm:p-5 flex justify-between items-center cursor-pointer">
+              <div
+                className="faq-question p-4 sm:p-5 flex justify-between items-center cursor-pointer"
+                onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                tabIndex={0}
+                role="button"
+                aria-expanded={openFaq === idx}
+                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setOpenFaq(openFaq === idx ? null : idx)}
+              >
                 <h3 className="text-base sm:text-lg font-medium text-[#2c2d5a] pr-8">{item.q}</h3>
-                <span className={`faq-icon flex-shrink-0 text-[#ff3366] transition-transform duration-200 ${openFaq === idx ? 'transform rotate-180' : ''}`}>
+                <span className={`faq-icon flex-shrink-0 text-[#ff3366] transition-transform duration-300 ease-in-out ${openFaq === idx ? 'transform rotate-180' : ''}`}>
                   <i className="fas fa-chevron-down" />
                 </span>
               </div>
+              {/* Updated faq-answer div */}
               <div
-                className={`faq-answer overflow-hidden transition-all duration-300 ${openFaq === idx ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+                className={`faq-answer overflow-hidden transition-all duration-300 ease-in-out ${
+                  openFaq === idx 
+                    ? 'max-h-96 opacity-100 pt-0 pb-4 sm:pb-5 px-4 sm:px-5' // Added pt-0, padding applied when open
+                    : 'max-h-0 opacity-0 px-4 sm:px-5' // Keep horizontal padding for smoother height transition
+                }`}
               >
-                <p className="px-4 sm:px-5 pb-4 sm:pb-5 text-sm sm:text-base text-gray-600">{item.a}</p>
+                {/* Inner p tag for the text content, no specific padding here */}
+                <p className={`text-sm sm:text-base text-gray-600 ${openFaq === idx ? 'pt-2 border-t border-gray-100' : ''}`}>
+                  {item.a}
+                </p>
               </div>
             </div>
           ))}
@@ -91,4 +101,4 @@ export default function HomeFAQSection() {
       </div>
     </section>
   );
-} 
+}

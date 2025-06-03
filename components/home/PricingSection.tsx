@@ -91,16 +91,13 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
                 <div className="plan-features text-left mt-4 mb-6">
                   <ul className="space-y-2 text-xs sm:text-sm">
                     <li className="flex items-start">
-                      <i className="fas fa-check text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
-                      <span>All Creative Cloud Apps</span>
+                      <span>All Adobe Apps</span>
                     </li>
                     <li className="flex items-start">
-                      <i className="fas fa-check text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
                       <span>All AI features</span>
                     </li>
                     <li className="flex items-start">
-                      <i className="fas fa-check text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
-                      <span>100GB Cloud Storage</span>
+                      <span>100GB Cloud</span>
                     </li>
                   </ul>
                 </div>

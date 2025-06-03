@@ -16,15 +16,56 @@ export default function Header() {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const [authChecked, setAuthChecked] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false); // Initialize to false
 
+  // Effect for auth state: runs once on mount
   useEffect(() => {
-    setIsDropdownOpen(false);
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
+    let isMounted = true;
+    const supabase = createClient();
 
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        if (error) {
+          console.error('Error getting initial session:', error);
+          setUser(null);
+        } else {
+          setUser(session?.user ?? null);
+        }
+      } catch (e) {
+        if (!isMounted) return;
+        console.error('Exception in getInitialSession:', e);
+        setUser(null);
+      } finally {
+        if (isMounted) {
+          setAuthChecked(true); // Mark initial check as complete
+        }
+      }
+    };
+
+    getInitialSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      if (!isMounted) return;
+      setUser(session?.user ?? null);
+      // If onAuthStateChange fires before getInitialSession completes its finally block
+      if (!authChecked && isMounted) {
+        setAuthChecked(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []); // Empty dependency array: runs once on mount for auth setup
+
+  // Effect for scroll handling and click outside dropdown/mobile menu
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
@@ -34,83 +75,45 @@ export default function Header() {
           lastScrollY.current = currentY;
           ticking = false;
         });
+        ticking = true;
       }
-      ticking = true;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
-    const supabase = createClient();
-
-    const checkAuth = async () => {
-      setAuthChecked(false);
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (!isMounted) return;
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          setUser(null);
-        } else if (session?.user) {
-          setUser(session.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        if (!isMounted) return;
-        console.error('Error checking auth:', error);
-        setUser(null);
-      } finally {
-        if (isMounted) {
-          setAuthChecked(true);
-        }
-      }
-    };
-
-    checkAuth();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      if (!isMounted) return;
-      setUser(session?.user ?? null);
-      if (event === "SIGNED_IN" || event === "USER_UPDATED") {
-         setAuthChecked(false);
-         checkAuth();
-      }
-      if (!authChecked) setAuthChecked(true);
-    });
 
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
-      
-      // Handle clicks outside mobile menu
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && isMobileMenuOpen) {
         const mobileToggle = document.getElementById('mobile-menu-toggle');
+        // Ensure the click is not on the toggle button itself, which would re-open it
         if (mobileToggle && !mobileToggle.contains(event.target as Node)) {
             setIsMobileMenuOpen(false);
         }
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      isMounted = false;
-      authListener?.subscription?.unsubscribe();
+      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [pathname, isMobileMenuOpen, authChecked]);
+  }, [isMobileMenuOpen]); // Re-add listener if mobile menu state affects its behavior
+
+  // Effect to close menus on pathname change
+  useEffect(() => {
+    setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    setUser(null);
+    // setUser(null); // Handled by onAuthStateChange
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
     router.push('/');
+    router.refresh(); // Ensure layout reflects logout
   };
 
   const toggleDropdown = () => {
@@ -122,12 +125,19 @@ export default function Header() {
   };
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (pathname === '/dashboard' || pathname === '/profile') {
+    // If on dashboard or profile, force a full page navigation to home
+    // to ensure correct state reset if needed.
+    if (pathname === '/dashboard' || pathname === '/profile' || pathname === '/login' || pathname === '/register') {
       e.preventDefault();
-      window.location.href = '/';
+      window.location.href = '/'; // Or router.push('/') and ensure state resets
     }
-    setIsMobileMenuOpen(false);
+    setIsMobileMenuOpen(false); // Always close mobile menu on logo click
   };
+  
+  const handleNavLinkClick = () => {
+    setIsMobileMenuOpen(false); // Close mobile menu when a nav link is clicked
+  };
+
 
   return (
     <header className={!showHeader ? 'hidden' : ''}>
@@ -143,8 +153,9 @@ export default function Header() {
           <button
             id="mobile-menu-toggle"
             onClick={toggleMobileMenu}
-            className="p-2 rounded-md text-gray-500 hover:bg-gray-100"
+            className="p-2 rounded-md text-gray-500 hover:bg-gray-100 focus:outline-none"
             aria-label="Toggle mobile menu"
+            aria-expanded={isMobileMenuOpen}
           >
             <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
           </button>
@@ -168,7 +179,7 @@ export default function Header() {
                   aria-expanded={isDropdownOpen}
                   aria-haspopup="true"
                 >
-                  <span className="md:hidden">
+                  <span className="md:hidden"> {/* Icon for mobile-sized desktop view if needed */}
                     <i className="fas fa-user-cog icon"></i>
                   </span>
                   <span className="hidden md:inline">My Account</span>
@@ -176,10 +187,10 @@ export default function Header() {
                 </button>
 
                 <div className={`dropdown-menu${isDropdownOpen ? ' open' : ''}`}>
-                  <Link href="/dashboard">
+                  <Link href="/dashboard" onClick={handleNavLinkClick}>
                     <i className="fas fa-tachometer-alt icon"></i> Dashboard
                   </Link>
-                  <Link href="/profile">
+                  <Link href="/profile" onClick={handleNavLinkClick}>
                     <i className="fas fa-user-edit icon"></i> Profile
                   </Link>
                   <div className="dropdown-divider"></div>
@@ -205,7 +216,7 @@ export default function Header() {
       {/* Mobile dropdown menu - shown when hamburger is clicked */}
       {isMobileMenuOpen && (
         <div className="md:hidden" id="mobile-menu" ref={mobileMenuRef}>
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white shadow-lg">
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white shadow-lg absolute top-full left-0 right-0 z-40 border-t border-gray-100">
             {!authChecked ? (
               <div className="px-3 py-2">
                 <div className="animate-pulse bg-gray-200 h-8 w-full rounded mb-2"></div>
@@ -216,10 +227,10 @@ export default function Header() {
                 <div className="px-3 py-2">
                   <span className="block text-sm font-medium text-gray-600 truncate">{user.email}</span>
                 </div>
-                <Link href="/dashboard" className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                <Link href="/dashboard" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
                   <i className="fas fa-tachometer-alt mr-2"></i> Dashboard
                 </Link>
-                <Link href="/profile" className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                <Link href="/profile" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
                   <i className="fas fa-user-edit mr-2"></i> Profile
                 </Link>
                 <button onClick={handleLogout} className="w-full text-left block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
@@ -228,24 +239,27 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link href="/login" className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                <Link href="/login" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
                   Log In
                 </Link>
-                <Link href="/register" className="block px-3 py-2 rounded text-base font-medium bg-pink-50 text-[#ff3366] hover:bg-pink-100">
+                <Link href="/register" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium bg-pink-50 text-[#ff3366] hover:bg-pink-100">
                   Register
                 </Link>
               </>
             )}
             <div className="my-2 h-px bg-gray-200"></div>
-            <Link href="/#pricing" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+            <Link href="/#pricing" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
               Pricing
             </Link>
-            <Link href="/faq" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+            <Link href="/faq" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
               FAQ
+            </Link>
+             <Link href="mailto:support@cheapcc.online" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+              Support
             </Link>
           </div>
         </div>
       )}
     </header>
   );
-} 
+}

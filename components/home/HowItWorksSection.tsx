@@ -26,6 +26,24 @@ export default function HowItWorksSection() {
     };
   }, []);
 
+  const steps = [
+    {
+      title: "Choose a Plan",
+      description: "Select the subscription duration that best fits your needs.",
+      delay: "",
+    },
+    {
+      title: "Complete Purchase",
+      description: "Enter your email and pay securely with PayPal.",
+      delay: "delay-100",
+    },
+    {
+      title: "Receive Details",
+      description: "Get your Adobe account information delivered via email.",
+      delay: "delay-200",
+    },
+  ];
+
   return (
     <section className="how-it-works py-10 sm:py-16 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,44 +52,27 @@ export default function HowItWorksSection() {
           <p className="text-base sm:text-lg text-gray-500">Getting your Adobe Creative Cloud subscription is simple and fast</p>
         </div>
         
-        {/* Steps container - grid on mobile, flex row with connected steps on desktop */}
         <div 
-          className="steps-container grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-0 max-w-4xl mx-auto" 
+          // Added 'steps-container-with-line' for CSS targeting and adjusted gaps
+          className={`steps-container steps-container-with-line grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-8 sm:gap-x-4 md:gap-x-8 max-w-4xl mx-auto`} 
           ref={howItWorksRef}
         >
-          <div className={`step flex flex-col items-center text-center sm:items-start sm:text-left relative stagger-item ${isVisible ? 'visible' : ''}`}>
-            <div className="step-number w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-[#ff3366] text-white text-xl sm:text-2xl font-bold mb-4">1</div>
-            <h3 className="text-lg sm:text-xl font-semibold text-[#2c2d5a] mb-2">Choose a Plan</h3>
-            <p className="text-sm sm:text-base text-gray-600">Select the subscription duration that best fits your needs.</p>
-            
-            {/* Connect arrow - visible on desktop only */}
-            <div className="hidden sm:block absolute top-7 left-[110%] transform -translate-x-1/2 w-16 h-2 bg-[#ff3366]/20 sm:w-full">
-              <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-[#ff3366]">
-                <i className="fas fa-chevron-right"></i>
+          {steps.map((step, index) => (
+            <div 
+              key={index}
+              // Always center text content
+              className={`step flex flex-col items-center text-center relative stagger-item ${step.delay} ${isVisible ? 'visible' : ''}`}
+            >
+              <div className="step-number w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-[#ff3366] text-white text-xl sm:text-2xl font-bold mb-4">
+                {index + 1}
               </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-[#2c2d5a] mb-2">{step.title}</h3>
+              <p className="text-sm sm:text-base text-gray-600 px-2 sm:px-0">{step.description}</p>
+              {/* Individual connecting lines/arrows are removed */}
             </div>
-          </div>
-          
-          <div className={`step flex flex-col items-center text-center sm:items-start sm:text-left relative stagger-item delay-100 ${isVisible ? 'visible' : ''}`}>
-            <div className="step-number w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-[#ff3366] text-white text-xl sm:text-2xl font-bold mb-4">2</div>
-            <h3 className="text-lg sm:text-xl font-semibold text-[#2c2d5a] mb-2">Complete Purchase</h3>
-            <p className="text-sm sm:text-base text-gray-600">Enter your email and pay securely with PayPal.</p>
-            
-            {/* Connect arrow - visible on desktop only */}
-            <div className="hidden sm:block absolute top-7 left-[110%] transform -translate-x-1/2 w-16 h-2 bg-[#ff3366]/20 sm:w-full">
-              <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 text-[#ff3366]">
-                <i className="fas fa-chevron-right"></i>
-              </div>
-            </div>
-          </div>
-          
-          <div className={`step flex flex-col items-center text-center sm:items-start sm:text-left stagger-item delay-200 ${isVisible ? 'visible' : ''}`}>
-            <div className="step-number w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-[#ff3366] text-white text-xl sm:text-2xl font-bold mb-4">3</div>
-            <h3 className="text-lg sm:text-xl font-semibold text-[#2c2d5a] mb-2">Receive Details</h3>
-            <p className="text-sm sm:text-base text-gray-600">Get your Adobe account information delivered via email.</p>
-          </div>
+          ))}
         </div>
       </div>
     </section>
   );
-} 
+}

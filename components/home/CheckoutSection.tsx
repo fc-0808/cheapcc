@@ -149,7 +149,7 @@ export default function CheckoutSection({
                       <i className="fas fa-exclamation-circle text-[#ff3366] text-sm"></i>
                     </span>
                     <span className="font-semibold text-xs sm:text-sm">
-                      Please enter your name and a valid email to continue.
+                      Please enter a name and a valid email to continue.
                     </span>
                   </div>
                 )}

@@ -83,7 +83,6 @@ export default function TestimonialsSection() {
           {currentTestimonial && (
             <div className="testimonial-card bg-white rounded-xl shadow-md p-6 sm:p-8 relative">
               <div className="testimonial-quote absolute text-6xl text-[#ff3366]/5 top-4 left-4">
-                <i className="fas fa-quote-left"></i>
               </div>
               
               <div className="testimonial-rating flex mb-4">
