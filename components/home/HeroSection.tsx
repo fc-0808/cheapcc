@@ -8,17 +8,17 @@ export default function HeroSection() {
         <div className="savings-badge mx-auto mb-4 sm:mb-6">
           <i className="fas fa-tags" /> Save up to 86% vs Official Pricing
         </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
           Unleash Your Creativity with<br className="hidden sm:block" />
           <span className="highlight">
             Adobe Creative Cloud
             <span className="highlight-underline" />
           </span>
         </h1>
-        <p className="text-base sm:text-lg md:text-xl max-w-3xl mx-auto">
-          Get the complete suite with all premium applications at a fraction of the official cost. Same powerful tools, same features, massive savings.
+        <p className="text-sm sm:text-lg md:text-xl max-w-lg md:max-w-2xl mx-auto">
+          Access the full Adobe Creative Cloud suite for less. Genuine apps, huge savings.
         </p>
-        <div className="hero-features flex flex-wrap justify-center gap-3 sm:gap-4 my-6 sm:my-8">
+        <div className="hero-features hidden sm:flex sm:flex-col md:flex-row md:flex-wrap justify-center items-center gap-3 sm:gap-4 my-6 sm:my-8">
           <div className="hero-feature">
             <i className="fas fa-check-circle" /> All Creative Cloud Apps
           </div>
