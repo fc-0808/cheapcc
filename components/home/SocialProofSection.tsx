@@ -2,10 +2,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const INITIAL_COUNTERS = [
-  { id: 'customers', value: 0, target: 500, label: 'Happy Customers', icon: 'fas fa-users', suffix: '+' },
-  { id: 'activations', value: 0, target: 1500, label: 'Successful Activations', icon: 'fas fa-check-circle', suffix: '+' },
-  { id: 'satisfaction', value: 0, target: 99, label: 'Customer Satisfaction', icon: 'fas fa-star', suffix: '%' },
-  { id: 'support', value: 0, target: 24, label: 'Support Availability', icon: 'fas fa-headset', suffix: '/7' },
+  { id: 'customers', value: 0, target: 500, label: 'HAPPY CUSTOMERS', icon: 'fas fa-users', suffix: '+' },
+  { id: 'activations', value: 0, target: 1500, label: 'SUCCESSFUL ACTIVATIONS', icon: 'fas fa-check-circle', suffix: '+' },
+  { id: 'satisfaction', value: 0, target: 99, label: 'CUSTOMER SATISFACTION', icon: 'fas fa-star', suffix: '%' },
+  { id: 'support', value: 0, target: 24, label: 'SUPPORT AVAILABILITY', icon: 'fas fa-headset', suffix: '/7' },
 ];
 
 export default function SocialProofSection() {
@@ -38,7 +38,7 @@ export default function SocialProofSection() {
   useEffect(() => {
     if (isVisible && !animated) {
       setAnimated(true);
-      const durations = [1200, 1200, 1200, 1200]; // Durations for each counter animation
+      const durations = [1500, 1500, 1500, 1500]; // Slightly longer, smoother animations
       counters.forEach((counter, idx) => {
         let start = 0;
         const end = counter.target;
@@ -47,17 +47,25 @@ export default function SocialProofSection() {
 
         function animate(now: number) {
           const elapsed = now - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const current = Math.floor(progress * (end - start) + start);
+          // Use easeOutExpo for a more natural, professional animation feel
+          const progress = elapsed / duration;
+          const easedProgress = progress < 1 
+            ? 1 - Math.pow(2, -10 * progress) 
+            : 1;
+          
+          // Use Math.round to make sure we can reach the exact target value
+          const current = Math.round(easedProgress * end);
+          
           setCounters(prev => {
             const updated = [...prev];
             updated[idx] = { ...updated[idx], value: current };
             return updated;
           });
+          
           if (progress < 1) {
             requestAnimationFrame(animate);
           } else {
-             // Ensure target is set at the end
+            // Explicitly set the final value to ensure it's exactly the target
             setCounters(prev => {
               const updated = [...prev];
               updated[idx] = { ...updated[idx], value: end };
@@ -68,27 +76,46 @@ export default function SocialProofSection() {
         requestAnimationFrame(animate);
       });
     }
-  }, [isVisible, animated]); // Removed counters from dependency array
+  }, [isVisible, animated]); 
 
   return (
-    <section className="social-proof bg-gradient-to-br from-[#2c2d5a] to-[#1e0029] py-10 sm:py-12 md:py-16">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          className="counter-container grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
+    <section className="bg-[#1a1a3a] py-20 relative overflow-hidden">
+      {/* Premium background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a3a] to-[#232355] z-0"></div>
+      
+      {/* Subtle spotlight animations */}
+      <div className="absolute inset-0 z-0">
+        <div className="spotlight-mini spotlight-mini-1"></div>
+        <div className="spotlight-mini spotlight-mini-2"></div>
+      </div>
+      
+      {/* Very subtle grid pattern for depth */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzAgMzBoMzB2MzBIMzB6IiBzdHJva2Utb3BhY2l0eT0iLjAyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iLjUiLz48cGF0aCBkPSJNMCAzMGgzMHYzMEgweiIgc3Ryb2tlLW9wYWNpdHk9Ii4wMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9Ii41Ii8+PHBhdGggZD0iTTMwIDBIMHYzMGgzMHoiIHN0cm9rZS1vcGFjaXR5PSIuMDIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxwYXRoIGQ9Ik0zMCAwaDMwdjMwSDMweiIgc3Ryb2tlLW9wYWNpdHk9Ii4wMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9Ii41Ii8+PC9nPjwvc3ZnPg==')] opacity-5 z-0"></div>
+
+      <div className="container relative z-10 mx-auto px-4">
+        <div 
+          className="flex flex-col md:flex-row justify-center items-center md:justify-between max-w-5xl mx-auto"
           ref={counterRef}
         >
-          {counters.map((counter) => (
-            <div 
-              key={counter.id} 
-              className={`counter-item flex flex-col items-center justify-center p-4 sm:p-6 rounded-lg bg-white/10 backdrop-blur-sm stagger-item ${isVisible ? 'visible' : ''}`}
-            >
-              <i className={`${counter.icon} text-xl sm:text-2xl text-pink-300 mb-2`} />
-              <div className={`counter-value text-2xl sm:text-3xl md:text-4xl font-bold text-white ${animated ? 'animated' : ''}`}>
-                {counter.value}
-                <span className="counter-suffix">{counter.suffix}</span>
+          {counters.map((counter, index) => (
+            <React.Fragment key={counter.id}>
+              <div 
+                className={`flex flex-col items-center text-center my-6 md:my-0 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                style={{ transitionDelay: `${index * 150}ms` }}
+              >
+                <i className={`${counter.icon} text-[#ff3366] text-3xl mb-4`}></i>
+                <div className="text-white text-4xl font-bold mb-1">
+                  {counter.value}{counter.suffix}
+                </div>
+                <div className="text-[#a0a0c0] text-xs tracking-wider font-medium uppercase">
+                  {counter.label}
+                </div>
               </div>
-              <div className="counter-label text-sm sm:text-base text-pink-100 mt-1 text-center">{counter.label}</div>
-            </div>
+              
+              {index < counters.length - 1 && (
+                <div className="hidden md:block h-14 w-px bg-[#ffffff1a] mx-4"></div>
+              )}
+            </React.Fragment>
           ))}
         </div>
       </div>

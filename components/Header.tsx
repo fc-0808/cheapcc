@@ -7,16 +7,26 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function Header() {
-  const [showHeader, setShowHeader] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const lastScrollY = useRef(0);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const [authChecked, setAuthChecked] = useState(false); // Initialize to false
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Effect to mark component as mounted and then make it visible
+  useEffect(() => {
+    setIsMounted(true);
+    // Small delay to ensure smooth transition
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 10);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Effect for auth state: runs once on mount
   useEffect(() => {
@@ -40,7 +50,7 @@ export default function Header() {
         setUser(null);
       } finally {
         if (isMounted) {
-          setAuthChecked(true); // Mark initial check as complete
+          setAuthChecked(true);
         }
       }
     };
@@ -50,7 +60,6 @@ export default function Header() {
     const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!isMounted) return;
       setUser(session?.user ?? null);
-      // If onAuthStateChange fires before getInitialSession completes its finally block
       if (!authChecked && isMounted) {
         setAuthChecked(true);
       }
@@ -60,25 +69,11 @@ export default function Header() {
       isMounted = false;
       authListener?.subscription?.unsubscribe();
     };
-  }, []); // Empty dependency array: runs once on mount for auth setup
+  }, []);
 
-  // Effect for scroll handling and click outside dropdown/mobile menu
+  // Handle clicks outside dropdown/mobile menu
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentY = window.scrollY;
-          setShowHeader(currentY <= 60 || currentY < lastScrollY.current);
-          lastScrollY.current = currentY;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
 
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -86,19 +81,17 @@ export default function Header() {
       }
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && isMobileMenuOpen) {
         const mobileToggle = document.getElementById('mobile-menu-toggle');
-        // Ensure the click is not on the toggle button itself, which would re-open it
         if (mobileToggle && !mobileToggle.contains(event.target as Node)) {
-            setIsMobileMenuOpen(false);
+          setIsMobileMenuOpen(false);
         }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isMobileMenuOpen]); // Re-add listener if mobile menu state affects its behavior
+  }, [isMobileMenuOpen]);
 
   // Effect to close menus on pathname change
   useEffect(() => {
@@ -109,11 +102,10 @@ export default function Header() {
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    // setUser(null); // Handled by onAuthStateChange
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
     router.push('/');
-    router.refresh(); // Ensure layout reflects logout
+    router.refresh();
   };
 
   const toggleDropdown = () => {
@@ -125,87 +117,118 @@ export default function Header() {
   };
 
   const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // If on dashboard or profile, force a full page navigation to home
-    // to ensure correct state reset if needed.
     if (pathname === '/dashboard' || pathname === '/profile' || pathname === '/login' || pathname === '/register') {
       e.preventDefault();
-      window.location.href = '/'; // Or router.push('/') and ensure state resets
+      window.location.href = '/';
     }
-    setIsMobileMenuOpen(false); // Always close mobile menu on logo click
+    setIsMobileMenuOpen(false);
   };
   
   const handleNavLinkClick = () => {
-    setIsMobileMenuOpen(false); // Close mobile menu when a nav link is clicked
+    setIsMobileMenuOpen(false);
   };
 
+  // Basic header styling for both server and client rendering
+  const headerClasses = "fixed top-0 z-50 py-3 mx-3 my-4 backdrop-blur-[2px] shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] rounded-[20px] border border-white/18 transition-all duration-300 ease-in-out left-0 right-0 md:left-20 md:right-20 lg:left-80 lg:right-80";
+  
+  // Add opacity transition for smooth appearance
+  const visibilityClasses = isVisible ? "opacity-100" : "opacity-0";
+
+  // Button classes based on client/server rendering
+  const toggleButtonClasses = isMounted 
+    ? "p-2 rounded-md text-white/70 hover:text-white transition-colors"
+    : "p-2 rounded-md text-gray-500 hover:text-gray-900 transition-colors";
 
   return (
-    <header className={!showHeader ? 'hidden' : ''}>
-      <div className="container">
-        <Link href="/" onClick={handleLogoClick} className="logo-link">
-          <span className="logo-text">
-            Cheap <span className="accent-text">CC</span>
+    <header className={`${headerClasses} ${visibilityClasses}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+        <Link href="/" onClick={handleLogoClick} className="flex items-center">
+          <span className="font-extrabold text-xl tracking-tight text-gradient bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+            Cheap <span className="text-[#ff3366] font-bold">CC</span>
           </span>
         </Link>
 
-        {/* Mobile menu toggle button - visible on small screens */}
+        {/* Mobile menu toggle button */}
         <div className="md:hidden">
           <button
             id="mobile-menu-toggle"
             onClick={toggleMobileMenu}
-            className="p-2 rounded-md text-gray-500 hover:bg-gray-100 focus:outline-none"
+            className={toggleButtonClasses}
             aria-label="Toggle mobile menu"
             aria-expanded={isMobileMenuOpen}
           >
-            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
+            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-lg`}></i>
           </button>
         </div>
         
-        {/* Desktop navigation - hidden on small screens */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* Desktop navigation */}
+        <div className="hidden md:flex md:items-center space-x-8">
           {!authChecked ? (
-            <div className="auth-skeleton"></div>
+            <div className="bg-gray-100 h-9 w-32 animate-pulse rounded-md"></div>
           ) : user ? (
-            <div className="user-info">
-              <span className="user-email-display hidden md:inline-flex items-center">
-                <i className="fas fa-user-circle icon"></i>
+            <div className="flex items-center space-x-5">
+              <span className="hidden lg:flex items-center text-sm text-gray-600">
+                <i className="fas fa-user-circle mr-2 text-gray-400"></i>
                 {user.email}
               </span>
 
-              <div className="relative" ref={dropdownRef}>
+              <div ref={dropdownRef} className="relative">
                 <button
                   onClick={toggleDropdown}
-                  className={`dropdown-button${isDropdownOpen ? ' open' : ''}`}
+                  className="flex items-center gap-2 py-1.5 px-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100/70 transition-colors"
                   aria-expanded={isDropdownOpen}
                   aria-haspopup="true"
                 >
-                  <span className="md:hidden"> {/* Icon for mobile-sized desktop view if needed */}
-                    <i className="fas fa-user-cog icon"></i>
+                  <span className="md:hidden lg:hidden">
+                    <i className="fas fa-user-circle text-gray-600"></i>
                   </span>
                   <span className="hidden md:inline">My Account</span>
-                  <i className={`fas fa-chevron-down chevron-icon`}></i>
+                  <i className={`fas fa-chevron-down text-xs transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''} text-gray-400`}></i>
                 </button>
 
-                <div className={`dropdown-menu${isDropdownOpen ? ' open' : ''}`}>
-                  <Link href="/dashboard" onClick={handleNavLinkClick}>
-                    <i className="fas fa-tachometer-alt icon"></i> Dashboard
+                <div 
+                  className={`absolute right-0 mt-2 w-48 rounded-lg bg-white shadow-lg border border-gray-100 py-1 z-50 transform transition-all duration-150 ${
+                    isDropdownOpen 
+                      ? 'opacity-100 translate-y-0 visible' 
+                      : 'opacity-0 -translate-y-2 invisible'
+                  }`}
+                >
+                  <Link 
+                    href="/dashboard" 
+                    onClick={handleNavLinkClick}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-accent transition-colors"
+                  >
+                    <i className="fas fa-tachometer-alt w-5 text-center text-gray-400"></i> Dashboard
                   </Link>
-                  <Link href="/profile" onClick={handleNavLinkClick}>
-                    <i className="fas fa-user-edit icon"></i> Profile
+                  <Link 
+                    href="/profile" 
+                    onClick={handleNavLinkClick}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-accent transition-colors"
+                  >
+                    <i className="fas fa-user-edit w-5 text-center text-gray-400"></i> Profile
                   </Link>
-                  <div className="dropdown-divider"></div>
-                  <button onClick={handleLogout}>
-                    <i className="fas fa-sign-out-alt icon"></i> Log Out
+                  <div className="border-t border-gray-100 my-1"></div>
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-accent transition-colors text-left"
+                  >
+                    <i className="fas fa-sign-out-alt w-5 text-center text-gray-400"></i> Log Out
                   </button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="nav-links flex items-center gap-2">
-              <Link href="/login">
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/login"
+                className="text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:opacity-90 py-1.5 px-4 rounded-md transition-colors"
+              >
                 Log In
               </Link>
-              <Link href="/register" className="register-btn">
+              <Link 
+                href="/register"
+                className="text-sm font-medium bg-gradient-to-r from-pink-500 to-[#ff3366] text-white hover:opacity-90 py-1.5 px-4 rounded-md transition-colors"
+              >
                 Register
               </Link>
             </div>
@@ -213,49 +236,66 @@ export default function Header() {
         </div>
       </div>
       
-      {/* Mobile dropdown menu - shown when hamburger is clicked */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden" id="mobile-menu" ref={mobileMenuRef}>
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-white shadow-lg absolute top-full left-0 right-0 z-40 border-t border-gray-100">
+      {/* Mobile dropdown menu */}
+      {isMobileMenuOpen && isMounted && (
+        <div id="mobile-menu" ref={mobileMenuRef} className="md:hidden mt-2">
+          <div className="px-4 pt-2 pb-3 space-y-1 backdrop-blur-[5px] bg-white/10 shadow-lg border border-white/10 rounded-lg">
             {!authChecked ? (
-              <div className="px-3 py-2">
-                <div className="animate-pulse bg-gray-200 h-8 w-full rounded mb-2"></div>
-                <div className="animate-pulse bg-gray-200 h-8 w-full rounded"></div>
+              <div className="py-2">
+                <div className="animate-pulse bg-white/20 h-8 w-full rounded-md mb-2"></div>
+                <div className="animate-pulse bg-white/20 h-8 w-full rounded-md"></div>
               </div>
             ) : user ? (
               <>
-                <div className="px-3 py-2">
-                  <span className="block text-sm font-medium text-gray-600 truncate">{user.email}</span>
+                <div className="py-2 border-b border-white/10">
+                  <span className="block text-sm font-medium text-white/90 truncate">{user.email}</span>
                 </div>
-                <Link href="/dashboard" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
-                  <i className="fas fa-tachometer-alt mr-2"></i> Dashboard
+                <Link 
+                  href="/dashboard" 
+                  onClick={handleNavLinkClick}
+                  className="block px-3 py-2 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 transition-colors"
+                >
+                  <i className="fas fa-tachometer-alt mr-2 text-white/60"></i> Dashboard
                 </Link>
-                <Link href="/profile" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
-                  <i className="fas fa-user-edit mr-2"></i> Profile
+                <Link 
+                  href="/profile" 
+                  onClick={handleNavLinkClick}
+                  className="block px-3 py-2 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 transition-colors"
+                >
+                  <i className="fas fa-user-edit mr-2 text-white/60"></i> Profile
                 </Link>
-                <button onClick={handleLogout} className="w-full text-left block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
-                  <i className="fas fa-sign-out-alt mr-2"></i> Log Out
+                <button 
+                  onClick={handleLogout}
+                  className="w-full text-left block px-3 py-2 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 transition-colors"
+                >
+                  <i className="fas fa-sign-out-alt mr-2 text-white/60"></i> Log Out
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
+                <Link 
+                  href="/login" 
+                  onClick={handleNavLinkClick}
+                  className="block px-3 py-2 rounded-md text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition-colors"
+                >
                   Log In
                 </Link>
-                <Link href="/register" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium bg-pink-50 text-[#ff3366] hover:bg-pink-100">
+                <Link 
+                  href="/register" 
+                  onClick={handleNavLinkClick}
+                  className="block px-3 py-2 rounded-md text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-[#ff3366] hover:opacity-90 transition-colors mt-2"
+                >
                   Register
                 </Link>
               </>
             )}
-            <div className="my-2 h-px bg-gray-200"></div>
-            <Link href="/#pricing" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
-              Pricing
-            </Link>
-            <Link href="/faq" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
-              FAQ
-            </Link>
-             <Link href="mailto:support@cheapcc.online" onClick={handleNavLinkClick} className="block px-3 py-2 rounded text-base font-medium text-gray-700 hover:bg-gray-50">
-              Support
+            <div className="border-t border-white/10 my-2"></div>
+            <Link 
+              href="mailto:support@cheapcc.online" 
+              onClick={handleNavLinkClick}
+              className="block px-3 py-2 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 transition-colors"
+            >
+              <i className="fas fa-envelope mr-2 text-white/60"></i> Support
             </Link>
           </div>
         </div>
