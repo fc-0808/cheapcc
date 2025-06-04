@@ -452,18 +452,20 @@ input:focus, select:focus, textarea:focus {
 }
 
 .hero-title-accent {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #ff3366;
-  background: linear-gradient(90deg, #FF6B8B 0%, #FF8E53 25%, #FFCF4B 50%, #66E6F4 75%, #6B6EFF 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  position: relative;
-  padding-bottom: 0.3rem;
-  display: inline-block;
-  margin-top: 0.5rem;
-  text-shadow: 0 5px 15px rgba(255, 107, 139, 0.35);
+   font-size: 2.5rem;
+   font-weight: 800;
+   background: linear-gradient(90deg, #FF6B8B 0%, #FF8E53 25%, #FFCF4B 50%, #66E6F4 75%, #6B6EFF 100%);
+   -webkit-background-clip: text;
+   background-clip: text;
+   color: transparent;
+   position: relative;
+   padding-bottom: 0.3rem;
+   display: inline-block;
+   margin-top: 0.5rem;
+ }
+
+.hero-title-accent-wrapper {
+  filter: drop-shadow(0 5px 15px rgba(255, 107, 139, 0.35));
 }
 
 .hero-title-accent::after {
@@ -702,10 +704,12 @@ input:focus, select:focus, textarea:focus {
 
 
 .social-proof {
-  background-color: #1e1e42; /* Dark navy/purple background as shown in the image */
-  color: #fff;
+  background: var(--primary-dark);
+  color: var(--gray-200);
   position: relative;
   padding: 3rem 0;
+  border-top: 1px solid var(--gray-700);
+  border-bottom: 1px solid var(--gray-700);
 }
 
 @media (min-width: 768px) {
@@ -1208,18 +1212,7 @@ input:focus, select:focus, textarea:focus {
 }
 /* The ::after line is complex to make responsive purely with CSS if step count changes */
 /* Tailwind component does not implement this line currently */
-.steps-container.steps-container-with-line::after {
-	content: "";
-	position: absolute;
-	top: calc( (var(--step-number-size, 56px) / 2) ); /* Approximate */
-	left: 20%; /* These are hard to make generic */
-	right: 20%;
-	height: 2px;
-	background: linear-gradient(90deg, var(--primary-light), var(--primary), var(--primary-light));
-	z-index: 0;
-	opacity: 0.3;
-    /* This line is better implemented with SVGs or specific HTML elements for responsiveness if kept */
-}
+
 /* Individual step styling */
 .step {
 	/* flex: 1; max-width: 300px; (If flex) */

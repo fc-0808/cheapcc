@@ -29,6 +29,8 @@ export default function HeroSection() {
         const opacity = Math.random() * 0.5 + 0.3; // Random opacity
         
         star.className = 'absolute rounded-full bg-white z-10';
+        star.setAttribute('aria-hidden', 'true');
+        star.setAttribute('role', 'presentation');
         star.style.width = `${size}px`;
         star.style.height = `${size}px`;
         star.style.left = `${Math.random() * 100}%`;
