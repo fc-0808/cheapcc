@@ -79,26 +79,35 @@ export default function HeroSection() {
       
       <div className="container mx-auto px-4 p-8 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center justify-center text-center">
         <div className={`hero-content ${isVisible ? 'visible' : ''} relative max-w-4xl mx-auto`}>
-          <div className="savings-badge mb-8 md:mb-10">
+          {/* Savings badge hidden on screens smaller than md */}
+          <div className="hidden md:flex savings-badge mb-8 md:mb-10">
             <div className="savings-badge-inner border border-[#ff3366] bg-transparent backdrop-blur-sm text-[#ff3366]">
               <i className="fas fa-tags mr-2 text-[#ff3366]" /> Save up to 86% vs Official Pricing
             </div>
           </div>
           
-          <div className="hero-title-container mb-6">
+          <div className="hero-title-container mb-4 md:mb-6">
             <h1 className="hero-title">
-              <span className="hero-title-main hero-3d-text text-white text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">Unleash Your Creativity with</span>
-              <span className="hero-title-accent block mt-3 text-4xl sm:text-5xl md:text-6xl">
+              {/* Adjusted font sizes and leading for hero-title-main */}
+              <span className="hero-title-main hero-3d-text text-white text-[2.2rem] leading-[2.5rem] sm:text-[2.8rem] sm:leading-[3.1rem] md:text-6xl font-bold">Unleash Your Creativity with</span>
+              {/* Adjusted font sizes, leading and margin-top for hero-title-accent */}
+              <span className="hero-title-accent block mt-0 pt-3 sm:mt-1 md:mt-2 text-[2.4rem] leading-[2.7rem] sm:text-[3rem] sm:leading-[3.3rem] md:text-6xl">
                 Adobe Creative Cloud
               </span>
             </h1>
           </div>
           
-          <p className="hero-description text-white/60 max-w-2xl mx-auto mb-10 text-lg backdrop-blur-sm py-2 font-light tracking-wide">
-            Access the full Adobe Creative Cloud suite for less. Genuine apps, unlimited potential, significant savings.
+          {/* Description for mobile/tablet - Adjusted margin */}
+          <p className="md:hidden hero-description text-white/60 max-w-xl mx-auto mb-8 text-md sm:text-lg backdrop-blur-sm py-1 font-light tracking-wide">
+            Access the full Adobe Creative Cloud suite for less.
+          </p>
+          {/* Description for desktop - Adjusted margin */}
+          <p className="hidden md:block hero-description text-white/60 max-w-2xl mx-auto mb-10 text-lg backdrop-blur-sm py-8 pt-1 font-light tracking-wide">
+            Access the full Adobe Creative Cloud suite for less.
           </p>
           
-          <div className="hero-features-wrapper mb-10">
+          {/* Features hidden on screens smaller than md */}
+          <div className="hidden md:block hero-features-wrapper mb-10">
             <div className="hero-features flex flex-wrap justify-center gap-4">
               <div className="hero-feature bg-[#ffffff08] backdrop-blur-sm border border-[#ffffff10] rounded-full shadow-[0_0_20px_rgba(255,51,102,0.07)]">
                 <div className="hero-feature-icon">
@@ -121,8 +130,10 @@ export default function HeroSection() {
             </div>
           </div>
           
-          <div className="hero-cta mb-12">
-            <a href="#pricing" className="primary-btn glow-effect px-8 py-4 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff5e85] text-white font-medium text-lg shadow-lg shadow-[#ff336640] hover:shadow-[#ff336660] hover:translate-y-[-2px] transition-all duration-300">
+          {/* Adjusted CTA margin for mobile */}
+          <div className="hero-cta mb-6 md:mb-12">
+            {/* Adjusted button padding for smaller screens, text size slightly smaller on smallest screens */}
+            <a href="#pricing" className="primary-btn glow-effect px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff5e85] text-white font-medium text-base sm:text-lg shadow-lg shadow-[#ff336640] hover:shadow-[#ff336660] hover:translate-y-[-2px] transition-all duration-300">
               Explore Plans & Pricing <i className="fas fa-arrow-right ml-2"></i>
             </a>
           </div>
@@ -130,4 +141,4 @@ export default function HeroSection() {
       </div>
     </section>
   );
-} 
+}
