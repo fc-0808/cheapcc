@@ -873,17 +873,22 @@ input:focus, select:focus, textarea:focus {
 
 /* --- Pricing Section --- */
 .pricing {
-  padding: 3rem 0;
+  padding: 5rem 0;
   background-color: var(--white);
   border-top: 1px solid var(--gray-100);
   border-bottom: 1px solid var(--gray-100);
   position: relative;
+  overflow: visible;
 }
 
 .pricing .section-heading h2 {
   color: var(--primary);
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
   font-size: 2.5rem;
-  margin-bottom: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
 }
 
 .pricing .section-heading p {
@@ -892,65 +897,124 @@ input:focus, select:focus, textarea:focus {
   margin-bottom: 2rem;
 }
 
-/* Plans Container */
-.plans-container {
-  display: flex;
-  margin-top: 1.5rem;
-  padding-bottom: 1rem;
+/* For the pricing container */
+.pricing .overflow-x-auto {
+  margin: 0 -0.5rem;
+  padding-top: 2rem;
+  padding-bottom: 1.5rem;
+  overflow-y: visible !important;
+
+  /* --- Hide Scrollbar --- */
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+}
+
+.pricing .overflow-x-auto::-webkit-scrollbar {
+  display: none; /* For Chrome, Safari, and Opera */
+}
+
+.pricing .overflow-x-auto::-webkit-scrollbar-thumb {
+  background-color: var(--primary-light);
+  border-radius: 6px;
+}
+
+.pricing .overflow-x-auto::-webkit-scrollbar-track {
+  background-color: var(--gray-100);
+  border-radius: 6px;
 }
 
 .plan-card {
   background-color: var(--white);
-  border-radius: var(--radius-md);
-  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  text-align: center;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  padding: 1.75rem 1.25rem;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--gray-200);
   position: relative;
   justify-content: space-between;
   cursor: pointer;
-  /* Widths are handled by Tailwind classes in the component */
-  min-height: 380px;
+  min-height: 450px;
+  flex-shrink: 0;
+  margin: 0.5rem;
+  overflow: visible !important;
 }
 
 .plan-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--gray-300);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-light);
 }
 
 .plan-card.selected {
   border: 2px solid var(--accent);
-  box-shadow: 0 0 0 2px rgba(var(--accent-rgb),0.1), var(--shadow-lg);
-  transform: translateY(-3px);
-  z-index: 2;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.2), 0 10px 25px rgba(var(--primary-rgb),0.1);
+  transform: translateY(-10px) scale(1.02);
+  z-index: 20; /* Higher z-index to ensure it's above other cards */
+  overflow: visible !important;
+  position: relative;
 }
 
 .plan-duration {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  color: var(--primary-light);
+  border-bottom-color: var(--gray-200);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--gray-200);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 .plan-price {
-  font-size: 2.5rem;
-  font-weight: 700;
   color: var(--primary-dark);
-  margin-bottom: 1.25rem;
+  font-size: 2.75rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
   line-height: 1.1;
+  transition: color 0.3s ease;
+}
+
+.plan-card:hover .plan-price {
+  color: var(--accent);
+}
+
+.plan-card.selected .plan-price {
+  color: var(--accent);
+}
+
+/* Ribbon Container Styling */
+.ribbon-container {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  z-index: 10;
+  overflow: visible;
+}
+
+/* One-time purchase ribbon styling */
+.one-time-purchase-ribbon {
+  background: linear-gradient(90deg, #ff3366 0%, #a855f7 100%);
+  box-shadow: 0 6px 24px rgba(255,51,102,0.25), 0 1.5px 6px rgba(168,85,247,0.18);
+  transform: translateY(-25%) translateX(15%) rotate(15deg);
+  padding: 0.35rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: white;
+  white-space: nowrap;
+  position: relative; 
+  z-index: 10;
 }
 
 .plan-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 1.5rem 0;
+  margin: 1rem 0 1.5rem 0;
   text-align: left;
   width: 100%;
-  font-size: 0.9rem;
 }
 
 .plan-features ul {
@@ -961,10 +1025,12 @@ input:focus, select:focus, textarea:focus {
 
 .plan-features li {
   margin-bottom: 0.75rem;
-  padding-left: 1.5rem;
+  padding-left: 1.75rem;
   position: relative;
   color: var(--text);
   line-height: 1.5;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .plan-features li:before {
@@ -974,44 +1040,84 @@ input:focus, select:focus, textarea:focus {
   color: var(--success);
   position: absolute;
   left: 0;
-  top: 3px;
-  font-size: 0.8rem;
+  top: 1px;
+  font-size: 0.9rem;
+  background: rgba(var(--success-rgb), 0.1);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .select-btn {
   margin-top: auto;
   width: 100%;
-  background-color: var(--primary);
+  background: var(--primary);
   color: var(--white);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.15);
   border: none;
-  padding: 0.875rem 0;
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
+  padding: 0.9rem 0;
+  border-radius: var(--radius-md);
+  font-size: 1.05rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: all 0.3s ease;
   text-transform: capitalize;
 }
 
 .select-btn:hover {
-  background-color: var(--primary-light);
-  transform: translateY(-1px);
+  background: var(--primary-light);
+  box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.2);
+  transform: translateY(-2px);
 }
 
 .plan-card.selected .select-btn {
-  background-color: var(--accent);
-  color: var(--white);
-  font-weight: 600;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%);
+  box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.25);
+  font-weight: 700;
 }
 
 .plan-card.selected .select-btn:hover {
-  background-color: var(--accent-light);
+  background: linear-gradient(90deg, var(--accent-light) 0%, var(--accent) 100%);
+  box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.35);
 }
 
-/* Style for the "One-time purchase" ribbon */
-.plan-card .absolute.right-0.top-0 {
-  background: linear-gradient(90deg, #ff3366 0%, #a855f7 100%);
-  box-shadow: 0 6px 24px rgba(255,51,102,0.25), 0 1.5px 6px rgba(168,85,247,0.18);
+@media (max-width: 640px) {
+  .plan-card {
+    padding: 1.5rem 1.25rem;
+    min-height: 340px;
+  }
+  
+  .plan-price {
+    font-size: 2.25rem;
+  }
+  
+  .plan-features li {
+    font-size: 0.9rem;
+  }
+}
+
+/* New styles for the elegant fade effect on the pricing section */
+.pricing-scroll-container {
+  position: relative;
+}
+
+/* Apply the fade effect only on screens where horizontal scrolling is likely */
+@media (max-width: 1023px) { 
+  .pricing-scroll-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px; /* Adjust the width of the fade effect */
+    height: 100%;
+    /* The gradient fades from the section's background color to transparent */
+    background: linear-gradient(to left, var(--white), rgba(255, 255, 255, 0));
+    pointer-events: none; /* Allows clicking and scrolling through the gradient */
+    z-index: 2; /* Ensures the fade is on top of the cards */
+  }
 }
 
 .checkout {
@@ -1417,13 +1523,72 @@ input:focus, select:focus, textarea:focus {
 /* --- How It Works Section (Refinement) --- */
 .how-it-works {
   padding: 5rem 0;
-  background-color: var(--gray-50);
+  background-color: var(--white);
 }
 .how-it-works .section-heading h2 {
   color: var(--primary);
   background: none; -webkit-background-clip: unset; background-clip: unset;
 }
-/* Step styles from previous context are assumed to be the main definition */
+
+/* Horizontal connecting line styling */
+.steps-container-with-line {
+  position: relative;
+}
+
+/* Create the horizontal line connecting all steps */
+.steps-container-with-line::before {
+  content: "";
+  position: absolute;
+  background-color: #e5e7eb; /* Tailwind gray-200 */
+  z-index: 0;
+  border-radius: 2px;
+  
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  
+  /* KEY CHANGE: Adjust these two values for the new floating layout */
+  top: 3.5rem;   /* Start the line just below the first circle */
+  bottom: 3.5rem; /* End the line just above the last circle */
+}
+
+/* Adjust for medium screens */
+@media (min-width: 640px) {
+  .steps-container-with-line::before {
+    display: block;
+    top: 30px;
+    width: 80%;
+    height: 2px;
+  }
+}
+
+/* Adjust for larger screens */
+@media (min-width: 768px) {
+  .steps-container-with-line::before {
+    top: 36px; /* Adjust to match the larger circles on desktop */
+    width: 85%;
+    height: 2px;
+  }
+}
+
+/* Make step number circles appear on top of the line */
+.step-number {
+  position: relative;
+  z-index: 2; /* Above the line */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+@media (min-width: 640px) { /* 'sm' breakpoint */
+  .steps-container-with-line::before {
+    /* Horizontal line properties */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%; /* Span across the steps */
+    height: 2px;
+    top: 2rem; /* Position it in the middle of the circles */
+    bottom: auto; /* Unset the bottom property */
+  }
+}
 
 /* --- Checkout Section (Refinement) --- */
 .checkout {
