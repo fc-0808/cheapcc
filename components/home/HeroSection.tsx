@@ -101,7 +101,7 @@ export default function HeroSection() {
           <div className="hero-title-container mb-4 md:mb-6">
             <h1 className="hero-title">
               {/* Adjusted font sizes and leading for hero-title-main */}
-              <span className="hero-title-main hero-3d-text text-white text-[2.2rem] leading-[2.5rem] sm:text-[2.8rem] sm:leading-[3.1rem] md:text-6xl font-bold">Unleash Your Creativity with</span>
+              <span className="hero-title-main hero-3d-text opacity-85 md:opacity-100 text-white text-[2.2rem] leading-[2.5rem] sm:text-[2.8rem] sm:leading-[3.1rem] md:text-6xl font-bold">Unleash Your Creativity with</span>
               {/* Adjusted font sizes, leading and margin-top for hero-title-accent */}
               <span className="hero-title-accent block mt-0 pt-3 sm:mt-1 md:mt-2 text-[2.4rem] leading-[2.7rem] sm:text-[3rem] sm:leading-[3.3rem] md:text-6xl">
                 Adobe Creative Cloud

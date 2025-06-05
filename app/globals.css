@@ -435,7 +435,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .hero-title-main {
-  font-size: 2.5rem;
+  font-size: 2.3rem;
   font-weight: 800;
   color: var(--white);
   display: inline-block;
@@ -893,18 +893,19 @@ input:focus, select:focus, textarea:focus {
 
 .pricing .section-heading h2 {
   color: var(--primary);
-  background: none;
-  -webkit-background-clip: unset;
-  background-clip: unset;
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
+  background: none; -webkit-background-clip: unset; background-clip: unset;
 }
 
 .pricing .section-heading p {
   color: var(--text-muted);
   font-size: 1.1rem;
   margin-bottom: 2rem;
+}
+
+@media (max-width: 640px) {
+  .pricing .section-heading p {
+    font-size: 1rem;
+  }
 }
 
 /* For the pricing container */
@@ -1531,7 +1532,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--primary);
   background: none; -webkit-background-clip: unset; background-clip: unset;
 }
-/* Plan card styles from previous context are assumed to be the main definition */
+
 
 /* --- How It Works Section (Refinement) --- */
 .how-it-works {
@@ -1627,7 +1628,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--primary);
   background: none; -webkit-background-clip: unset; background-clip: unset;
 }
-/* Checkout form styles from previous context are assumed to be the main definition */
+
 
 /* --- FAQ Section (Refinement for Home Page FAQ if different from /faq page) --- */
 /* If .faq on home page is different from .faq-page styles */
@@ -1639,7 +1640,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--primary);
   background: none; -webkit-background-clip: unset; background-clip: unset;
 }
-/* FAQ item styles from previous context are assumed to be the main definition for .faq-item */
+
 
 /* --- Testimonials Section (Refinement) --- */
 .testimonials {
@@ -1659,7 +1660,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 1.1rem;
   color: var(--text-muted);
 }
-/* Testimonial card styles from previous context are assumed to be the main definition */
+
 
 .stagger-item {
 	opacity: 0;
@@ -2005,6 +2006,130 @@ input:focus, select:focus, textarea:focus {
   text-decoration: underline;
 }
 
+
+/* === Dashboard Page Styles === */
+.dashboard-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dashboard-welcome {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-welcome h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+}
+
+.dashboard-welcome p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--gray-100);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+.stat-icon {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon i {
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.content-card {
+  background-color: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--gray-100);
+}
+
+.content-card h2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.table-responsive {
+  overflow-x: auto;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+  
 @media (max-width: 640px) {
   .dashboard-container {
     padding: 1.5rem 1rem;
