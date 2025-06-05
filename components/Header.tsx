@@ -129,7 +129,7 @@ export default function Header() {
   };
 
   // Basic header styling for both server and client rendering
-  const headerClasses = "fixed top-0 z-50 py-3 mx-3 my-4 backdrop-blur-[2px] shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] rounded-[20px] border border-white/18 transition-all duration-300 ease-in-out left-0 right-0 md:left-20 md:right-20 lg:left-80 lg:right-80";
+  const headerClasses = "fixed top-0 z-50 py-3 mx-3 my-4 backdrop-blur-[2px] shadow-[0_4px_32px_0_rgba(31,38,135,0.37)] rounded-[20px] border-b-pink/50 border-t-transparent border-l-transparent border-r-transparent transition-all duration-300 ease-in-out left-0 right-0 md:left-20 md:right-20 lg:left-80 lg:right-80";
   
   // Add opacity transition for smooth appearance
   const visibilityClasses = isVisible ? "opacity-100" : "opacity-0";

@@ -16,13 +16,13 @@ export default function BenefitsSection() {
       { threshold: 0.1 }
     );
 
-    if (benefitsRef.current) {
-      observer.observe(benefitsRef.current);
+    const currentRef = benefitsRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
     return () => {
-      if (benefitsRef.current) {
-        // Check if benefitsRef.current is not null before calling unobserve
-        observer.unobserve(benefitsRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
@@ -61,19 +61,17 @@ export default function BenefitsSection() {
             Authorized Adobe Creative Cloud subscriptions at significantly reduced prices compared to official channels
           </p>
         </div>
-        <div className={`benefits-container grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 max-w-3xl mx-auto mt-8 sm:mt-12 stagger-item delay-100 ${isVisible ? 'visible' : ''}`}>
+        <div className={`benefits-container grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 max-w-3xl mx-auto mt-4 md:mt-12 stagger-item delay-100 ${isVisible ? 'visible' : ''}`}>
           {benefits.map((benefit, index) => (
             <div 
               key={index}
-              // Always center content as per the image
               className="benefit-card bg-gray-50 hover:bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center"
             >
-              {/* Updated Icon Styling */}
-              <div className="mb-5"> {/* Wrapper for spacing, increased margin-bottom */}
-                <i className={`${benefit.icon} text-4xl sm:text-5xl text-[#2c2d5a]`}></i> {/* Primary color, larger size */}
+              <div className="mb-5">
+                <i className={`${benefit.icon} text-4xl sm:text-5xl text-[#2c2d5a]`}></i>
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-[#2c2d5a] mb-2">{benefit.title}</h3>
-              <p className="text-sm sm:text-base text-gray-600">{benefit.description}</p>
+              <h3 className="text-sm md:text-xl font-semibold text-[#2c2d5a] mb-2">{benefit.title}</h3>
+              <p className="text-sm sm:text-base text-gray-600 hidden md:block">{benefit.description}</p>
             </div>
           ))}
         </div>

@@ -913,7 +913,7 @@ input:focus, select:focus, textarea:focus {
   justify-content: space-between;
   cursor: pointer;
   /* Widths are handled by Tailwind classes in the component */
-  min-height: 340px;
+  min-height: 380px;
 }
 
 .plan-card:hover {
