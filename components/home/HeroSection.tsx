@@ -48,6 +48,18 @@ export default function HeroSection() {
     }
   }, []);
 
+  // Handle smooth scrolling to the pricing section
+  const handleScrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const pricingSection = document.getElementById('pricing');
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
     <section className="hero relative overflow-hidden min-h-screen flex items-center -mt-16">  
       {/* Premium Background - Darker than before */}
@@ -132,8 +144,8 @@ export default function HeroSection() {
           
           {/* Adjusted CTA margin for mobile */}
           <div className="hero-cta mb-6 md:mb-12">
-            {/* Adjusted button padding for smaller screens, text size slightly smaller on smallest screens */}
-            <a href="#pricing" className="primary-btn glow-effect px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff5e85] text-white font-medium text-base sm:text-lg shadow-lg shadow-[#ff336640] hover:shadow-[#ff336660] hover:translate-y-[-2px] transition-all duration-300">
+            {/* Updated with onClick handler for smooth scrolling */}
+            <a href="#pricing" onClick={handleScrollToPricing} className="primary-btn glow-effect px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff5e85] text-white font-medium text-base sm:text-lg shadow-lg shadow-[#ff336640] hover:shadow-[#ff336660] hover:translate-y-[-2px] transition-all duration-300">
               Explore Plans & Pricing <i className="fas fa-arrow-right ml-2"></i>
             </a>
           </div>
