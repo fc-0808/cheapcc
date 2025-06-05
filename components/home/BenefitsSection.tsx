@@ -53,7 +53,7 @@ export default function BenefitsSection() {
   return (
     <section className="benefits py-10 sm:py-16 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={benefitsRef}>
-        <div className={`section-heading text-center mb-8 sm:mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
+        <div className={`section-heading text-center mb-6 sm:mb-10 stagger-item ${isVisible ? 'visible' : ''}`}>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#2c2d5a] to-[#484a9e] bg-clip-text text-transparent inline-block mb-2">
             Why Choose CheapCC?
           </h2>
@@ -61,14 +61,14 @@ export default function BenefitsSection() {
             Authorized Adobe Creative Cloud subscriptions at significantly reduced prices compared to official channels
           </p>
         </div>
-        <div className={`benefits-container grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8 max-w-3xl mx-auto mt-4 md:mt-12 stagger-item delay-100 ${isVisible ? 'visible' : ''}`}>
+        <div className={`benefits-container grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-8 max-w-3xl mx-auto mt-2 sm:mt-4 md:mt-12 stagger-item delay-100 ${isVisible ? 'visible' : ''}`}>
           {benefits.map((benefit, index) => (
             <div 
               key={index}
-              className="benefit-card bg-gray-50 hover:bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center"
+              className="benefit-card bg-gray-50 hover:bg-white rounded-xl p-4 sm:p-5 md:p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center"
             >
-              <div className="mb-5">
-                <i className={`${benefit.icon} text-4xl sm:text-5xl text-[#2c2d5a]`}></i>
+              <div className="mb-3 sm:mb-4 md:mb-5">
+                <i className={`${benefit.icon} text-3xl sm:text-4xl md:text-5xl text-[#2c2d5a]`}></i>
               </div>
               <h3 className="text-sm md:text-xl font-semibold text-[#2c2d5a] mb-2">{benefit.title}</h3>
               <p className="text-sm sm:text-base text-gray-600 hidden md:block">{benefit.description}</p>

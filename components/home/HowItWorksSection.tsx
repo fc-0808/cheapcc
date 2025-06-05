@@ -52,11 +52,8 @@ export default function HowItWorksSection() {
           <p className="text-base sm:text-lg text-gray-500">Getting your Adobe Creative Cloud subscription is simple and fast</p>
         </div>
         
-        {/*
-          POLISH: The vertical gap is adjusted to 'gap-y-8' for a slightly tighter and more professional spacing.
-        */}
         <div 
-          className={`steps-container steps-container-with-line grid grid-cols-1 sm:grid-cols-3 gap-y-8 sm:gap-x-10 md:gap-x-16 max-w-4xl mx-auto relative`} 
+          className={`steps-container steps-container-with-line grid grid-cols-1 sm:grid-cols-3 gap-y-16 sm:gap-y-12 sm:gap-x-10 md:gap-x-16 max-w-4xl mx-auto relative`} 
           ref={howItWorksRef}
         >
           {steps.map((step, index) => (
@@ -67,8 +64,10 @@ export default function HowItWorksSection() {
               <div className="step-number z-10 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-full bg-[#2c2d5a] text-white text-xl sm:text-2xl font-bold mb-4 shadow-lg border-4 border-white">
                 {index + 1}
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-[#2c2d5a] mb-2">{step.title}</h3>
-              <p className="text-sm sm:text-base text-gray-600 px-2 sm:px-4 hidden lg:block">{step.description}</p>
+              <div className="step-title-wrapper bg-white px-4 z-10 relative">
+                <h3 className="text-lg sm:text-xl font-semibold text-[#2c2d5a] mb-2">{step.title}</h3>
+              </div>
+              <p className="text-sm sm:text-base hidden md:block text-gray-600 px-4 mt-2 max-w-[200px] mx-auto">{step.description}</p>
             </div>
           ))}
         </div>

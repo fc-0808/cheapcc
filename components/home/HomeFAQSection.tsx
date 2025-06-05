@@ -86,7 +86,7 @@ export default function HomeFAQSection() {
                 }`}
               >
                 {/* Inner p tag for the text content, no specific padding here */}
-                <p className={`text-sm sm:text-base text-gray-600 ${openFaq === idx ? 'pt-2 border-t border-gray-100' : ''}`}>
+                <p className={`text-xs sm:text-sm md:text-base text-gray-600 ${openFaq === idx ? 'pt-2 border-t border-gray-100' : ''}`}>
                   {item.a}
                 </p>
               </div>
