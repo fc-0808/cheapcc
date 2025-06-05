@@ -988,7 +988,7 @@ input:focus, select:focus, textarea:focus {
 /* Ribbon Container Styling */
 .ribbon-container {
   position: absolute;
-  top: -5px;
+  top: -2px;
   right: -5px;
   z-index: 10;
   overflow: visible;
@@ -998,7 +998,7 @@ input:focus, select:focus, textarea:focus {
 .one-time-purchase-ribbon {
   background: linear-gradient(90deg, #ff3366 0%, #a855f7 100%);
   box-shadow: 0 6px 24px rgba(255,51,102,0.25), 0 1.5px 6px rgba(168,85,247,0.18);
-  transform: translateY(-25%) translateX(15%) rotate(15deg);
+  transform: translateX(15%) rotate(15deg);
   padding: 0.35rem 1rem;
   border-radius: 4px;
   font-size: 0.75rem;

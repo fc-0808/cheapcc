@@ -21,7 +21,7 @@ import LoginPopup from "@/components/home/LoginPopup";
 
 export default function Home() {
   const router = useRouter();
-  const [selectedPrice, setSelectedPrice] = useState<string>('1m');
+  const [selectedPrice, setSelectedPrice] = useState<string>('14d');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [sdkReady, setSdkReady] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
