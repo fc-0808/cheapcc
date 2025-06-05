@@ -1266,10 +1266,7 @@ input:focus, select:focus, textarea:focus {
 	margin-bottom: 0;
 	border-bottom: none;
 }
-/* Spans within the <p> tags */
-.selected-plan-summary p span:first-child { /* Label part like "Duration" */
-    /* color: var(--text-muted); /* Already on p */
-}
+
 .selected-plan-summary p span:last-child { /* Value part like "1 month" or "$14.99" */
     font-weight: 500; /* Tailwind: font-medium */
     color: var(--text); /* Tailwind: text-gray-700 */
