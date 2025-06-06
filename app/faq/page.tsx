@@ -61,7 +61,7 @@ const FAQS = [
   // Support
   {
     q: "How can I contact customer support?",
-    a: "You can reach our customer support team by emailing support@cheapcc.online. We typically respond within 24 hours. Please include your order number if you have a question about a specific purchase.",
+    a: "You can reach our customer support team by emailing cheapcconline@gmail.com. We typically respond within 24 hours. Please include your order number if you have a question about a specific purchase.",
     category: "support",
   },
   {
@@ -164,7 +164,7 @@ export default function FAQPage() {
         <div className="container text-center">
           <h2 className="text-2xl font-bold text-[#2c2d5a] mb-2">Still Have Questions?</h2>
           <p className="text-gray-500 mb-6">Our support team is here to help you with any questions or concerns.</p>
-          <a href="mailto:support@cheapcc.online" className="btn btn-primary inline-block px-6 py-3 rounded-full bg-[#ff3366] text-white font-semibold shadow hover:bg-[#ff6b8b] transition mb-4">Contact Support</a>
+          <a href="mailto:cheapcconline@gmail.com" className="btn btn-primary inline-block px-6 py-3 rounded-full bg-[#ff3366] text-white font-semibold shadow hover:bg-[#ff6b8b] transition mb-4">Contact Support</a>
           <div className="home-link-container mt-2">
             <a href="/" className="home-link text-[#2c2d5a] hover:underline inline-flex items-center gap-2 font-medium">
               Back to Homepage <i className="fas fa-home" />

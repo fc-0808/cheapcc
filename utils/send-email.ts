@@ -26,7 +26,7 @@ export async function sendConfirmationEmail(to: string, name: string, orderId: s
 
   try {
     const emailData = {
-      from: 'CheapCC Support <support@cheapcc.online>', // Ensure this email is verified with Resend
+      from: 'CheapCC Support <cheapcconline@gmail.com>', // Ensure this email is verified with Resend
       to,
       subject: 'Your CheapCC Order Confirmation',
       react: React.createElement(EmailTemplate, { name, orderId, isGuest }),

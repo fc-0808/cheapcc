@@ -31,6 +31,9 @@ export default function LoginPage() {
      if (result?.error) {
          setFormMessage(result.error);
          setFormMessageType('error');
+     } else {
+         // If login was successful, refresh to ensure components re-render with new auth state
+         router.refresh();
      }
   };
 

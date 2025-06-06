@@ -55,7 +55,7 @@ export default function Header() {
     };
   }, []);
 
-  // Effect for auth state: runs once on mount
+  // Effect for auth state: Add pathname as a dependency to re-run when redirected to dashboard
   useEffect(() => {
     let isMounted = true;
     const supabase = createClient();
@@ -86,6 +86,7 @@ export default function Header() {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!isMounted) return;
+      console.log('Auth state change event:', event);
       setUser(session?.user ?? null);
       if (!authChecked && isMounted) {
         setAuthChecked(true);
@@ -96,7 +97,7 @@ export default function Header() {
       isMounted = false;
       authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [pathname]); // Add pathname as dependency to re-run when route changes
 
   // Handle clicks outside dropdown/mobile menu
   useEffect(() => {
@@ -342,7 +343,7 @@ export default function Header() {
             )}
             <div className={`border-t ${usesDarkTheme ? 'border-gray-200' : 'border-white/10'} my-2`}></div>
             <Link 
-              href="mailto:support@cheapcc.online" 
+              href="mailto:cheapcconline@gmail.com" 
               onClick={handleNavLinkClick}
               className={`block px-3 py-2 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-700 hover:bg-gray-50' : 'text-white/80 hover:bg-white/10'} transition-colors`}
             >

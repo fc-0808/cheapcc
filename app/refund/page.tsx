@@ -22,7 +22,7 @@ export default function RefundPolicy() {
             <h2 className="text-xl font-semibold text-[#2c2d5a] mb-3">2. How to Request a Refund</h2>
             <p>To request a refund, please follow these steps:</p>
             <ol className="list-decimal pl-6">
-              <li>Contact our support team at <a href="mailto:support@cheapcc.online" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a> within 7 days of your purchase.</li>
+              <li>Contact our support team at <a href="mailto:cheapcconline@gmail.com" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a> within 7 days of your purchase.</li>
               <li>Include your order number and the email address used for the purchase.</li>
               <li>Clearly explain the reason for your refund request.</li>
               <li>Our support team will review your request and respond within 24-48 hours.</li>
@@ -63,7 +63,7 @@ export default function RefundPolicy() {
           </div>
           <div className="refund-block">
             <h2 className="text-xl font-semibold text-[#2c2d5a] mb-3">8. Contact Us</h2>
-            <p>If you have any questions about our Refund Policy, please contact our support team at <a href="mailto:support@cheapcc.online" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a>.</p>
+            <p>If you have any questions about our Refund Policy, please contact our support team at <a href="mailto:cheapcconline@gmail.com" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a>.</p>
           </div>
         </div>
       </div>

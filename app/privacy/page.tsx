@@ -73,7 +73,7 @@ export default function PrivacyPolicy() {
               <li>The right to withdraw consent</li>
               <li>The right to object to processing of your personal information</li>
             </ul>
-            <p>To exercise any of these rights, please contact us at <a href="mailto:support@cheapcc.online" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a>.</p>
+            <p>To exercise any of these rights, please contact us at <a href="mailto:cheapcconline@gmail.com" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a>.</p>
           </div>
           <div className="privacy-block mb-8">
             <h2 className="text-xl font-semibold text-[#2c2d5a] mb-3">10. Children's Privacy</h2>
@@ -86,7 +86,7 @@ export default function PrivacyPolicy() {
           </div>
           <div className="privacy-block">
             <h2 className="text-xl font-semibold text-[#2c2d5a] mb-3">12. Contact Us</h2>
-            <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:support@cheapcc.online" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a>.</p>
+            <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:cheapcconline@gmail.com" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a>.</p>
           </div>
         </div>
       </div>

@@ -169,11 +169,12 @@ export default async function DashboardPageContent() {
           <i className="fas fa-info-circle"></i>
           <div>
             <strong>Having trouble with your account?</strong>
-            <p>Our support team is here to help. You can reach out via our support page or contact us directly at <a href="mailto:support@cheapcc.online">support@cheapcc.online</a></p>
+            <p className="hidden md:block">Our support team is here to help. You can reach out via our support page or contact us directly at <a href="mailto:cheapcconline@gmail.com">cheapcconline@gmail.com</a></p>
+            <p className="block md:hidden">Contact us directly at <a href="mailto:cheapcconline@gmail.com">cheapcconline@gmail.com</a></p>
           </div>
         </div>
         <div className="text-center mt-4">
-          <Link href="/support" className="btn btn-outline">Contact Support</Link>
+          <Link href="mailto:cheapcconline@gmail.com" className="btn btn-outline">Contact Support</Link>
         </div>
       </div>
     </>
