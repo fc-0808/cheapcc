@@ -20,7 +20,7 @@ const HOME_FAQS = [
   },
   {
     q: "What is your refund policy?",
-    a: "We offer a 7-day money-back guarantee if you are unable to access the Adobe Creative Cloud services with the credentials provided. If you encounter any issues, please contact our support team at cheapcconline@gmail.com with your order details, and we'll assist you promptly.",
+    a: "We offer a 7-day money-back guarantee if you are unable to access the Adobe Creative Cloud services with the credentials provided. If you encounter any issues, please contact our support team at support@cheapcc.online with your order details, and we'll assist you promptly.",
   },
 ];
 

@@ -50,7 +50,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
               </a>
             </div>
             <div style={{ marginBottom: 20 }}>
-              <p style={{ marginBottom: 18 }}>If you have any questions or need help, please visit our <a href="https://cheapcc.online" style={{ color: '#ff3366', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">Help Center</a> or contact our support team at <a href="mailto:cheapcconline@gmail.com" style={{ color: '#ff3366' }}>support@cheapcc.online</a>.</p>
+              <p style={{ marginBottom: 18 }}>If you have any questions or need help, please visit our <a href="https://cheapcc.online" style={{ color: '#ff3366', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">Help Center</a> or contact our support team at <a href="mailto:support@cheapcc.online" style={{ color: '#ff3366' }}>support@cheapcc.online</a>.</p>
               <p style={{ marginBottom: 0 }}>Thank you for choosing CheapCC!</p>
             </div>
           </div>

@@ -94,9 +94,9 @@ const Footer: React.FC = () => (
           </h3>
           <ul className="footer-links space-y-2">
             <li>
-              <a href="mailto:cheapcconline@gmail.com" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <a href="mailto:support@cheapcc.online" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-at footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
-                <span className="text-sm break-all">cheapcconline@gmail.com</span>
+                <span className="text-sm break-all">support@cheapcc.online</span>
               </a>
             </li>
             <li>

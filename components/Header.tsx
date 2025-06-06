@@ -343,7 +343,7 @@ export default function Header() {
             )}
             <div className={`border-t ${usesDarkTheme ? 'border-gray-200' : 'border-white/10'} my-2`}></div>
             <Link 
-              href="mailto:cheapcconline@gmail.com" 
+              href="mailto:support@cheapcc.online" 
               onClick={handleNavLinkClick}
               className={`block px-3 py-2 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-700 hover:bg-gray-50' : 'text-white/80 hover:bg-white/10'} transition-colors`}
             >
