@@ -67,7 +67,7 @@ export default function TermsOfService() {
           </div>
           <div className="terms-block">
             <h2 className="text-xl font-semibold text-[#2c2d5a] mb-3">12. Contact Us</h2>
-            <p>If you have any questions about these Terms, please contact us at <a href="mailto:cheapcconline@gmail.com" className="text-[#ff3366] hover:text-[#2c2d5a] underline">support@cheapcc.online</a>.</p>
+            <p>If you have any questions about these Terms, please contact us at <a href="mailto:cheapcconline@gmail.com" className="text-[#ff3366] hover:text-[#2c2d5a] underline">cheapcconline@gmail.com</a>.</p>
           </div>
         </div>
       </div>
