@@ -161,16 +161,20 @@ export default function Header() {
   
   // Add opacity transition for smooth appearance
   const visibilityClasses = isVisible ? "opacity-100" : "opacity-0";
+  
+  // Check if current path is login or register
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
   // Button classes based on client/server rendering, scroll position, and current path
   // For dashboard/profile pages, always use dark colors regardless of scroll position
+  // For login/register pages, always use dark color for better visibility on white background
   const toggleButtonClasses = isMounted 
-    ? `p-2 rounded-md ${isDashboardOrProfile || scrolledPastHero ? 'text-gray-700 hover:text-gray-900' : 'text-white/70 hover:text-white'} transition-colors`
+    ? `p-2 rounded-md ${isDashboardOrProfile || isAuthPage || scrolledPastHero ? 'text-gray-700 hover:text-gray-900' : 'text-white/70 hover:text-white'} transition-colors`
     : "p-2 rounded-md text-gray-500 hover:text-gray-900 transition-colors";
 
   // Determine if dropdown menu should use light or dark theme
-  // For dashboard/profile pages, always use dark theme regardless of scroll position
-  const usesDarkTheme = isDashboardOrProfile || scrolledPastHero;
+  // For dashboard/profile/auth pages, always use dark theme regardless of scroll position
+  const usesDarkTheme = isDashboardOrProfile || isAuthPage || scrolledPastHero;
 
   return (
     <header className={`${headerClasses} ${visibilityClasses}`}>
