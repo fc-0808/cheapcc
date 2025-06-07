@@ -144,11 +144,11 @@ export default function CheckoutSection({
 
                 {/* Separate error message for when name/email are not filled */}
                 {!canPay && isVisible && (
-                  <div className="form-note flex items-center gap-2 bg-[#fff0f3] text-[#b91c1c] py-3 px-2 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-4">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#ffe4ea] mr-1 flex-shrink-0">
-                      <i className="fas fa-exclamation-circle text-[#ff3366] text-sm"></i>
+                  <div className="form-note flex items-center bg-[#fff0f3] text-[#b91c1c] py-3 px-3 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-4">
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#ffe4ea] mr-3 flex-shrink-0">
+                      <i className="fas fa-exclamation-circle text-[#ff3366] text-xs"></i>
                     </span>
-                    <span className="font-semibold text-xs sm:text-sm">
+                    <span className="font-medium text-xs flex-1">
                       Please enter a name and a valid email to continue.
                     </span>
                   </div>

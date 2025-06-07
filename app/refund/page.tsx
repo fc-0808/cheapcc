@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Refund Policy - Adobe Creative Cloud Subscription Returns',
+  description: 'Our 7-day money-back guarantee and refund policy for Adobe Creative Cloud subscriptions purchased through CheapCC. Learn about our refund eligibility and process.',
+  keywords: 'adobe cc refund, cheapcc money back guarantee, creative cloud refund policy, adobe subscription return',
+};
 
 export default function RefundPolicy() {
   return (

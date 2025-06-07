@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Cheap CC",
-  description: "Affordable Adobe Creative Cloud subscriptions for everyone.",
+  title: {
+    template: '%s | CheapCC - Affordable Adobe CC Subscriptions',
+    default: 'CheapCC - Affordable Adobe Creative Cloud Subscriptions',
+  },
+  description: "Get genuine Adobe Creative Cloud subscriptions for up to 86% off. Instant delivery for all Adobe apps, including Photoshop, Illustrator, and Premiere Pro.",
 };
 
 export default function RootLayout({
@@ -17,6 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        {/* Preload fonts for better performance */}
+        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
         {/* Preconnect to PayPal domains to improve loading performance */}
         <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.sandbox.paypal.com" crossOrigin="anonymous" />
@@ -24,6 +31,37 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
       </head>
       <body className="antialiased bg-white text-[#171717]">
+        {/* Schema.org structured data for organization */}
+        <Script id="organization-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: `
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "CheapCC",
+            "url": "https://cheapcc.online",
+            "logo": "https://cheapcc.online/favicon.svg",
+            "description": "Provider of affordable Adobe Creative Cloud subscriptions",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "email": "support@cheapcc.online",
+              "contactType": "customer support"
+            }
+          }
+        `}} />
+        {/* Schema.org structured data for website */}
+        <Script id="website-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: `
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "url": "https://cheapcc.online",
+            "name": "CheapCC - Affordable Adobe Creative Cloud Subscriptions",
+            "description": "Get genuine Adobe Creative Cloud subscriptions for up to 86% off.",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://cheapcc.online/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        `}} />
         {/* Header - always logged out state for server component */}
         <Header />
         {/* Main Content */}

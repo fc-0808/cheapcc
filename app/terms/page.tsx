@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms of Service - Adobe Creative Cloud Subscription Agreement',
+  description: 'Terms and conditions for using CheapCC\'s Adobe Creative Cloud subscription services. Read our full terms of service agreement for using our discount Adobe CC subscriptions.',
+  keywords: 'adobe creative cloud terms, cheapcc terms of service, adobe cc subscription terms, creative cloud agreement',
+};
 
 export default function TermsOfService() {
   return (

@@ -1,4 +1,11 @@
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy - Adobe Creative Cloud Subscriptions',
+  description: 'Our privacy policy explains how we collect, use, and protect your information when purchasing Adobe Creative Cloud subscriptions from CheapCC.',
+  keywords: 'adobe cc privacy policy, cheapcc privacy, creative cloud subscription privacy, adobe subscription data privacy',
+};
 
 export default function PrivacyPolicy() {
   return (
