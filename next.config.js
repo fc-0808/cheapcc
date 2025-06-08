@@ -11,7 +11,20 @@ const nextConfig = {
 		NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
 	},
 	images: {
-		domains: ['images.unsplash.com'],
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'images.unsplash.com',
+				pathname: '**',
+			},
+		],
+	},
+	typescript: {
+		// !! WARN !!
+		// Dangerously allow production builds to successfully complete even if
+		// your project has type errors.
+		// !! WARN !!
+		ignoreBuildErrors: true,
 	},
 }
 

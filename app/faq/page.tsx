@@ -67,6 +67,22 @@ const faqStructuredData = {
   ]
 };
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "https://cheapcc.online"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "FAQ",
+    "item": "https://cheapcc.online/faq"
+  }]
+};
+
 export default function FAQPage() {
   return (
     <>
@@ -74,6 +90,11 @@ export default function FAQPage() {
         id="faq-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <FAQPageContent />
     </>

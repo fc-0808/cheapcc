@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
 import type { Session } from '@supabase/supabase-js';
 import UrlMessageDisplay from "@/components/UrlMessageDisplay";
+import Script from 'next/script';
+import { PRICING_OPTIONS } from '@/utils/products';
 
 // Import new section components
 import HeroSection from "@/components/home/HeroSection";
@@ -257,6 +259,34 @@ export default function Home() {
 
   return (
     <main className="bg-white">
+      <Script
+        id="product-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": "Adobe Creative Cloud Subscription",
+          "description": "Get genuine Adobe Creative Cloud subscriptions for up to 86% off. Includes all Adobe apps like Photoshop, Illustrator, and Premiere Pro.",
+          "brand": {
+            "@type": "Brand",
+            "name": "Adobe"
+          },
+          "image": "https://cheapcc.online/og-image.jpg",
+          "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "USD",
+            "lowPrice": "4.99",
+            "highPrice": "124.99",
+            "offerCount": PRICING_OPTIONS.length,
+            "offers": PRICING_OPTIONS.map(option => ({
+              "@type": "Offer",
+              "name": option.description,
+              "price": option.price,
+              "priceCurrency": "USD"
+            }))
+          }
+        }) }}
+      />
       <LoginPopup 
         show={showLoginPopup} 
         onClose={() => setShowLoginPopup(false)}
@@ -264,9 +294,9 @@ export default function Home() {
         onContinueAsGuest={handleContinueAsGuest}
       />
       
-      <Suspense fallback={<div>Loading messages...</div>}>
+      <React.Suspense fallback={<div>Loading messages...</div>}>
         <UrlMessageDisplay />
-      </Suspense>
+      </React.Suspense>
 
       <HeroSection />
       <SocialProofSection />

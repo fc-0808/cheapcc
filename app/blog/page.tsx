@@ -45,7 +45,7 @@ export default function Blog() {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {posts.map(post => (
+            {posts.map((post, index) => (
               <article 
                 key={post.slug} 
                 className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
@@ -57,6 +57,7 @@ export default function Blog() {
                         src={post.featuredImage}
                         alt={post.title}
                         fill
+                        priority={index === 0} 
                         className="object-cover hover:scale-105 transition-transform duration-500"
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />

@@ -7,19 +7,22 @@ import Script from 'next/script';
 
 // Generate metadata for each blog post
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const postData = await getPostData(params.slug);
+  // Await params before using it
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
+  const postData = await getPostData(slug);
   
   return {
     title: `${postData.title} - Adobe CC Blog`,
     description: postData.excerpt,
     keywords: `adobe creative cloud, ${postData.title.toLowerCase()}, adobe cc tutorials`,
     alternates: {
-      canonical: `/blog/${params.slug}`
+      canonical: `/blog/${slug}`
     },
     openGraph: {
       title: postData.title,
       description: postData.excerpt,
-      url: `/blog/${params.slug}`,
+      url: `/blog/${slug}`,
       siteName: 'CheapCC',
       locale: 'en_US',
       type: 'article',
@@ -55,10 +58,13 @@ export async function generateStaticParams() {
 }
 
 export default async function Post({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+  // Await params before using it
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
   const postData = await getPostData(slug);
   const formattedDate = format(new Date(postData.date), 'MMMM d, yyyy');
   
+  // Create ArticleLD JSON schema for the blog post
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -75,12 +81,43 @@ export default async function Post({ params }: { params: { slug: string } }) {
     "mainEntityOfPage": { "@type": "WebPage", "@id": `https://cheapcc.online/blog/${slug}` }
   };
   
+  // Create BreadcrumbList schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://cheapcc.online"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://cheapcc.online/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": postData.title,
+        "item": `https://cheapcc.online/blog/${slug}`
+      }
+    ]
+  };
+  
   return (
     <>
       <Script
         id="article-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <main className="bg-[#f8f9fa] min-h-screen py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
