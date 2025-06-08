@@ -10,6 +10,9 @@ const nextConfig = {
 		NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
 		NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
 	},
+	images: {
+		domains: ['images.unsplash.com'],
+	},
 }
 
 module.exports = nextConfig

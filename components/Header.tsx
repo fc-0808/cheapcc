@@ -173,8 +173,14 @@ export default function Header() {
     : "p-2 rounded-md text-gray-500 hover:text-gray-900 transition-colors";
 
   // Determine if dropdown menu should use light or dark theme
-  // For dashboard/profile/auth pages, always use dark theme regardless of scroll position
-  const usesDarkTheme = isDashboardOrProfile || isAuthPage || scrolledPastHero;
+  // For dashboard/profile/auth pages, always use dark theme
+  // For ANY page that's not the homepage, always use dark theme
+  // For homepage, use dark theme only when scrolled past hero
+  const usesDarkTheme = isDashboardOrProfile || isAuthPage || pathname !== '/' || (pathname === '/' && scrolledPastHero);
+
+  // Check if current path is blog
+  const isBlogPage = pathname?.includes('/blog');
+  const navLinkClasses = `text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:text-[#ff3366]' : 'text-white/80 hover:text-white'} transition-colors`;
 
   return (
     <header className={`${headerClasses} ${visibilityClasses}`}>
@@ -194,12 +200,21 @@ export default function Header() {
             aria-label="Toggle mobile menu"
             aria-expanded={isMobileMenuOpen}
           >
-            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-lg`}></i>
+            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-lg ${usesDarkTheme ? 'text-gray-800' : ''}`}></i>
           </button>
         </div>
         
         {/* Desktop navigation */}
-        <div className="hidden md:flex md:items-center space-x-8">
+        <div className="hidden md:flex md:items-center md:space-x-8">
+          {/* Blog link for desktop */}
+          <Link 
+            href="/blog" 
+            className={`${navLinkClasses} ${isBlogPage ? 'font-bold' : ''}`}
+            onClick={handleNavLinkClick}
+          >
+            Blog
+          </Link>
+
           {!authChecked ? (
             <div className="bg-gray-100 h-9 w-32 animate-pulse rounded-md"></div>
           ) : user ? (
@@ -237,26 +252,32 @@ export default function Header() {
                   <Link 
                     href="/dashboard" 
                     onClick={handleNavLinkClick}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-pink-50 hover:text-[#ff3366] transition-colors group"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                   >
-                    <i className="fas fa-tachometer-alt w-5 h-5 flex items-center justify-center text-indigo-400 group-hover:text-[#ff3366] bg-indigo-50 group-hover:bg-pink-50 p-1 rounded-md transition-colors"></i> 
-                    <span>Dashboard</span>
+                    <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-indigo-100' : 'bg-indigo-500/20'} flex items-center justify-center`}>
+                      <i className={`fas fa-tachometer-alt ${usesDarkTheme ? 'text-indigo-700' : 'text-indigo-300'}`}></i>
+                    </span>
+                    Dashboard
                   </Link>
                   <Link 
                     href="/profile" 
                     onClick={handleNavLinkClick}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-pink-50 hover:text-[#ff3366] transition-colors group"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                   >
-                    <i className="fas fa-user-edit w-5 h-5 flex items-center justify-center text-purple-400 group-hover:text-[#ff3366] bg-purple-50 group-hover:bg-pink-50 p-1 rounded-md transition-colors"></i> 
-                    <span>Profile</span>
+                    <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-purple-100' : 'bg-purple-500/20'} flex items-center justify-center`}>
+                      <i className={`fas fa-user-circle ${usesDarkTheme ? 'text-purple-700' : 'text-purple-300'}`}></i>
+                    </span>
+                    Profile
                   </Link>
                   <div className="border-t border-gray-100 my-1"></div>
                   <button 
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 hover:text-red-500 transition-colors group text-left"
+                    className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                   >
-                    <i className="fas fa-sign-out-alt w-5 h-5 flex items-center justify-center text-pink-400 group-hover:text-red-500 bg-pink-50 group-hover:bg-red-50 p-1 rounded-md transition-colors"></i> 
-                    <span>Log Out</span>
+                    <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-pink-100' : 'bg-pink-500/20'} flex items-center justify-center`}>
+                      <i className={`fas fa-sign-out-alt ${usesDarkTheme ? 'text-pink-700' : 'text-pink-300'}`}></i>
+                    </span>
+                    Log Out
                   </button>
                 </div>
               </div>
@@ -284,6 +305,8 @@ export default function Header() {
       {isMobileMenuOpen && isMounted && (
         <div id="mobile-menu" ref={mobileMenuRef} className="md:hidden mt-2">
           <div className={`px-4 pt-2 pb-3 space-y-1 backdrop-blur-[5px] ${usesDarkTheme ? 'bg-white shadow-lg border border-gray-100' : 'bg-white/10 shadow-lg border border-white/10'} rounded-lg`}>
+          
+            
             {!authChecked ? (
               <div className="py-2">
                 <div className="animate-pulse bg-white/20 h-8 w-full rounded-md mb-2"></div>
@@ -292,7 +315,7 @@ export default function Header() {
             ) : user ? (
               <>
                 <div className={`py-3 ${usesDarkTheme ? 'border-b border-gray-200 mb-2' : 'border-b border-white/10 mb-2'}`}>
-                  <span className={`block text-sm font-medium ${usesDarkTheme ? 'text-gray-700' : 'text-white'} truncate bg-gradient-to-r from-indigo-400 to-pink-400 py-2 px-3 rounded-md`}>
+                  <span className={`block text-sm font-medium ${usesDarkTheme ? 'text-gray-800' : 'text-white'} truncate bg-gradient-to-r from-indigo-400 to-pink-400 py-2 px-3 rounded-md`}>
                     <i className="fas fa-user-circle mr-2"></i>
                     {user.email}
                   </span>
@@ -300,29 +323,29 @@ export default function Header() {
                 <Link 
                   href="/dashboard" 
                   onClick={handleNavLinkClick}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-700 hover:bg-gray-50' : 'text-white/90 hover:bg-white/10'} transition-colors`}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
                   <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-indigo-100' : 'bg-indigo-500/20'} flex items-center justify-center`}>
-                    <i className={`fas fa-tachometer-alt ${usesDarkTheme ? 'text-indigo-600' : 'text-indigo-300'}`}></i>
+                    <i className={`fas fa-tachometer-alt ${usesDarkTheme ? 'text-indigo-700' : 'text-indigo-300'}`}></i>
                   </span>
                   Dashboard
                 </Link>
                 <Link 
                   href="/profile" 
                   onClick={handleNavLinkClick}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-700 hover:bg-gray-50' : 'text-white/90 hover:bg-white/10'} transition-colors`}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
                   <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-purple-100' : 'bg-purple-500/20'} flex items-center justify-center`}>
-                    <i className={`fas fa-user-edit ${usesDarkTheme ? 'text-purple-600' : 'text-purple-300'}`}></i>
+                    <i className={`fas fa-user-circle ${usesDarkTheme ? 'text-purple-700' : 'text-purple-300'}`}></i>
                   </span>
                   Profile
                 </Link>
                 <button 
                   onClick={handleLogout}
-                  className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-700 hover:bg-gray-50' : 'text-white/90 hover:bg-white/10'} transition-colors`}
+                  className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
                   <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-pink-100' : 'bg-pink-500/20'} flex items-center justify-center`}>
-                    <i className={`fas fa-sign-out-alt ${usesDarkTheme ? 'text-pink-600' : 'text-pink-300'}`}></i>
+                    <i className={`fas fa-sign-out-alt ${usesDarkTheme ? 'text-pink-700' : 'text-pink-300'}`}></i>
                   </span>
                   Log Out
                 </button>
@@ -332,26 +355,46 @@ export default function Header() {
                 <Link 
                   href="/login" 
                   onClick={handleNavLinkClick}
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition-colors"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
+                  <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-indigo-100' : 'bg-indigo-500/20'} flex items-center justify-center`}>
+                    <i className={`fas fa-sign-in-alt ${usesDarkTheme ? 'text-indigo-700' : 'text-indigo-300'}`}></i>
+                  </span>
                   Log In
                 </Link>
                 <Link 
                   href="/register" 
                   onClick={handleNavLinkClick}
-                  className="block px-3 py-2 rounded-md text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-[#ff3366] hover:opacity-90 transition-colors mt-2"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
+                  <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-pink-100' : 'bg-pink-500/20'} flex items-center justify-center`}>
+                    <i className={`fas fa-user-plus ${usesDarkTheme ? 'text-pink-700' : 'text-pink-300'}`}></i>
+                  </span>
                   Register
                 </Link>
               </>
             )}
-            <div className={`border-t ${usesDarkTheme ? 'border-gray-200' : 'border-white/10'} my-2`}></div>
+            {/* Blog link for mobile */}
+            <Link 
+              href="/blog" 
+              onClick={handleNavLinkClick}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors ${isBlogPage ? 'font-bold' : ''}`}
+            >
+              <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-blue-100' : 'bg-blue-500/20'} flex items-center justify-center`}>
+                <i className={`fas fa-book-open ${usesDarkTheme ? 'text-blue-700' : 'text-blue-300'}`}></i>
+              </span>
+              Blog
+            </Link>
+            <div className={`border-t ${usesDarkTheme ? 'border-gray-200' : 'border-white/10'} my-1`}></div>
+            {/* Support link for mobile */}
             <Link 
               href="mailto:support@cheapcc.online" 
-              onClick={handleNavLinkClick}
-              className={`block px-3 py-2 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-700 hover:bg-gray-50' : 'text-white/80 hover:bg-white/10'} transition-colors`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
             >
-              <i className={`fas fa-envelope mr-2 ${usesDarkTheme ? 'text-gray-500' : 'text-white/60'}`}></i> Support
+              <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-gray-100' : 'bg-gray-500/20'} flex items-center justify-center`}>
+                <i className={`fas fa-envelope ${usesDarkTheme ? 'text-gray-700' : 'text-white/60'}`}></i>
+              </span>
+              Support
             </Link>
           </div>
         </div>
