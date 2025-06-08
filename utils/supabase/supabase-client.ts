@@ -13,32 +13,10 @@ export function createClient() {
   }
   try {
     supabaseClient = createBrowserClient(url, key, {
-      cookies: {
-        get: (name) => {
-          if (typeof document === 'undefined') return '';
-          const cookie = document.cookie
-            .split('; ')
-            .find((row) => row.startsWith(`${name}=`));
-          return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
-        },
-        set: (name, value, options) => {
-          if (typeof document === 'undefined') return;
-          let cookieString = `${name}=${encodeURIComponent(value)}`;
-          if (options.maxAge) {
-            cookieString += `; Max-Age=${options.maxAge}`;
-          }
-          if (options.path) {
-            cookieString += `; Path=${options.path}`;
-          }
-          if (options.sameSite) {
-            cookieString += `; SameSite=${options.sameSite}`;
-          }
-          document.cookie = cookieString;
-        },
-        remove: (name, options) => {
-          if (typeof document === 'undefined') return;
-          document.cookie = `${name}=; Max-Age=0; Path=${options?.path || '/'}`;
-        },
+      cookieOptions: {
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        sameSite: 'lax',
       },
       auth: {
         detectSessionInUrl: true,
