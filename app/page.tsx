@@ -16,7 +16,6 @@ import PricingSection from "@/components/home/PricingSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import CheckoutSection from "@/components/home/CheckoutSection";
 import HomeFAQSection from "@/components/home/HomeFAQSection";
-import TestimonialsSection from "@/components/home/TestimonialsSection";
 import LoginPopup from "@/components/home/LoginPopup";
 
 // PRICING_OPTIONS will be imported by PricingSection and CheckoutSection directly
@@ -332,7 +331,6 @@ export default function Home() {
       </div>
       
       <HomeFAQSection />
-      <TestimonialsSection />
     </main>
   );
 }
