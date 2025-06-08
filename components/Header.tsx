@@ -8,6 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
+  const [userName, setUserName] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -68,13 +69,38 @@ export default function Header() {
         if (error) {
           console.error('Error getting initial session:', error);
           setUser(null);
+          setUserName('');
         } else {
           setUser(session?.user ?? null);
+          
+          // Get user name from metadata or profile
+          if (session?.user) {
+            let name = session.user.user_metadata?.name || '';
+            
+            // If no name in metadata, try to get it from the profile
+            if (!name) {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('name')
+                .eq('id', session.user.id)
+                .maybeSingle();
+                
+              name = profileData?.name || '';
+            }
+            
+            // If still no name, use the first part of the email
+            if (!name && session.user.email) {
+              name = session.user.email.split('@')[0];
+            }
+            
+            setUserName(name);
+          }
         }
       } catch (e) {
         if (!isMounted) return;
         console.error('Exception in getInitialSession:', e);
         setUser(null);
+        setUserName('');
       } finally {
         if (isMounted) {
           setAuthChecked(true);
@@ -87,7 +113,38 @@ export default function Header() {
     const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       if (!isMounted) return;
       console.log('Auth state change event:', event);
+      
       setUser(session?.user ?? null);
+      
+      // Update user name when auth state changes
+      if (session?.user) {
+        const updateUserName = async () => {
+          let name = session.user.user_metadata?.name || '';
+          
+          // If no name in metadata, try to get it from the profile
+          if (!name) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('id', session.user.id)
+              .maybeSingle();
+              
+            name = profileData?.name || '';
+          }
+          
+          // If still no name, use the first part of the email
+          if (!name && session.user.email) {
+            name = session.user.email.split('@')[0];
+          }
+          
+          setUserName(name);
+        };
+        
+        updateUserName();
+      } else {
+        setUserName('');
+      }
+      
       if (!authChecked && isMounted) {
         setAuthChecked(true);
       }
@@ -221,7 +278,7 @@ export default function Header() {
             <div className="flex items-center space-x-5">
               <span className="hidden lg:flex items-center text-sm bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent font-semibold">
                 <i className="fas fa-user-circle mr-2 text-[#ff3366]"></i>
-                {user.email}
+                {userName || (user?.email ? user.email.split('@')[0] : 'User')}
               </span>
 
               <div ref={dropdownRef} className="relative">
@@ -247,35 +304,35 @@ export default function Header() {
                 >
                   <div className="absolute -top-2 right-6 w-4 h-4 bg-white rotate-45 border-t border-l border-gray-100"></div>
                   <div className="pt-2 pb-3 px-4 mb-1 border-b border-gray-100">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Account Menu</p>
+                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Account Menu</p>
                   </div>
                   <Link 
                     href="/dashboard" 
                     onClick={handleNavLinkClick}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-indigo-100' : 'bg-indigo-500/20'} flex items-center justify-center`}>
-                      <i className={`fas fa-tachometer-alt ${usesDarkTheme ? 'text-indigo-700' : 'text-indigo-300'}`}></i>
+                    <span className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <i className="fas fa-tachometer-alt text-indigo-700"></i>
                     </span>
                     Dashboard
                   </Link>
                   <Link 
                     href="/profile" 
                     onClick={handleNavLinkClick}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-purple-100' : 'bg-purple-500/20'} flex items-center justify-center`}>
-                      <i className={`fas fa-user-circle ${usesDarkTheme ? 'text-purple-700' : 'text-purple-300'}`}></i>
+                    <span className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                      <i className="fas fa-user-circle text-purple-700"></i>
                     </span>
                     Profile
                   </Link>
                   <div className="border-t border-gray-100 my-1"></div>
                   <button 
                     onClick={handleLogout}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
+                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    <span className={`w-8 h-8 rounded-full ${usesDarkTheme ? 'bg-pink-100' : 'bg-pink-500/20'} flex items-center justify-center`}>
-                      <i className={`fas fa-sign-out-alt ${usesDarkTheme ? 'text-pink-700' : 'text-pink-300'}`}></i>
+                    <span className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center">
+                      <i className="fas fa-sign-out-alt text-pink-700"></i>
                     </span>
                     Log Out
                   </button>
@@ -317,7 +374,7 @@ export default function Header() {
                 <div className={`py-3 ${usesDarkTheme ? 'border-b border-gray-200 mb-2' : 'border-b border-white/10 mb-2'}`}>
                   <span className={`block text-sm font-medium ${usesDarkTheme ? 'text-gray-800' : 'text-white'} truncate bg-gradient-to-r from-indigo-400 to-pink-400 py-2 px-3 rounded-md`}>
                     <i className="fas fa-user-circle mr-2"></i>
-                    {user.email}
+                    {userName || (user?.email ? user.email.split('@')[0] : 'User')}
                   </span>
                 </div>
                 <Link 
