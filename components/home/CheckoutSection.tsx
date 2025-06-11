@@ -44,6 +44,7 @@ export default function CheckoutSection({
 }: CheckoutSectionProps) {
   const sectionRef = useRef<HTMLDivElement>(null); // Ref for Intersection Observer for this section
   const [isVisible, setIsVisible] = useState(false);
+  const [showRequiredFieldsMessage, setShowRequiredFieldsMessage] = useState(true);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -65,6 +66,26 @@ export default function CheckoutSection({
       }
     };
   }, []);
+  
+  // Effect to show/hide the form error message based on name and email validation
+  useEffect(() => {
+    if (!isUserSignedIn) {
+      const nameValid = name.trim() !== '';
+      const emailValid = isValidEmail(email);
+      
+      if (nameValid && emailValid) {
+        // Clear the form error when both fields are valid
+        setCheckoutFormError(null);
+        setShowRequiredFieldsMessage(false);
+      } else {
+        // Show the warning message when either field is invalid
+        setShowRequiredFieldsMessage(true);
+      }
+    } else {
+      // If user is signed in, we don't need to show the warning
+      setShowRequiredFieldsMessage(false);
+    }
+  }, [name, email, isUserSignedIn, setCheckoutFormError]);
   
   // Control PayPal button visibility and rendering
   useEffect(() => {
@@ -143,7 +164,7 @@ export default function CheckoutSection({
                 />
 
                 {/* Separate warning message about required fields */}
-                {isVisible && (
+                {isVisible && showRequiredFieldsMessage && !isUserSignedIn && (
                   <div className="form-note flex items-center bg-[#fff0f3] text-[#b91c1c] py-4 px-4 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-5">
                     <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#ffe4ea] mr-3 flex-shrink-0">
                       <i className="fas fa-exclamation-circle text-[#ff3366]"></i>

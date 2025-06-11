@@ -69,11 +69,13 @@ export default function Home() {
           const currentName = nameRef.current;
           const currentEmail = emailRef.current;
           const currentSelectedPrice = selectedPriceRef.current;
+          
+          // Just validate without setting error message (handled by CheckoutSection's useEffect)
           if (!currentName.trim() || !isValidEmail(currentEmail) || !currentSelectedPrice) {
-            setCheckoutFormError('Please fill in your name and a valid email address.');
-            setPaymentStatus('error');
             return actions.reject();
           }
+          
+          // Clear any previous errors and reset payment status
           setCheckoutFormError(null);
           if (paymentStatus === 'error') setPaymentStatus('idle');
           return actions.resolve();
@@ -166,8 +168,9 @@ export default function Home() {
   // Update canPay
   useEffect(() => {
     // Always allow showing the PayPal button, validation happens in onClick handler
+    // and the CheckoutSection handles showing/hiding the warning message
     setCanPay(true);
-  }, [isUserSignedIn, name, email]);
+  }, []);
 
   // Auth check
   useEffect(() => {
