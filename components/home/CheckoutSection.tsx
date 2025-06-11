@@ -106,7 +106,7 @@ export default function CheckoutSection({
                   }}
                   autoComplete="email"
                   disabled={isUserSignedIn}
-                  className={`${isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""} w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]`}
+                  className={`${isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""}  w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]`}
                 />
               </div>
               <div className="form-group">
@@ -138,15 +138,15 @@ export default function CheckoutSection({
                 <div
                   id="paypal-button-container"
                   ref={paypalButtonContainerRef}
-                  className="mt-4 w-full"
+                  className={`mt-4 w-full p-4 bg-gray-50 rounded-lg border border-gray-100 ${(!isUserSignedIn && (name.trim() === '' || !isValidEmail(email))) ? 'opacity-50' : ''}`}
                   // style.display is controlled by the useEffect hook
                 />
 
-                {/* Separate error message for when name/email are not filled */}
-                {!canPay && isVisible && (
-                  <div className="form-note flex items-center bg-[#fff0f3] text-[#b91c1c] py-3 px-3 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-4">
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#ffe4ea] mr-3 flex-shrink-0">
-                      <i className="fas fa-exclamation-circle text-[#ff3366] text-xs"></i>
+                {/* Separate warning message about required fields */}
+                {isVisible && (
+                  <div className="form-note flex items-center bg-[#fff0f3] text-[#b91c1c] py-4 px-4 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-5">
+                    <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#ffe4ea] mr-3 flex-shrink-0">
+                      <i className="fas fa-exclamation-circle text-[#ff3366]"></i>
                     </span>
                     <span className="font-medium text-xs flex-1">
                       Please enter a name and a valid email to continue.
@@ -176,29 +176,11 @@ export default function CheckoutSection({
                 </div>
               )}
               
-              <p className="form-disclaimer text-xs text-gray-500">
+              <p className="form-disclaimer text-xs text-gray-500 mb-4">
                 By completing your purchase, you agree to our
                 <a href="/terms" className="text-[#2c2d5a] hover:text-[#ff3366] underline mx-1">Terms of Service</a> and
                 <a href="/privacy" className="text-[#2c2d5a] hover:text-[#ff3366] underline mx-1">Privacy Policy</a>.
               </p>
-
-              <button
-                type="submit"
-                className="btn-modern w-full py-3 px-4 text-white font-semibold rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                disabled={!canPay || paymentStatus === 'loading'}
-              >
-                {paymentStatus === 'loading' ? (
-                  <>
-                    <span className="animate-spin mr-2 inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-credit-card mr-2"></i>
-                    Proceed to Payment
-                  </>
-                )}
-              </button>
             </form>
             <div className="flex flex-col items-center gap-3 mt-6 mb-6">
               <div className="flex items-center pt-4 sm:pt-5 gap-2 text-[#10b981] text-sm sm:text-base font-semibold">

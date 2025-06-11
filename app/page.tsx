@@ -165,8 +165,8 @@ export default function Home() {
   
   // Update canPay
   useEffect(() => {
-    const shouldAllowPayment = isUserSignedIn || (name.trim() !== '' && isValidEmail(email));
-    setCanPay(shouldAllowPayment);
+    // Always allow showing the PayPal button, validation happens in onClick handler
+    setCanPay(true);
   }, [isUserSignedIn, name, email]);
 
   // Auth check
