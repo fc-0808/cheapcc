@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Adobe Creative Cloud Blog - Tips, Tutorials & Updates',
-  description: 'Learn about Adobe Creative Cloud apps, discover tips and tutorials, and stay updated on discounted subscription offers from CheapCC.',
-  keywords: 'adobe cc blog, creative cloud tutorials, photoshop tips, illustrator guides, adobe cc discount blog',
+  title: 'Adobe Creative Cloud Blog - Tips, Tutorials & Savings',
+  description: 'Your expert resource for Adobe Creative Cloud. Learn Photoshop and Illustrator tips, discover new features, and find exclusive offers on genuine Adobe CC subscriptions.',
+  keywords: 'adobe cc blog, creative cloud tutorials, photoshop tips, illustrator guides, premiere pro tricks, adobe savings',
   alternates: {
     canonical: '/blog'
   },

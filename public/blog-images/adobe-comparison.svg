@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f5f5f5"/>
+  <rect x="100" y="100" width="1000" height="430" rx="15" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+  
+  <!-- Title -->
+  <text x="600" y="180" font-family="Arial, sans-serif" font-size="42" font-weight="bold" text-anchor="middle" fill="#2c2d5a">CheapCC vs Adobe Direct: Price Comparison</text>
+  
+  <!-- Chart Background -->
+  <rect x="150" y="220" width="900" height="260" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+  
+  <!-- Chart Labels -->
+  <text x="180" y="260" font-family="Arial, sans-serif" font-size="18" fill="#444444">1 Month</text>
+  <text x="180" y="320" font-family="Arial, sans-serif" font-size="18" fill="#444444">3 Months</text>
+  <text x="180" y="380" font-family="Arial, sans-serif" font-size="18" fill="#444444">6 Months</text>
+  <text x="180" y="440" font-family="Arial, sans-serif" font-size="18" fill="#444444">12 Months</text>
+  
+  <!-- Legend -->
+  <rect x="700" y="490" width="20" height="20" fill="#ff3366"/>
+  <text x="730" y="505" font-family="Arial, sans-serif" font-size="18" fill="#444444">CheapCC Price</text>
+  
+  <rect x="900" y="490" width="20" height="20" fill="#2c2d5a"/>
+  <text x="930" y="505" font-family="Arial, sans-serif" font-size="18" fill="#444444">Adobe Direct Price</text>
+  
+  <!-- Chart Bars - Fixed to show side by side bars instead of overlapping -->
+  <!-- 1 Month -->
+  <rect x="300" y="240" width="80" height="30" fill="#ff3366"/>
+  <text x="350" y="260" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$14.99</text>
+  
+  <rect x="390" y="240" width="400" height="30" fill="#2c2d5a"/>
+  <text x="590" y="260" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$79.99</text>
+  
+  <!-- 3 Months -->
+  <rect x="300" y="300" width="200" height="30" fill="#ff3366"/>
+  <text x="400" y="320" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$39.99</text>
+  
+  <rect x="510" y="300" width="400" height="30" fill="#2c2d5a"/>
+  <text x="710" y="320" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$239.97</text>
+  
+  <!-- 6 Months -->
+  <rect x="300" y="360" width="230" height="30" fill="#ff3366"/>
+  <text x="415" y="380" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$69.99</text>
+  
+  <rect x="540" y="360" width="400" height="30" fill="#2c2d5a"/>
+  <text x="740" y="380" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$479.94</text>
+  
+  <!-- 12 Months -->
+  <rect x="300" y="420" width="250" height="30" fill="#ff3366"/>
+  <text x="425" y="440" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$89.99</text>
+  
+  <rect x="560" y="420" width="400" height="30" fill="#2c2d5a"/>
+  <text x="760" y="440" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#ffffff">$599.88</text>
+  
+  <!-- Price labels -->
+  <text x="300" y="210" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#444444">Price ($)</text>
+</svg> 

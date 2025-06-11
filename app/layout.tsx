@@ -3,6 +3,13 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Script from "next/script";
+import { Inter } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -21,16 +28,13 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        {/* Preload fonts for better performance */}
-        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
         {/* Preconnect to PayPal domains to improve loading performance */}
         <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.sandbox.paypal.com" crossOrigin="anonymous" />
         {/* Font Awesome for icons */}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
       </head>
-      <body className="antialiased bg-white text-[#171717]">
+      <body className={`${inter.variable} antialiased bg-white text-[#171717]`}>
         {/* Schema.org structured data for organization */}
         <Script id="organization-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: `
           {

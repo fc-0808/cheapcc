@@ -157,6 +157,36 @@ export default async function Post({ params }: { params: { slug: string } }) {
                 className="prose prose-lg max-w-none prose-headings:text-[#2c2d5a] prose-a:text-[#ff3366] prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-hr:border-gray-200"
                 dangerouslySetInnerHTML={{ __html: postData.contentHtml }} 
               />
+              
+              {/* Pricing CTA Section */}
+              <div className="mt-12 pt-8 border-t border-gray-200">
+                <div className="bg-gradient-to-br from-white via-[#f9f9fb] to-[#f0f2f5] rounded-xl p-8 shadow-sm relative overflow-hidden">
+                  {/* Decorative elements */}
+                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#ff336610] rounded-full blur-3xl"></div>
+                  <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-[#2c2d5a10] rounded-full blur-3xl"></div>
+                  
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
+                    <div>
+                      <span className="inline-block px-3 py-1 bg-[#ff336615] text-[#ff3366] text-xs font-semibold rounded-full mb-3">EXCLUSIVE OFFER</span>
+                      <h3 className="text-2xl font-bold text-[#2c2d5a] mb-3">Ready to save on Adobe Creative Cloud?</h3>
+                      <p className="text-gray-600 mb-4 sm:mb-0 max-w-md">Get the complete Adobe suite with all premium features for up to <span className="font-semibold text-[#2c2d5a]">86% off</span> official prices</p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <Link 
+                        href="/#pricing" 
+                        className="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border border-[#ff336620] relative overflow-hidden group"
+                      >
+                        <span className="relative z-10">View Pricing Plans</span>
+                        <svg className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                        <span className="absolute inset-0 bg-gradient-to-r from-[#ff4f7b] to-[#ff3366] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                      </Link>
+                      <div className="mt-3 text-center text-xs text-gray-500">No credit card required to view plans</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </article>
         </div>

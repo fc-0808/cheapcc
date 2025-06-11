@@ -35,12 +35,12 @@ Our streamlined process makes getting your discounted Adobe Creative Cloud subsc
 
 Let's break down the actual savings when choosing CheapCC over Adobe's official pricing:
 
-| Plan Duration | Adobe Official Price | CheapCC Price | Your Savings    |
-| ------------- | -------------------- | ------------- | --------------- |
-| 1 Month       | $79.99               | $14.99        | $65.00 (81%)    |
-| 3 Months      | $239.97              | $39.99        | $199.98 (83%)   |
-| 12 Months     | $599.88              | $89.99        | $509.89 (85%)   |
-| 24 Months     | $1,199.76            | $169.99       | $1,029.77 (86%) |
+| Plan Duration | Adobe Official Price | CheapCC Price | Your Savings  |
+| ------------- | -------------------- | ------------- | ------------- |
+| 1 Month       | $79.99               | $14.99        | $65.00 (81%)  |
+| 3 Months      | $239.97              | $39.99        | $199.98 (83%) |
+| 6 Months      | $479.94              | $69.99        | $409.95 (85%) |
+| 12 Months     | $599.88              | $89.99        | $509.89 (85%) |
 
 These savings add up quickly. For a 12-month subscription, you'll save over $500 compared to Adobe's pricing. That's money you can reinvest in your business, use for new equipment, or simply keep in your pocket.
 
@@ -62,7 +62,7 @@ Yes, absolutely! You will receive a genuine Adobe account with full access to al
 
 ### What happens if I have technical issues?
 
-Our [customer support team](/support) is available to assist you with any questions or concerns. Most technical issues can be resolved directly through Adobe's support channels, as you're using their official software.
+Our [customer support team](/faq) is available to assist you with any questions or concerns. Most technical issues can be resolved directly through Adobe's support channels, as you're using their official software.
 
 ### How do I install my software after purchase?
 

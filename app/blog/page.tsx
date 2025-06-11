@@ -66,7 +66,7 @@ export default function Blog() {
                   )}
                   <div className="p-6">
                     <div className="flex items-center mb-3">
-                      <span className="text-sm text-white font-medium px-3 py-1 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff6b8b]">
+                      <span className="text-sm text-gray-600 font-medium px-3 py-1 rounded-full bg-gray-100 border border-gray-200">
                         {format(new Date(post.date), 'MMM d, yyyy')}
                       </span>
                     </div>
@@ -89,11 +89,12 @@ export default function Blog() {
 
         {posts.length > 0 && (
           <div className="mt-16 text-center">
-            <Link href="/#pricing" className="inline-flex items-center px-6 py-3 bg-[#ff3366] hover:bg-[#ff6b8b] text-white font-semibold rounded-full shadow-md hover:shadow-lg transition-all">
-              Get Adobe CC at a Discount
-              <svg className="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 20 20">
+            <Link href="/#pricing" className="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group border border-[#ff336620]">
+              <span className="relative z-10">Get Adobe CC at a Discount</span>
+              <svg className="w-5 h-5 ml-2 relative z-10 transition-transform duration-300 group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
+              <span className="absolute inset-0 bg-gradient-to-r from-[#ff4f7b] to-[#ff3366] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             </Link>
           </div>
         )}

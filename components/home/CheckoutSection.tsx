@@ -181,6 +181,24 @@ export default function CheckoutSection({
                 <a href="/terms" className="text-[#2c2d5a] hover:text-[#ff3366] underline mx-1">Terms of Service</a> and
                 <a href="/privacy" className="text-[#2c2d5a] hover:text-[#ff3366] underline mx-1">Privacy Policy</a>.
               </p>
+
+              <button
+                type="submit"
+                className="btn-modern w-full py-3 px-4 text-white font-semibold rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                disabled={!canPay || paymentStatus === 'loading'}
+              >
+                {paymentStatus === 'loading' ? (
+                  <>
+                    <span className="animate-spin mr-2 inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-credit-card mr-2"></i>
+                    Proceed to Payment
+                  </>
+                )}
+              </button>
             </form>
             <div className="flex flex-col items-center gap-3 mt-6 mb-6">
               <div className="flex items-center pt-4 sm:pt-5 gap-2 text-[#10b981] text-sm sm:text-base font-semibold">

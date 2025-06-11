@@ -3,9 +3,9 @@ import FAQPageContent from '@/components/faq/FAQPageContent';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'FAQ - Cheap Adobe Creative Cloud Questions',
-  description: 'Find answers to common questions about our cheap Adobe Creative Cloud subscriptions, payment methods, account delivery, and legitimacy.',
-  keywords: 'cheap adobe creative cloud, adobe cc discount, adobe creative cloud faq, genuine adobe subscription, adobe cc support',
+  title: 'FAQ - Your Questions Answered about Cheap Adobe CC',
+  description: 'Find answers to common questions about our cheap Adobe Creative Cloud subscriptions. Learn about legitimacy, payment methods, account delivery, and more.',
+  keywords: 'cheap adobe creative cloud faq, adobe cc discount questions, is cheapcc legit, adobe subscription support',
   alternates: {
     canonical: '/faq'
   },

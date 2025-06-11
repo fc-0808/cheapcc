@@ -22,11 +22,13 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
         onClick={onClose} // Close on overlay click
     >
       <div 
-        className="bg-white rounded-xl shadow-2xl p-5 sm:p-6 w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto transform animate-scaleIn"
+        className="bg-white rounded-xl shadow-2xl p-5 sm:p-6 w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto transform animate-scaleIn border border-gray-100/80"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
       >
         <div className="text-center mb-3 sm:mb-4">
-          <i className="fas fa-user-circle text-4xl sm:text-5xl text-[#ff3366]"></i>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#ff3366] to-[#ff66a3] text-white shadow-lg">
+            <i className="fas fa-user-circle text-3xl"></i>
+          </div>
         </div>
         <h3 className="text-lg sm:text-xl font-bold text-[#2c2d5a] mb-2 sm:mb-3 text-center">Create an Account?</h3>
         <p className="text-gray-600 mb-4 sm:mb-5 text-center text-sm sm:text-base">
@@ -35,7 +37,7 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:justify-center">
           <button
             onClick={onRegisterClick}
-            className="py-2 sm:py-2.5 px-4 sm:px-5 bg-[#ff3366] text-white rounded-lg hover:bg-[#e62e5c] transition font-medium flex items-center justify-center whitespace-nowrap cursor-pointer text-sm sm:text-base"
+            className="py-2 sm:py-2.5 px-4 sm:px-5 bg-gradient-to-r from-[#ff3366] to-[#ff66a3] text-white rounded-lg hover:shadow-md transition-all duration-300 font-medium flex items-center justify-center whitespace-nowrap cursor-pointer text-sm sm:text-base"
           >
             <i className="fas fa-user-plus mr-2"></i> Register
           </button>
