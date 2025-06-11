@@ -1,0 +1,10 @@
+This is a placeholder for the Apple Pay domain association file.
+
+For Apple Pay integration, you need to replace this file with the actual
+domain association file provided by Apple during the PayPal Apple Pay onboarding process.
+
+See the PayPal documentation at:
+https://developer.paypal.com/docs/multiparty/checkout/apm/apple-pay/
+
+This file needs to be accessible at:
+/.well-known/apple-developer-merchantid-domain-association

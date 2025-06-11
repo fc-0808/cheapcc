@@ -12,7 +12,7 @@ import { CreateOrderSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 
 const clientId = process.env.PAYPAL_CLIENT_ID!;
-const clientSecret = process.env.PAYPAL_SECRET_KEY!;
+const clientSecret = process.env.PAYPAL_CLIENT_SECRET!;
 
 // Updated: Determine PayPal environment based on PAYPAL_API_MODE,
 // defaulting to Sandbox if not set or if NODE_ENV is not 'production'.

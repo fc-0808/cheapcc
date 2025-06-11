@@ -58,7 +58,7 @@ export default function BenefitsSection() {
             Why Choose CheapCC?
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-gray-500 max-w-xl mx-auto">
-            Authorized Adobe Creative Cloud subscriptions at significantly reduced prices compared to official channels
+            CheapCC delivers authorized Adobe Creative Cloud subscriptions at significantly reduced prices compared to official channels
           </p>
         </div>
         <div className={`benefits-container grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-8 max-w-3xl mx-auto mt-2 sm:mt-4 md:mt-12 stagger-item delay-100 ${isVisible ? 'visible' : ''}`}>

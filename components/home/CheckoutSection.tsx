@@ -149,10 +149,16 @@ export default function CheckoutSection({
               </div>
               <div className="form-group">
                 <Script
-                  src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture`}
+                  src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture&components=buttons,applepay&debug=true`}
                   strategy="afterInteractive"
-                  onLoad={onPayPalLoad}
-                  onError={onPayPalError}
+                  onLoad={() => {
+                    console.log('PayPal SDK script loaded in CheckoutSection with components=buttons,applepay');
+                    onPayPalLoad();
+                  }}
+                  onError={(e) => {
+                    console.error('PayPal SDK script failed to load in CheckoutSection:', e);
+                    onPayPalError();
+                  }}
                 />
                 
                 {/* PayPal Button Container - Always in DOM */}
@@ -205,10 +211,11 @@ export default function CheckoutSection({
             </form>
             <div className="flex flex-col items-center gap-3 mt-6 mb-6">
               <div className="flex items-center pt-4 sm:pt-5 gap-2 text-[#10b981] text-sm sm:text-base font-semibold">
-                <i className="fas fa-lock" /> Secure Payment with PayPal
+                <i className="fas fa-lock" /> Secure Payment with PayPal & Apple Pay
               </div>
               <div className="flex gap-3 mt-1 text-xl sm:text-2xl text-gray-400">
                 <i className="fab fa-cc-paypal" title="PayPal" style={{color:'#003087'}}></i>
+                <i className="fab fa-apple-pay" title="Apple Pay" style={{color:'#000'}}></i>
                 <i className="fab fa-cc-visa" title="Visa" style={{color:'#1a1f71'}}></i>
                 <i className="fab fa-cc-mastercard" title="Mastercard" style={{color:'#eb001b'}}></i>
                 <i className="fab fa-cc-amex" title="Amex" style={{color:'#2e77bb'}}></i>

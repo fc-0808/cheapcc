@@ -1,9 +1,9 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'CheapCC - Affordable Adobe Creative Cloud Subscriptions',
-  description: 'Get genuine Adobe Creative Cloud subscriptions for up to 86% off. Instant delivery for all Adobe apps, including Photoshop, Illustrator, and Premiere Pro.',
-  keywords: 'cheap adobe creative cloud, adobe cc discount, adobe subscription cheap, affordable creative cloud, buy adobe cc, creative cloud all apps, adobe cc sale',
+  title: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud Subscriptions',
+  description: 'CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 86% off. Get instant delivery for all Adobe apps, including Photoshop, Illustrator, and Premiere Pro.',
+  keywords: 'cheapcc, cheapcc adobe, cheapcc creative cloud, cheap adobe creative cloud, adobe cc discount, adobe subscription cheap, cheapcc review',
   metadataBase: new URL('https://cheapcc.online'),
   authors: [
     {
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'CheapCC - Affordable Adobe Creative Cloud Subscriptions',
-    description: 'Get genuine Adobe Creative Cloud subscriptions up to 86% off. All apps included with full functionality.',
+    title: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
+    description: 'CheapCC offers genuine Adobe Creative Cloud subscriptions up to 86% off. All apps included with full functionality.',
     url: 'https://cheapcc.online',
     siteName: 'CheapCC',
     locale: 'en_US',
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CheapCC - Affordable Adobe Creative Cloud Subscriptions',
-    description: 'Get genuine Adobe Creative Cloud subscriptions up to 86% off. All apps included with full functionality.',
+    title: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
+    description: 'CheapCC offers genuine Adobe Creative Cloud subscriptions up to 86% off. All apps included with full functionality.',
     creator: '@cheapccofficial',
     images: ['/twitter-image.jpg'],
   },

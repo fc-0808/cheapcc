@@ -7,11 +7,13 @@ This project demonstrates how to integrate PayPal payments with Next.js, includi
 - Handling webhooks for payment notifications
 - Storing completed orders in Supabase with buyer info
 - Sending confirmation emails after successful payment
+- Apple Pay integration through PayPal SDK
 
 ## Features
 
 - Server-side order creation and capture using PayPal Checkout Server SDK
 - Client-side PayPal Smart Button integration
+- Apple Pay integration for Safari users on compatible devices
 - Webhook handling for payment notifications
 - **Order data (name, email, amount, currency, etc.) is only stored in Supabase after payment is completed**
 - Duplicate insert protection for webhooks
@@ -22,7 +24,7 @@ This project demonstrates how to integrate PayPal payments with Next.js, includi
 1. **User enters name and email on the frontend.**
 2. **Order is created via `/api/orders` endpoint:**
    - The backend encodes the user's name and email as a JSON string in the PayPal order's `custom_id` field.
-3. **User completes payment via PayPal.**
+3. **User completes payment via PayPal or Apple Pay.**
 4. **PayPal sends a webhook (`PAYMENT.CAPTURE.COMPLETED`) to `/api/webhooks/paypal`:**
    - The webhook handler extracts the name and email from the `custom_id` field.
    - The handler inserts a new order into Supabase with all relevant fields (name, email, amount, currency, etc.), but only if it does not already exist (duplicate protection).
@@ -98,6 +100,26 @@ yarn dev
 
 Visit http://localhost:3000 to see the application.
 
+### 7. Apple Pay Domain Verification Setup
+
+For Apple Pay to work, you must verify domain ownership with Apple:
+
+1. **Host the domain association file**:
+
+   - The placeholder file is already at `public/.well-known/apple-developer-merchantid-domain-association`
+   - Replace it with the actual file from PayPal/Apple during merchant onboarding
+
+2. **Register your domain with PayPal**:
+
+   - Follow the steps in the [PayPal Apple Pay documentation](https://developer.paypal.com/docs/multiparty/checkout/apm/apple-pay/)
+   - For production, register your domain using the PayPal API as described in the documentation
+   - For sandbox testing, register your domain through the PayPal Developer Dashboard
+
+3. **Note**: Apple Pay is only available to users:
+   - Using Safari browser
+   - On compatible devices with Apple Pay set up
+   - The integration automatically detects eligibility and displays Apple Pay only when available
+
 ## How Duplicate Insert Protection Works
 
 - The webhook handler checks if an order with the same PayPal order ID already exists in Supabase before inserting.
@@ -108,6 +130,14 @@ Visit http://localhost:3000 to see the application.
 - The frontend collects the buyer's name and email before showing the PayPal button.
 - These values are sent to the backend and stored in the PayPal order's `custom_id` field as a JSON string.
 - When the webhook is received, the handler parses `custom_id` to retrieve the original name and email for storage in Supabase.
+
+## How Apple Pay Integration Works
+
+- The integration uses PayPal's Apple Pay SDK component
+- The checkout page automatically detects if Apple Pay is available on the user's device and browser
+- If available, both PayPal and Apple Pay buttons are displayed
+- The same order creation and capture flow is used for both payment methods
+- Both payment methods use the same webhook handling and order processing
 
 ## Testing the Integration
 
@@ -129,17 +159,19 @@ Visit http://localhost:3000 to see the application.
 
 ## Important Files
 
-- `app/page.tsx`: Main checkout page with PayPal button integration
+- `app/page.tsx`: Main checkout page with PayPal and Apple Pay button integration
 - `app/api/orders/route.ts`: Server endpoint for creating PayPal orders (encodes buyer info in custom_id)
 - `app/api/webhooks/paypal/route.ts`: Webhook handler for PayPal notifications (extracts buyer info, inserts order, sends email)
 - `utils/paypal-webhook.ts`: Helper functions for webhook signature verification
 - `utils/send-email.ts`: Utility for sending confirmation emails
 - `components/EmailTemplate.tsx`: Email template for order confirmation
+- `public/.well-known/apple-developer-merchantid-domain-association`: Domain verification file for Apple Pay
 
 ## Learn More
 
 - [PayPal JavaScript SDK Documentation](https://developer.paypal.com/sdk/js/reference/)
 - [PayPal REST API Documentation](https://developer.paypal.com/api/rest/)
+- [PayPal Apple Pay Integration Guide](https://developer.paypal.com/docs/multiparty/checkout/apm/apple-pay/)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [Resend Documentation](https://resend.com/docs)

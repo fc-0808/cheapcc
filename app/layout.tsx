@@ -14,9 +14,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: {
     template: '%s | CheapCC - Affordable Adobe CC Subscriptions',
-    default: 'CheapCC - Affordable Adobe Creative Cloud Subscriptions',
+    default: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
   },
-  description: "Get genuine Adobe Creative Cloud subscriptions for up to 86% off. Instant delivery for all Adobe apps, including Photoshop, Illustrator, and Premiere Pro.",
+  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 86% off. Instant delivery for all Adobe apps.",
 };
 
 export default function RootLayout({
@@ -28,6 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="keywords" content="cheapcc, cheapcc review, cheapcc adobe, adobe cc discount, cheapcc login" />
         {/* Preconnect to PayPal domains to improve loading performance */}
         <link rel="preconnect" href="https://www.paypal.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.sandbox.paypal.com" crossOrigin="anonymous" />
@@ -43,12 +44,18 @@ export default function RootLayout({
             "name": "CheapCC",
             "url": "https://cheapcc.online",
             "logo": "https://cheapcc.online/favicon.svg",
-            "description": "Provider of affordable Adobe Creative Cloud subscriptions",
+            "description": "CheapCC - Provider of affordable Adobe Creative Cloud subscriptions",
+            "slogan": "Affordable Adobe Creative Cloud for Everyone",
             "contactPoint": {
               "@type": "ContactPoint",
               "email": "support@cheapcc.online",
               "contactType": "customer support"
-            }
+            },
+            "sameAs": [
+              "https://twitter.com/cheapccofficial",
+              "https://facebook.com/cheapccofficial",
+              "https://instagram.com/cheapccofficial"
+            ]
           }
         `}} />
         {/* Schema.org structured data for website */}
@@ -57,8 +64,9 @@ export default function RootLayout({
             "@context": "https://schema.org",
             "@type": "WebSite",
             "url": "https://cheapcc.online",
-            "name": "CheapCC - Affordable Adobe Creative Cloud Subscriptions",
-            "description": "Get genuine Adobe Creative Cloud subscriptions for up to 86% off.",
+            "name": "CheapCC - Affordable Adobe Creative Cloud",
+            "description": "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 86% off.",
+            "keywords": "cheapcc, cheapcc adobe, cheap creative cloud, adobe cc discount",
             "potentialAction": {
               "@type": "SearchAction",
               "target": "https://cheapcc.online/search?q={search_term_string}",
@@ -69,7 +77,9 @@ export default function RootLayout({
         {/* Header - always logged out state for server component */}
         <Header />
         {/* Main Content */}
-        {children}
+        <main className="cheapcc-main-content">
+          {children}
+        </main>
         {/* Footer */}
         <Footer />
       </body>

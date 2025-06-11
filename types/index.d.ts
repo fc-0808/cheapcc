@@ -2,11 +2,32 @@
 
 // Define window interface for PayPal SDK
 interface Window {
+  ApplePaySession?: {
+    canMakePayments: () => boolean;
+  };
   paypal: {
     Buttons: (config: PayPalButtonsConfig) => {
       render: (containerId: string) => void;
+      isEligible?: () => boolean;
+    };
+    ApplePay?: {
+      validateMerchant: (options: ApplePayValidateOptions) => Promise<void>;
+      config: (options: ApplePayConfigOptions) => void;
+      ButtonsConfig: any;
     };
   };
+}
+
+// Apple Pay Configuration
+interface ApplePayConfigOptions {
+  defaultShippingMethod?: string;
+  shippingLabel?: string;
+}
+
+// Apple Pay Validate Options
+interface ApplePayValidateOptions {
+  validationUrl: string;
+  displayName: string;
 }
 
 // PayPal Button Configuration

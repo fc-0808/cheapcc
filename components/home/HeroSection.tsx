@@ -64,8 +64,12 @@ export default function HeroSection() {
   const heroSchemaData = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": "Adobe Creative Cloud Subscription",
-    "description": "Unleash Your Creativity with Adobe Creative Cloud. Access the full Adobe Creative Cloud suite for less.",
+    "name": "CheapCC Adobe Creative Cloud Subscription",
+    "description": "CheapCC - Unleash Your Creativity with Adobe Creative Cloud. Access the full Adobe Creative Cloud suite for less.",
+    "brand": {
+      "@type": "Brand",
+      "name": "CheapCC"
+    },
     "offers": {
       "@type": "AggregateOffer",
       "lowPrice": "14.99",
@@ -128,7 +132,7 @@ export default function HeroSection() {
             <div className="hero-title-container mb-4 md:mb-6">
               <h1 id="hero-heading" className="hero-title">
                 {/* Adjusted font sizes and leading for hero-title-main */}
-                <span className="hero-title-main hero-3d-text opacity-85 md:opacity-100 text-white text-[2.2rem] leading-[2.5rem] sm:text-[2.8rem] sm:leading-[3.1rem] md:text-6xl font-bold">Unleash Your Creativity with</span>
+                <span className="hero-title-main hero-3d-text opacity-85 md:opacity-100 text-white text-[2.2rem] leading-[2.5rem] sm:text-[2.8rem] sm:leading-[3.1rem] md:text-6xl font-bold">CheapCC - Unleash Your Creativity with</span>
                 {/* Adjusted font sizes, leading and margin-top for hero-title-accent */}
                 <span className="hero-title-accent block mt-0 pt-3 sm:mt-1 md:mt-2 text-[2.4rem] leading-[2.7rem] sm:text-[3rem] sm:leading-[3.3rem] md:text-6xl">
                   Adobe Creative Cloud
@@ -138,11 +142,11 @@ export default function HeroSection() {
             
             {/* Description for mobile/tablet - Adjusted margin */}
             <p className="md:hidden hero-description text-white/60 max-w-xl mx-auto mb-8 text-md sm:text-lg backdrop-blur-sm py-1 font-light tracking-wide">
-              Access the full Adobe Creative Cloud suite for less.
+              CheapCC provides the full Adobe Creative Cloud suite for less.
             </p>
             {/* Description for desktop - Adjusted margin */}
             <p className="hidden md:block hero-description text-white/60 max-w-2xl mx-auto mb-10 text-lg backdrop-blur-sm py-8 pt-1 font-light tracking-wide">
-              Access the full Adobe Creative Cloud suite for less.
+              CheapCC provides the full Adobe Creative Cloud suite for less.
             </p>
             
             {/* Features hidden on screens smaller than md */}

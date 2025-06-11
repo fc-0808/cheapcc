@@ -15,7 +15,7 @@ const Footer: React.FC = () => (
             </Link>
           </h3>
           <p className="text-sm sm:text-base text-gray-300 mb-4">
-            Affordable Adobe Creative Cloud subscriptions for everyone. Access top-tier software without breaking the bank.
+            CheapCC provides affordable Adobe Creative Cloud subscriptions for everyone. Access top-tier software without breaking the bank with CheapCC's exclusive pricing.
           </p>
           <div className="footer-social-icons flex gap-4">
             <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
@@ -110,7 +110,7 @@ const Footer: React.FC = () => (
       </div>
     </div>
     <div className="copyright text-center text-sm mt-8 pt-6 border-t border-gray-700 text-gray-400">
-      &copy; {new Date().getFullYear()} CheapCC. All rights reserved. Designed with <i className="fas fa-heart text-red-500"></i>.
+      &copy; {new Date().getFullYear()} CheapCC.online. All rights reserved. CheapCC - Designed with <i className="fas fa-heart text-red-500"></i>.
     </div>
   </footer>
 );

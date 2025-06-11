@@ -47,6 +47,28 @@ export default function Home() {
   const checkoutRef = useRef<HTMLDivElement>(null);
   const [checkoutVisible, setCheckoutVisible] = useState(false);
 
+  // Check if Apple Pay is available
+  const [isApplePayAvailable, setIsApplePayAvailable] = useState(false);
+
+  // Detect if Apple Pay is available in the browser
+  const detectApplePayAvailability = useCallback(() => {
+    // Check if we're on a supported browser (Safari)
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    console.log('Safari browser detected:', isSafari);
+    
+    // Check if Apple Pay is available in the browser
+    const hasApplePaySession = typeof window !== 'undefined' && window.ApplePaySession !== undefined;
+    console.log('ApplePaySession available:', hasApplePaySession);
+    
+    const canMakePayments = hasApplePaySession && window.ApplePaySession?.canMakePayments?.() || false;
+    console.log('ApplePaySession.canMakePayments():', canMakePayments);
+
+    const canMakePaymentsWithApplePay = isSafari && hasApplePaySession && canMakePayments;
+    console.log('Final Apple Pay availability:', canMakePaymentsWithApplePay);
+    
+    return canMakePaymentsWithApplePay;
+  }, []);
+
   // Update refs when values change
   useEffect(() => { nameRef.current = name; }, [name]);
   useEffect(() => { emailRef.current = email; }, [email]);
@@ -64,86 +86,224 @@ export default function Home() {
 
     console.log('Attempting to render PayPal button...');
     if (typeof window !== 'undefined' && window.paypal) {
-      window.paypal.Buttons({
-        onClick: (data: any, actions: any) => {
-          const currentName = nameRef.current;
-          const currentEmail = emailRef.current;
-          const currentSelectedPrice = selectedPriceRef.current;
-          
-          // Just validate without setting error message (handled by CheckoutSection's useEffect)
-          if (!currentName.trim() || !isValidEmail(currentEmail) || !currentSelectedPrice) {
-            return actions.reject();
-          }
-          
-          // Clear any previous errors and reset payment status
-          setCheckoutFormError(null);
-          if (paymentStatus === 'error') setPaymentStatus('idle');
-          return actions.resolve();
-        },
-        createOrder: async () => {
-          const currentName = nameRef.current;
-          const currentEmail = emailRef.current;
-          const currentSelectedPrice = selectedPriceRef.current;
-          try {
-            setPaymentStatus('loading');
+      try {
+        // Try to detect Apple Pay availability
+        if (typeof window !== 'undefined') {
+          const applePayAvailable = detectApplePayAvailability();
+          setIsApplePayAvailable(applePayAvailable || false);
+          console.log('Apple Pay available:', applePayAvailable);
+        }
+
+        // Render PayPal Buttons
+        window.paypal.Buttons({
+          onClick: (data: any, actions: any) => {
+            const currentName = nameRef.current;
+            const currentEmail = emailRef.current;
+            const currentSelectedPrice = selectedPriceRef.current;
+            
+            // Just validate without setting error message (handled by CheckoutSection's useEffect)
+            if (!currentName.trim() || !isValidEmail(currentEmail) || !currentSelectedPrice) {
+              return actions.reject();
+            }
+            
+            // Clear any previous errors and reset payment status
             setCheckoutFormError(null);
-            const response = await fetch('/api/orders', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ priceId: currentSelectedPrice, name: currentName, email: currentEmail }),
-            });
-            const orderData = await response.json();
-            if (!response.ok || orderData.error) {
-              throw new Error(orderData.error || `Failed to create order (status: ${response.status})`);
+            if (paymentStatus === 'error') setPaymentStatus('idle');
+            return actions.resolve();
+          },
+          createOrder: async () => {
+            const currentName = nameRef.current;
+            const currentEmail = emailRef.current;
+            const currentSelectedPrice = selectedPriceRef.current;
+            try {
+              setPaymentStatus('loading');
+              setCheckoutFormError(null);
+              const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ priceId: currentSelectedPrice, name: currentName, email: currentEmail }),
+              });
+              const orderData = await response.json();
+              if (!response.ok || orderData.error) {
+                throw new Error(orderData.error || `Failed to create order (status: ${response.status})`);
+              }
+              return orderData.id;
+            } catch (error: any) {
+              console.error('Error in createOrder:', error);
+              setCheckoutFormError(error.message || 'An unexpected error occurred during order creation.');
+              setPaymentStatus('error');
+              throw error;
             }
-            return orderData.id;
-          } catch (error: any) {
-            console.error('Error in createOrder:', error);
-            setCheckoutFormError(error.message || 'An unexpected error occurred during order creation.');
-            setPaymentStatus('error');
-            throw error;
-          }
-        },
-        onApprove: async (data: any, actions: any) => {
-          try {
-            setPaymentStatus('loading');
-            const response = await fetch('/api/orders/capture', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ orderID: data.orderID }),
-            });
-            const captureData = await response.json();
-            if (!response.ok || captureData.error) {
-              throw new Error(captureData.error || `Failed to capture order (status: ${response.status})`);
-            }
-            setPaymentStatus('success');
+          },
+          onApprove: async (data: any, actions: any) => {
+            try {
+              setPaymentStatus('loading');
+              const response = await fetch('/api/orders/capture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderID: data.orderID }),
+              });
+              const captureData = await response.json();
+              if (!response.ok || captureData.error) {
+                throw new Error(captureData.error || `Failed to capture order (status: ${response.status})`);
+              }
+              setPaymentStatus('success');
               router.push(`/success/${data.orderID}`);
-          } catch (error: any) {
-            console.error('Payment capture error:', error);
-            setCheckoutFormError(error.message || 'An error occurred while capturing the payment.');
+            } catch (error: any) {
+              console.error('Payment capture error:', error);
+              setCheckoutFormError(error.message || 'An error occurred while capturing the payment.');
+              setPaymentStatus('error');
+            }
+          },
+          onCancel: () => {
+            setPaymentStatus('cancel');
+            setCheckoutFormError('Payment was cancelled.');
+          },
+          onError: (err: Error) => {
+            console.error('PayPal button error:', err);
+            setCheckoutFormError(`PayPal Error: ${err.message}. Please check your details or try again.`);
             setPaymentStatus('error');
+          },
+        }).render('#paypal-button-container');
+        console.log('PayPal button.render() called.');
+        
+        // If Apple Pay is available via PayPal SDK, render Apple Pay button
+        if (window.paypal.ApplePay && isApplePayAvailable) {
+          console.log('PayPal ApplePay SDK component available and device supports Apple Pay, attempting to render...');
+          
+          // Configure Apple Pay settings
+          try {
+            window.paypal.ApplePay.config({
+              defaultShippingMethod: 'online_delivery',
+              shippingLabel: 'Digital Delivery',
+            });
+            console.log('Apple Pay config set successfully');
+            
+            // Create the Apple Pay button configuration
+            const applePayButtonConfig = {
+              onClick: (data: any, actions: any) => {
+                const currentName = nameRef.current;
+                const currentEmail = emailRef.current;
+                const currentSelectedPrice = selectedPriceRef.current;
+                
+                // Validate without setting error message (handled by CheckoutSection's useEffect)
+                if (!currentName.trim() || !isValidEmail(currentEmail) || !currentSelectedPrice) {
+                  return actions.reject();
+                }
+                
+                setCheckoutFormError(null);
+                if (paymentStatus === 'error') setPaymentStatus('idle');
+                return actions.resolve();
+              },
+              createOrder: async () => {
+                const currentName = nameRef.current;
+                const currentEmail = emailRef.current;
+                const currentSelectedPrice = selectedPriceRef.current;
+                try {
+                  setPaymentStatus('loading');
+                  setCheckoutFormError(null);
+                  const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ priceId: currentSelectedPrice, name: currentName, email: currentEmail }),
+                  });
+                  const orderData = await response.json();
+                  if (!response.ok || orderData.error) {
+                    throw new Error(orderData.error || `Failed to create order (status: ${response.status})`);
+                  }
+                  return orderData.id;
+                } catch (error: any) {
+                  console.error('Error in createOrder:', error);
+                  setCheckoutFormError(error.message || 'An unexpected error occurred during order creation.');
+                  setPaymentStatus('error');
+                  throw error;
+                }
+              },
+              onApprove: async (data: any, actions: any) => {
+                try {
+                  setPaymentStatus('loading');
+                  const response = await fetch('/api/orders/capture', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderID: data.orderID }),
+                  });
+                  const captureData = await response.json();
+                  if (!response.ok || captureData.error) {
+                    throw new Error(captureData.error || `Failed to capture order (status: ${response.status})`);
+                  }
+                  setPaymentStatus('success');
+                  router.push(`/success/${data.orderID}`);
+                } catch (error: any) {
+                  console.error('Apple Pay payment capture error:', error);
+                  setCheckoutFormError(error.message || 'An error occurred while capturing the Apple Pay payment.');
+                  setPaymentStatus('error');
+                }
+              },
+              onCancel: () => {
+                setPaymentStatus('cancel');
+                setCheckoutFormError('Apple Pay payment was cancelled.');
+              },
+              onError: (err: Error) => {
+                console.error('Apple Pay button error:', err);
+                setCheckoutFormError(`Apple Pay Error: ${err.message}. Please check your details or try again.`);
+                setPaymentStatus('error');
+              },
+              style: {
+                // Style can be customized if needed
+              }
+            };
+            console.log('Created Apple Pay button config');
+            
+            // Create and render Apple Pay button
+            const applePayButton = window.paypal.Buttons(
+              new window.paypal.ApplePay.ButtonsConfig(applePayButtonConfig)
+            );
+            console.log('Apple Pay button created, checking eligibility');
+            
+            if (applePayButton?.isEligible?.()) {
+              console.log('Apple Pay button eligible, rendering...');
+              applePayButton.render('#paypal-button-container');
+              console.log('Apple Pay button rendered successfully');
+            } else {
+              console.log('Apple Pay is not eligible on this device/browser');
+            }
+          } catch (error) {
+            console.error('Error setting up Apple Pay:', error);
           }
-        },
-        onCancel: () => {
-          setPaymentStatus('cancel');
-          setCheckoutFormError('Payment was cancelled.');
-        },
-        onError: (err: Error) => {
-          console.error('PayPal button error:', err);
-          setCheckoutFormError(`PayPal Error: ${err.message}. Please check your details or try again.`);
-          setPaymentStatus('error');
-        },
-      }).render('#paypal-button-container');
-      console.log('PayPal button.render() called.');
+        } else {
+          console.log('Apple Pay not available:', { 
+            paypalApplePaySDK: !!window.paypal.ApplePay, 
+            deviceSupportsApplePay: isApplePayAvailable 
+          });
+        }
+      } catch (err: any) {
+        console.error('Error rendering payment buttons:', err);
+        setCheckoutFormError('Error rendering payment options. Please refresh the page or try again later.');
+      }
     } else {
       console.error('PayPal SDK not available on window object during render attempt.');
-      setCheckoutFormError('PayPal is not ready. Please wait a moment or refresh the page.');
+      setCheckoutFormError('Payment services are not ready. Please wait a moment or refresh the page.');
     }
-  }, [router, setCheckoutFormError, setPaymentStatus]); // nameRef, emailRef, selectedPriceRef are stable refs
+  }, [router, setCheckoutFormError, setPaymentStatus, isApplePayAvailable, detectApplePayAvailability]);
 
   const handlePayPalLoad = () => {
     console.log('PayPal SDK loaded successfully (app/page.tsx)');
     setSdkReady(true);
+    
+    // Check if Apple Pay is available after SDK loads
+    if (typeof window !== 'undefined') {
+      const applePayAvailable = detectApplePayAvailability();
+      setIsApplePayAvailable(applePayAvailable || false);
+      console.log('Apple Pay available after SDK load:', applePayAvailable);
+      
+      // Debug PayPal SDK Apple Pay availability
+      if (window.paypal) {
+        console.log('PayPal SDK loaded, checking for Apple Pay component:', {
+          hasApplePay: !!window.paypal.ApplePay,
+          applePay: window.paypal.ApplePay
+        });
+      }
+    }
   };
 
   const handlePayPalError = () => {

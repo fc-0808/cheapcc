@@ -22,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Main site pages
   const routes = [
     {
-      url: baseUrl,
+      url: `${baseUrl}/`,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 1.0,
@@ -60,20 +60,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${baseUrl}/terms`,
       lastModified: new Date(),
-      changeFrequency: 'yearly' as const,
-      priority: 0.3,
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
     },
     {
       url: `${baseUrl}/privacy`,
       lastModified: new Date(),
-      changeFrequency: 'yearly' as const,
-      priority: 0.3,
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
     },
     {
       url: `${baseUrl}/refund`,
       lastModified: new Date(),
-      changeFrequency: 'yearly' as const,
-      priority: 0.3,
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
     },
   ];
 
