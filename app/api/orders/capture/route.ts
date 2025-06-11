@@ -5,13 +5,12 @@ import {
   LogLevel,
   OrdersController,
   Order,
-  OrderCaptureRequest
 } from '@paypal/paypal-server-sdk';
 import { CaptureOrderSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 
 const clientId = process.env.PAYPAL_CLIENT_ID!;
-const clientSecret = process.env.PAYPAL_SECRET_KEY!;
+const clientSecret = process.env.PAYPAL_CLIENT_SECRET!;
 
 const paypalApiEnv = process.env.PAYPAL_API_MODE === 'live'
                   ? Environment.Production
