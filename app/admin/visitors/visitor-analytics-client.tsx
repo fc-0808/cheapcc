@@ -12,11 +12,6 @@ interface VisitorLog {
   user_id: string | null;
   is_bot_heuristic: boolean;
   method: string;
-  geo_location?: {
-    country?: string;
-    city?: string;
-    region?: string;
-  } | null;
 }
 
 interface TopPage {
@@ -118,6 +113,12 @@ export default function VisitorAnalyticsClient({
   // Handle filter changes
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Get location for an IP address
+  const getLocationForIP = (ip: string): string => {
+    const matchingIp = topIpAddresses.find(item => item.ip === ip);
+    return matchingIp?.location || 'Unknown';
   };
 
   // Calculate percentages for stats
@@ -434,12 +435,10 @@ export default function VisitorAnalyticsClient({
                     </td>
                     <td className="px-3 py-4 text-sm">
                       <div className="font-mono text-gray-700 truncate">{log.ip_address}</div>
-                      {log.geo_location && (
-                        <div className="text-xs text-gray-500 mt-0.5 truncate">
-                          {log.geo_location.city ? `${log.geo_location.city}, ` : ''}
-                          {log.geo_location.country || 'Unknown'}
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500 mt-0.5 truncate">
+                        <i className="fas fa-map-marker-alt mr-1"></i>
+                        {getLocationForIP(log.ip_address)}
+                      </div>
                     </td>
                     <td className="px-3 py-4 text-sm">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${

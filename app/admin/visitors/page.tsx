@@ -2,7 +2,6 @@ import { createClient } from '@/utils/supabase/supabase-server';
 import { redirect } from 'next/navigation';
 import { formatDistanceToNow, format, subDays, subHours } from 'date-fns';
 import VisitorAnalyticsClient from './visitor-analytics-client';
-import geoip from 'geoip-lite';
 
 export const revalidate = 60; // Revalidate data every 60 seconds
 
@@ -28,28 +27,6 @@ export default async function VisitorLogsPage() {
   if (error) {
     return <div className="p-8 text-red-500">Error fetching logs: {error.message}</div>;
   }
-
-  // Add geo location data to logs
-  const logsWithLocation = logs?.map(log => {
-    let location = null;
-    
-    // Skip location lookup for localhost and private IPs
-    if (log.ip_address && !log.ip_address.startsWith('127.') && 
-        !log.ip_address.startsWith('192.168.') && 
-        !log.ip_address.startsWith('10.') && 
-        log.ip_address !== '::1') {
-      try {
-        location = geoip.lookup(log.ip_address);
-      } catch (e) {
-        console.error(`Error looking up IP ${log.ip_address}:`, e);
-      }
-    }
-    
-    return {
-      ...log,
-      geo_location: location
-    };
-  });
 
   // Calculate analytics data
   const totalVisits = logs?.length || 0;
@@ -104,33 +81,32 @@ export default async function VisitorLogsPage() {
     return acc;
   }, {});
 
-  // Enhance IP data with location information
+  // Create IP addresses with basic location info based on patterns
   const topIpAddresses = Object.entries(ipAddressCounts || {})
     .map(([ip, count]) => {
-      let location = null;
-      if (ip && !ip.startsWith('127.') && 
-          !ip.startsWith('192.168.') && 
-          !ip.startsWith('10.') && 
-          ip !== '::1') {
-        try {
-          location = geoip.lookup(ip);
-        } catch (e) {
-          console.error(`Error looking up IP ${ip}:`, e);
-        }
+      // Simple IP categorization without using geoip-lite
+      let location = 'Unknown';
+      
+      if (ip === '::1' || ip === '127.0.0.1') {
+        location = 'Localhost';
+      } else if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./)) {
+        location = 'Local Network';
+      } else if (ip.startsWith('54.') || ip.startsWith('52.') || ip.startsWith('35.') || ip.startsWith('18.')) {
+        location = 'AWS Cloud';
+      } else if (ip.startsWith('34.') || ip.startsWith('35.') || ip.startsWith('108.')) {
+        location = 'Google Cloud';
+      } else if (ip.startsWith('13.') || ip.startsWith('40.') || ip.startsWith('104.')) {
+        location = 'Microsoft Azure';
       }
       
-      return {
-        ip,
-        count,
-        location: location ? `${location.city || ''}, ${location.country || ''}`.trim() : 'Unknown'
-      };
+      return { ip, count, location };
     })
     .sort((a, b) => b.count - a.count)
     .slice(0, 20); // Get top 20 IPs
 
   return (
     <VisitorAnalyticsClient 
-      logs={logsWithLocation || []} 
+      logs={logs || []} 
       totalVisits={totalVisits}
       uniqueIPs={uniqueIPs}
       botVisits={botVisits}
