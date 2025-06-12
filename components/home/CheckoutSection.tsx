@@ -155,8 +155,8 @@ export default function CheckoutSection({
                 <div className="mt-2 p-4 bg-red-50 rounded-lg border border-red-100">
                   <div className="flex items-center">
                     <i className="fas fa-exclamation-circle text-red-400 mr-3"></i>
-                    <div className="text-sm text-red-600">
-                      Please enter a name and a valid email address to proceed with payment.
+                    <div className="text-xs text-red-600">
+                      Please enter a name and a valid email address to continue.
                     </div>
                   </div>
                 </div>

@@ -23,9 +23,6 @@ export default async function DashboardPageContent({
   const userEmail = user?.email || '';
   const userName = user?.user_metadata?.name || '';
   
-  // Check if this is a new user registration
-  const isNewRegistration = searchParams.welcome === 'new';
-
   const { data } = await supabase
     .from('orders')
     .select('*')
@@ -41,23 +38,6 @@ export default async function DashboardPageContent({
 
   return (
     <>
-      {/* Welcome message for new users */}
-      {isNewRegistration && (
-        <div className="welcome-banner mb-6">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center">
-              <div className="mr-5 hidden sm:block">
-                <i className="fas fa-user-check text-4xl"></i>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold mb-1">Welcome to CheapCC, {userName || 'New User'}!</h2>
-                <p className="text-blue-100">Your account has been created successfully. You can now browse our plans and make purchases.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Stats Cards */}
       <div className="stats-grid">
         <div className="stat-card">

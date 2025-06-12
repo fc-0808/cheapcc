@@ -12,6 +12,11 @@ interface VisitorLog {
   user_id: string | null;
   is_bot_heuristic: boolean;
   method: string;
+  geo_location?: {
+    country?: string;
+    city?: string;
+    region?: string;
+  } | null;
 }
 
 interface TopPage {
@@ -25,6 +30,12 @@ interface DailyVisit {
   label: string;
 }
 
+interface IpAddress {
+  ip: string;
+  count: number;
+  location?: string;
+}
+
 interface VisitorAnalyticsProps {
   logs: VisitorLog[];
   totalVisits: number;
@@ -33,6 +44,11 @@ interface VisitorAnalyticsProps {
   authenticatedVisits: number;
   visitsPerDay: DailyVisit[];
   topPages: TopPage[];
+  lastHourVisits: number;
+  last24HoursVisits: number;
+  last3DaysVisits: number;
+  last7DaysVisits: number;
+  topIpAddresses: IpAddress[];
 }
 
 interface FilterState {
@@ -51,7 +67,12 @@ export default function VisitorAnalyticsClient({
   botVisits,
   authenticatedVisits,
   visitsPerDay,
-  topPages
+  topPages,
+  lastHourVisits,
+  last24HoursVisits,
+  last3DaysVisits,
+  last7DaysVisits,
+  topIpAddresses
 }: VisitorAnalyticsProps) {
   const [filters, setFilters] = useState<FilterState>({
     showBots: true,
@@ -123,6 +144,39 @@ export default function VisitorAnalyticsClient({
             </div>
           </div>
         </header>
+
+        {/* Time-based Stats */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">Traffic by Time Period</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <div className="text-xs font-medium text-blue-500 uppercase tracking-wide mb-1">Last Hour</div>
+              <div className="text-2xl font-bold text-blue-700">{lastHourVisits}</div>
+              <div className="text-xs text-blue-500 mt-1">
+                {lastHourVisits > 0 ? `${Math.round((lastHourVisits / totalVisits) * 100)}% of total` : 'No visits'}
+              </div>
+            </div>
+            <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+              <div className="text-xs font-medium text-indigo-500 uppercase tracking-wide mb-1">Last 24 Hours</div>
+              <div className="text-2xl font-bold text-indigo-700">{last24HoursVisits}</div>
+              <div className="text-xs text-indigo-500 mt-1">
+                {last24HoursVisits > 0 ? `${Math.round((last24HoursVisits / totalVisits) * 100)}% of total` : 'No visits'}
+              </div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
+              <div className="text-xs font-medium text-purple-500 uppercase tracking-wide mb-1">Last 3 Days</div>
+              <div className="text-2xl font-bold text-purple-700">{last3DaysVisits}</div>
+              <div className="text-xs text-purple-500 mt-1">
+                {last3DaysVisits > 0 ? `${Math.round((last3DaysVisits / totalVisits) * 100)}% of total` : 'No visits'}
+              </div>
+            </div>
+            <div className="bg-pink-50 rounded-lg p-4 border border-pink-100">
+              <div className="text-xs font-medium text-pink-500 uppercase tracking-wide mb-1">Last 7 Days</div>
+              <div className="text-2xl font-bold text-pink-700">{last7DaysVisits}</div>
+              <div className="text-xs text-pink-500 mt-1">100% of data</div>
+            </div>
+          </div>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -227,6 +281,48 @@ export default function VisitorAnalyticsClient({
           </div>
         </div>
 
+        {/* Top IP Addresses */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">Top IP Addresses</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {topIpAddresses.map((item, i) => (
+              <div 
+                key={i} 
+                className="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                onClick={() => handleFilterChange('ipFilter', item.ip)}
+              >
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold mr-3">
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-mono text-sm font-medium text-gray-800 truncate">{item.ip}</div>
+                  {item.location && (
+                    <div className="text-xs text-gray-500 mt-0.5 flex items-center">
+                      <i className="fas fa-map-marker-alt mr-1"></i>
+                      <span className="truncate">{item.location}</span>
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    {item.count} {item.count === 1 ? 'visit' : 'visits'} ({Math.round((item.count / totalVisits) * 100)}%)
+                  </div>
+                </div>
+                <div className="ml-auto">
+                  <button 
+                    className="text-blue-500 hover:text-blue-700"
+                    title="Filter by this IP"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange('ipFilter', item.ip);
+                    }}
+                  >
+                    <i className="fas fa-filter"></i>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h2 className="text-lg font-semibold text-gray-700 mb-4">Filters</h2>
@@ -312,30 +408,40 @@ export default function VisitorAnalyticsClient({
             <h2 className="text-lg font-semibold text-gray-700">Visitor Logs</h2>
             <span className="text-sm text-gray-500">Showing {filteredLogs.length} of {logs.length} entries</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          
+          {/* Table with optimized layout to prevent horizontal scrolling */}
+          <div className="w-full">
+            <table className="w-full divide-y divide-gray-200 table-fixed">
               <thead className="bg-gray-100">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Path</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Agent</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auth Status</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bot?</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[14%]">Time</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[18%]">IP / Location</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8%]">Method</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[22%]">Path</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[22%]">User Agent</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8%]">Auth</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[8%]">Bot?</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-gray-50">
                     <td 
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                      className="px-3 py-4 text-sm text-gray-500 truncate"
                       title={new Date(log.created_at).toLocaleString('en-US')}
                     >
                       {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">{log.ip_address}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-4 text-sm">
+                      <div className="font-mono text-gray-700 truncate">{log.ip_address}</div>
+                      {log.geo_location && (
+                        <div className="text-xs text-gray-500 mt-0.5 truncate">
+                          {log.geo_location.city ? `${log.geo_location.city}, ` : ''}
+                          {log.geo_location.country || 'Unknown'}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-4 text-sm">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         log.method === 'GET' ? 'bg-blue-100 text-blue-800' : 
                         log.method === 'POST' ? 'bg-green-100 text-green-800' : 
@@ -344,22 +450,24 @@ export default function VisitorAnalyticsClient({
                         {log.method || 'GET'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-semibold">{log.path}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate" title={log.user_agent ?? ''}>
+                    <td className="px-3 py-4 text-sm text-gray-800 font-semibold truncate" title={log.path}>
+                      {log.path}
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-500 truncate" title={log.user_agent ?? ''}>
                       {log.user_agent}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-4 text-sm">
                       {log.user_id ? (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          Authenticated
+                          Yes
                         </span>
                       ) : (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                          Anonymous
+                          No
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-4 text-sm">
                       {log.is_bot_heuristic ? (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                           Yes
