@@ -20,7 +20,7 @@ export default function LoginPageURLMessages() {
       typeToShow = 'error';
     } else if (successParam) {
       if (successParam === 'register') {
-        messageToShow = 'Registration successful! Please check your email to confirm your account.';
+        messageToShow = 'Registration successful! You can now log in.';
       } else if (successParam === 'password_reset') {
         messageToShow = 'Your password has been reset successfully. Please log in.';
       } else {

@@ -149,6 +149,19 @@ export default function CheckoutSection({
                   className={`${isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""} w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]`}
                 />
               </div>
+              
+              {/* Required fields message - Moved here to display right after the input fields */}
+              {showRequiredFieldsMessage && !isUserSignedIn && (
+                <div className="mt-2 p-4 bg-red-50 rounded-lg border border-red-100">
+                  <div className="flex items-center">
+                    <i className="fas fa-exclamation-circle text-red-400 mr-3"></i>
+                    <div className="text-sm text-red-600">
+                      Please enter a name and a valid email address to proceed with payment.
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="form-group">
                 <Script
                   src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture&components=buttons${process.env.NEXT_PUBLIC_PAYPAL_API_MODE === 'live' ? '' : '&debug=true'}`}
@@ -163,25 +176,13 @@ export default function CheckoutSection({
                   }}
                 />
                 
-                {/* PayPal Button Container - Always in DOM */}
+                {/* PayPal Button Container - Always in DOM but with opacity based on field validation */}
                 <div 
                   ref={paypalButtonContainerRef} 
                   id="paypal-button-container" 
                   className="w-full mt-4"
-                  // style.display is controlled by the useEffect hook
+                  style={{ opacity: (!isUserSignedIn && showRequiredFieldsMessage) ? '0.5' : '1' }}
                 />
-
-                {/* Separate warning message about required fields */}
-                {showRequiredFieldsMessage && !canPay && (
-                  <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-100">
-                    <div className="flex items-center">
-                      <i className="fas fa-exclamation-triangle text-red-400 mr-3"></i>
-                      <div className="text-sm text-red-600">
-                        Please enter your name and a valid email address to proceed with payment.
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
               
               {/* Payment Status & General Error Messages */}

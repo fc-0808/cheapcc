@@ -68,12 +68,14 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
     }
 
     const supabase = await createClient();
+    
+    // Since email confirmation is disabled, we can directly sign up and sign in the user
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { name },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+        // Remove emailRedirectTo since we don't need email confirmation anymore
       },
     });
 
@@ -86,13 +88,56 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
       redirect(`/register?error=${encodeURIComponent(signUpError.message)}`);
     }
 
+    // Check if user was created successfully
+    if (!signUpData.user) {
+      console.error(JSON.stringify({
+        ...logContext, event: "signup_user_creation_failed",
+        reason: "User object not returned from signUp call"
+      }, null, 2));
+      redirect('/register?error=Failed+to+create+user+account');
+    }
+
     console.info(JSON.stringify({
-        ...logContext, event: "signup_successful_email_sent", userId: signUpData.user?.id
+      ...logContext, 
+      event: "signup_successful", 
+      userId: signUpData.user.id,
+      userConfirmed: true
     }, null, 2));
 
+    // Create a profile record if needed
+    try {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          { 
+            id: signUpData.user.id,
+            name: name,
+            email: email,
+          }
+        ]);
+      
+      if (profileError) {
+        console.warn(JSON.stringify({
+          ...logContext,
+          event: "profile_creation_warning",
+          userId: signUpData.user.id,
+          profileError: profileError.message
+        }, null, 2));
+        // Continue even if profile creation fails - the user is still authenticated
+      }
+    } catch (profileException) {
+      console.warn(JSON.stringify({
+        ...logContext,
+        event: "profile_creation_exception",
+        userId: signUpData.user.id,
+        error: profileException instanceof Error ? profileException.message : String(profileException)
+      }, null, 2));
+      // Continue even if profile creation throws - the user is still authenticated
+    }
+
     revalidatePath('/', 'layout');
-    console.info(JSON.stringify({ ...logContext, event: "initiating_redirect_to_login_after_signup" }, null, 2));
-    redirect('/login?success=register'); // This will throw NEXT_REDIRECT
+    console.info(JSON.stringify({ ...logContext, event: "redirecting_to_dashboard_after_signup", userId: signUpData.user.id }, null, 2));
+    redirect('/dashboard?welcome=new'); // Redirect directly to dashboard with welcome parameter
 
   } catch (error: any) {
     // **** THIS IS THE CRITICAL CORRECTED CATCH BLOCK ****
