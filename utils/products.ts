@@ -15,38 +15,45 @@ export const PRODUCT = {
 export const PRICING_OPTIONS: PricingOption[] = [
   {
     id: '14d',
-    name: '14-Day Trial',
+    name: '14 Days',
     duration: '14 days',
     price: 4.99,
-    description: '14 days of Adobe Creative Cloud All Apps',
+    description: 'Adobe Creative Cloud - 14 Days',
   },
   {
     id: '1m',
     name: '1 Month',
     duration: '1 month',
     price: 14.99,
-    description: '1 month of Adobe Creative Cloud All Apps',
+    description: 'Adobe Creative Cloud - 1 Month',
   },
   {
     id: '3m',
     name: '3 Months',
     duration: '3 months',
     price: 39.99,
-    description: '3 months of Adobe Creative Cloud All Apps',
+    description: 'Adobe Creative Cloud - 3 Months',
   },
   {
     id: '6m',
     name: '6 Months',
     duration: '6 months',
-    price: 64.99,
-    description: '6 months of Adobe Creative Cloud All Apps',
+    price: 74.99,
+    description: 'Adobe Creative Cloud - 6 Months',
   },
   {
     id: '12m',
     name: '12 Months',
     duration: '12 months',
     price: 124.99,
-    description: '12 months of Adobe Creative Cloud All Apps',
+    description: 'Adobe Creative Cloud - 12 Months',
+  },
+  {
+    id: 'test-live',
+    name: '$0.01 Live Test',
+    duration: 'Test',
+    price: 0.01,
+    description: 'Adobe Creative Cloud - Live Payment Test',
   },
 ];
 

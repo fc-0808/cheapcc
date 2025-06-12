@@ -20,6 +20,15 @@ const paypalApiEnv = process.env.PAYPAL_API_MODE === 'live'
                   ? Environment.Production
                   : Environment.Sandbox;
 
+// Log the environment being used for debugging
+console.info(JSON.stringify({
+  message: "PayPal API environment configuration",
+  environment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
+  clientIdExists: !!clientId,
+  clientSecretExists: !!clientSecret,
+  source: "app/api/orders/route.ts static initialization"
+}, null, 2));
+
 if (!clientId || !clientSecret) {
     console.error(JSON.stringify({
         message: "PayPal Client ID or Secret Key is not configured.",
@@ -116,6 +125,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Log the request details for debugging
+    console.info(JSON.stringify({
+      message: "Creating PayPal order",
+      priceId,
+      price: selectedOption.price,
+      duration: selectedOption.duration,
+      environment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
+      source: "app/api/orders/route.ts POST"
+    }, null, 2));
+
     const paypalRequestBody = {
       intent: CheckoutPaymentIntent.Capture,
       purchaseUnits: [
@@ -164,6 +183,7 @@ export async function POST(request: NextRequest) {
         paypalResponseStatus: error.response?.status,
         // Log more detailed PayPal response, even in prod for better debugging
         paypalResponseDataFull: paypalErrorDetails,
+        paypalEnvironment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
         durationMs,
         source: "app/api/orders/route.ts POST (catch)"
     };
@@ -172,13 +192,17 @@ export async function POST(request: NextRequest) {
     const userErrorMessage = 'Failed to create order. Please try again or contact support if the issue persists.';
     // Provide more specific details from PayPal if available and not in production,
     // or if specifically enabled for production debugging.
-    const errorDetailsForClient = process.env.NODE_ENV !== 'production' && paypalErrorDetails.message
-                                  ? paypalErrorDetails.message
+    const errorDetailsForClient = process.env.NODE_ENV !== 'production' 
+                                  ? (paypalErrorDetails.message || error.message || 'Unknown PayPal error')
                                   : undefined;
     const statusCode = error.response?.status || 500;
 
     return NextResponse.json(
-      { error: userErrorMessage, details: errorDetailsForClient },
+      { 
+        error: userErrorMessage, 
+        details: errorDetailsForClient,
+        environment: process.env.NODE_ENV !== 'production' ? process.env.PAYPAL_API_MODE || 'sandbox (default)' : undefined 
+      },
       { status: statusCode }
     );
   }

@@ -46,7 +46,9 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
       }, 10);
   };
 
-  const sortedPricingOptions = [...PRICING_OPTIONS].sort((a, b) => {
+  const sortedPricingOptions = [...PRICING_OPTIONS]
+    .filter(option => option.id !== 'test-live') // Filter out the test payment option
+    .sort((a, b) => {
     const durationOrder: Record<string, number> = { 
       "14 days": 1, 
       "1 month": 2, 
@@ -71,10 +73,10 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
     "offers": {
       "@type": "AggregateOffer",
       "priceCurrency": "USD",
-      "lowPrice": Math.min(...PRICING_OPTIONS.map(p => p.price)),
-      "highPrice": Math.max(...PRICING_OPTIONS.map(p => p.price)),
-      "offerCount": PRICING_OPTIONS.length,
-      "offers": PRICING_OPTIONS.map(option => ({
+      "lowPrice": Math.min(...PRICING_OPTIONS.filter(p => p.id !== 'test-live').map(p => p.price)),
+      "highPrice": Math.max(...PRICING_OPTIONS.filter(p => p.id !== 'test-live').map(p => p.price)),
+      "offerCount": PRICING_OPTIONS.filter(p => p.id !== 'test-live').length,
+      "offers": PRICING_OPTIONS.filter(p => p.id !== 'test-live').map(option => ({
         "@type": "Offer",
         "name": `Adobe Creative Cloud - ${option.duration}`,
         "price": option.price.toFixed(2),

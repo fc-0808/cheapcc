@@ -101,7 +101,9 @@ export default function CheckoutSection({
     }
   }, [sdkReady, canPay, isVisible, renderPayPalButton, paypalButtonContainerRef]);
 
-  const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[0];
+  const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice && option.id !== 'test-live') || 
+    PRICING_OPTIONS.find(option => option.id !== 'test-live') || 
+    PRICING_OPTIONS[0];
 
   return (
     <section className="checkout py-10 sm:py-16 md:py-20 bg-[#f3f4f6]" id="checkout">
@@ -149,10 +151,10 @@ export default function CheckoutSection({
               </div>
               <div className="form-group">
                 <Script
-                  src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture&components=buttons,applepay&debug=true`}
+                  src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture&components=buttons${process.env.NEXT_PUBLIC_PAYPAL_API_MODE === 'live' ? '' : '&debug=true'}`}
                   strategy="afterInteractive"
                   onLoad={() => {
-                    console.log('PayPal SDK script loaded in CheckoutSection with components=buttons,applepay');
+                    console.log('PayPal SDK script loaded in CheckoutSection with components=buttons');
                     onPayPalLoad();
                   }}
                   onError={(e) => {
@@ -162,22 +164,22 @@ export default function CheckoutSection({
                 />
                 
                 {/* PayPal Button Container - Always in DOM */}
-                <div
-                  id="paypal-button-container"
-                  ref={paypalButtonContainerRef}
-                  className={`mt-4 w-full p-4 bg-gray-50 rounded-lg border border-gray-100 ${(!isUserSignedIn && (name.trim() === '' || !isValidEmail(email))) ? 'opacity-50' : ''}`}
+                <div 
+                  ref={paypalButtonContainerRef} 
+                  id="paypal-button-container" 
+                  className="w-full mt-4"
                   // style.display is controlled by the useEffect hook
                 />
 
                 {/* Separate warning message about required fields */}
-                {isVisible && showRequiredFieldsMessage && !isUserSignedIn && (
-                  <div className="form-note flex items-center bg-[#fff0f3] text-[#b91c1c] py-4 px-4 rounded-lg shadow border border-[#ffd6db] animate-fade-in my-5">
-                    <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-[#ffe4ea] mr-3 flex-shrink-0">
-                      <i className="fas fa-exclamation-circle text-[#ff3366]"></i>
-                    </span>
-                    <span className="font-medium text-xs flex-1">
-                      Please enter a name and a valid email to continue.
-                    </span>
+                {showRequiredFieldsMessage && !canPay && (
+                  <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-100">
+                    <div className="flex items-center">
+                      <i className="fas fa-exclamation-triangle text-red-400 mr-3"></i>
+                      <div className="text-sm text-red-600">
+                        Please enter your name and a valid email address to proceed with payment.
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -211,11 +213,10 @@ export default function CheckoutSection({
             </form>
             <div className="flex flex-col items-center gap-3 mt-6 mb-6">
               <div className="flex items-center pt-4 sm:pt-5 gap-2 text-[#10b981] text-sm sm:text-base font-semibold">
-                <i className="fas fa-lock" /> Secure Payment with PayPal & Apple Pay
+                <i className="fas fa-lock" /> Secure Payment with PayPal
               </div>
               <div className="flex gap-3 mt-1 text-xl sm:text-2xl text-gray-400">
                 <i className="fab fa-cc-paypal" title="PayPal" style={{color:'#003087'}}></i>
-                <i className="fab fa-apple-pay" title="Apple Pay" style={{color:'#000'}}></i>
                 <i className="fab fa-cc-visa" title="Visa" style={{color:'#1a1f71'}}></i>
                 <i className="fab fa-cc-mastercard" title="Mastercard" style={{color:'#eb001b'}}></i>
                 <i className="fab fa-cc-amex" title="Amex" style={{color:'#2e77bb'}}></i>
