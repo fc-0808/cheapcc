@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface VisitorLog {
@@ -12,6 +12,10 @@ interface VisitorLog {
   user_id: string | null;
   is_bot_heuristic: boolean;
   method: string;
+  geo_location?: {
+    country: string;
+    city: string;
+  };
 }
 
 interface TopPage {
@@ -55,6 +59,8 @@ interface FilterState {
   ipFilter: string;
 }
 
+type TimePeriod = 'hour' | '24hours' | '3days' | '7days';
+
 export default function VisitorAnalyticsClient({
   logs,
   totalVisits,
@@ -77,13 +83,43 @@ export default function VisitorAnalyticsClient({
     pathFilter: '',
     ipFilter: ''
   });
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>('7days');
 
   const [filteredLogs, setFilteredLogs] = useState<VisitorLog[]>(logs);
+  const [timeFilteredLogs, setTimeFilteredLogs] = useState<VisitorLog[]>(logs);
   const [maxBarHeight, setMaxBarHeight] = useState<number>(100);
 
-  // Apply filters when they change
+  // Apply time period filter
   useEffect(() => {
-    const filtered = logs.filter(log => {
+    const now = new Date();
+    let threshold: Date;
+    
+    switch (selectedTimePeriod) {
+      case 'hour':
+        threshold = new Date(now.getTime() - 60 * 60 * 1000); // 1 hour ago
+        break;
+      case '24hours':
+        threshold = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
+        break;
+      case '3days':
+        threshold = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); // 3 days ago
+        break;
+      case '7days':
+      default:
+        threshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
+        break;
+    }
+    
+    const filtered = logs.filter(log => new Date(log.created_at) >= threshold);
+    setTimeFilteredLogs(filtered);
+  }, [logs, selectedTimePeriod]);
+
+  // Apply other filters when they change
+  useEffect(() => {
+    const filtered = timeFilteredLogs.filter(log => {
+      // Filter out internal API endpoints
+      if (log.path.startsWith('/api/geolocation')) return false;
+      
       // Bot/Human filter
       if (log.is_bot_heuristic && !filters.showBots) return false;
       if (!log.is_bot_heuristic && !filters.showHumans) return false;
@@ -102,7 +138,7 @@ export default function VisitorAnalyticsClient({
     });
     
     setFilteredLogs(filtered);
-  }, [logs, filters]);
+  }, [timeFilteredLogs, filters]);
 
   // Calculate max bar height for chart
   useEffect(() => {
@@ -115,16 +151,57 @@ export default function VisitorAnalyticsClient({
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  // Get location for an IP address
-  const getLocationForIP = (ip: string): string => {
-    const matchingIp = topIpAddresses.find(item => item.ip === ip);
-    return matchingIp?.location || 'Unknown';
+  // Format location for display
+  const formatLocation = (log: VisitorLog): string => {
+    if (!log.geo_location) return 'Unknown';
+    const { city, country } = log.geo_location;
+    if (country && country !== 'Unknown') {
+      if (city && city !== 'Unknown') {
+        return `${city}, ${country}`;
+      }
+      return country;
+    }
+    return 'Unknown';
   };
 
-  // Calculate percentages for stats
-  const botPercentage = totalVisits > 0 ? Math.round((botVisits / totalVisits) * 100) : 0;
-  const humanPercentage = 100 - botPercentage;
-  const authPercentage = totalVisits > 0 ? Math.round((authenticatedVisits / totalVisits) * 100) : 0;
+  // Get current time period stats
+  const getCurrentTimeStats = () => {
+    switch (selectedTimePeriod) {
+      case 'hour':
+        return lastHourVisits;
+      case '24hours':
+        return last24HoursVisits;
+      case '3days':
+        return last3DaysVisits;
+      case '7days':
+      default:
+        return last7DaysVisits;
+    }
+  };
+
+  // Calculate stats based on time-filtered logs
+  const currentPeriodStats = useMemo(() => {
+    const botCount = timeFilteredLogs.filter(log => log.is_bot_heuristic).length;
+    const authCount = timeFilteredLogs.filter(log => log.user_id).length;
+    const uniqueIPCount = [...new Set(timeFilteredLogs.map(log => log.ip_address))].length;
+    const totalCount = timeFilteredLogs.length;
+    
+    return {
+      total: totalCount,
+      uniqueIPs: uniqueIPCount,
+      bots: botCount,
+      botPercentage: totalCount > 0 ? Math.round((botCount / totalCount) * 100) : 0,
+      authenticated: authCount,
+      authPercentage: totalCount > 0 ? Math.round((authCount / totalCount) * 100) : 0,
+    };
+  }, [timeFilteredLogs]);
+
+  const periodLabels = {
+    'hour': 'Last Hour',
+    '24hours': 'Last 24 Hours',
+    '3days': 'Last 3 Days',
+    '7days': 'Last 7 Days'
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen p-4 sm:p-8">
@@ -146,36 +223,30 @@ export default function VisitorAnalyticsClient({
           </div>
         </header>
 
-        {/* Time-based Stats */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Traffic by Time Period</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-              <div className="text-xs font-medium text-blue-500 uppercase tracking-wide mb-1">Last Hour</div>
-              <div className="text-2xl font-bold text-blue-700">{lastHourVisits}</div>
-              <div className="text-xs text-blue-500 mt-1">
-                {lastHourVisits > 0 ? `${Math.round((lastHourVisits / totalVisits) * 100)}% of total` : 'No visits'}
-              </div>
-            </div>
-            <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
-              <div className="text-xs font-medium text-indigo-500 uppercase tracking-wide mb-1">Last 24 Hours</div>
-              <div className="text-2xl font-bold text-indigo-700">{last24HoursVisits}</div>
-              <div className="text-xs text-indigo-500 mt-1">
-                {last24HoursVisits > 0 ? `${Math.round((last24HoursVisits / totalVisits) * 100)}% of total` : 'No visits'}
-              </div>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-              <div className="text-xs font-medium text-purple-500 uppercase tracking-wide mb-1">Last 3 Days</div>
-              <div className="text-2xl font-bold text-purple-700">{last3DaysVisits}</div>
-              <div className="text-xs text-purple-500 mt-1">
-                {last3DaysVisits > 0 ? `${Math.round((last3DaysVisits / totalVisits) * 100)}% of total` : 'No visits'}
-              </div>
-            </div>
-            <div className="bg-pink-50 rounded-lg p-4 border border-pink-100">
-              <div className="text-xs font-medium text-pink-500 uppercase tracking-wide mb-1">Last 7 Days</div>
-              <div className="text-2xl font-bold text-pink-700">{last7DaysVisits}</div>
-              <div className="text-xs text-pink-500 mt-1">100% of data</div>
-            </div>
+        {/* Time Period Selector */}
+        <div className="bg-white rounded-lg shadow-md mb-8">
+          <div className="flex overflow-x-auto border-b border-gray-200">
+            {(['hour', '24hours', '3days', '7days'] as TimePeriod[]).map((period) => (
+              <button
+                key={period}
+                onClick={() => setSelectedTimePeriod(period)}
+                className={`flex-1 px-4 py-4 text-center font-medium text-sm ${
+                  selectedTimePeriod === period
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {periodLabels[period]}
+                <div className={`text-lg font-bold mt-1 ${
+                  selectedTimePeriod === period ? 'text-blue-700' : 'text-gray-700'
+                }`}>
+                  {period === 'hour' ? lastHourVisits :
+                   period === '24hours' ? last24HoursVisits :
+                   period === '3days' ? last3DaysVisits : 
+                   last7DaysVisits}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -187,8 +258,8 @@ export default function VisitorAnalyticsClient({
                 <i className="fas fa-users text-xl"></i>
               </div>
               <div className="ml-4">
-                <h2 className="text-sm font-medium text-gray-500">Total Visits</h2>
-                <p className="text-2xl font-bold text-gray-800">{totalVisits}</p>
+                <h2 className="text-sm font-medium text-gray-500">Visits ({periodLabels[selectedTimePeriod]})</h2>
+                <p className="text-2xl font-bold text-gray-800">{currentPeriodStats.total}</p>
               </div>
             </div>
           </div>
@@ -200,7 +271,7 @@ export default function VisitorAnalyticsClient({
               </div>
               <div className="ml-4">
                 <h2 className="text-sm font-medium text-gray-500">Unique IPs</h2>
-                <p className="text-2xl font-bold text-gray-800">{uniqueIPs}</p>
+                <p className="text-2xl font-bold text-gray-800">{currentPeriodStats.uniqueIPs}</p>
               </div>
             </div>
           </div>
@@ -212,7 +283,7 @@ export default function VisitorAnalyticsClient({
               </div>
               <div className="ml-4">
                 <h2 className="text-sm font-medium text-gray-500">Bot Visits</h2>
-                <p className="text-2xl font-bold text-gray-800">{botVisits} <span className="text-sm text-gray-500">({botPercentage}%)</span></p>
+                <p className="text-2xl font-bold text-gray-800">{currentPeriodStats.bots} <span className="text-sm text-gray-500">({currentPeriodStats.botPercentage}%)</span></p>
               </div>
             </div>
           </div>
@@ -224,7 +295,7 @@ export default function VisitorAnalyticsClient({
               </div>
               <div className="ml-4">
                 <h2 className="text-sm font-medium text-gray-500">Authenticated</h2>
-                <p className="text-2xl font-bold text-gray-800">{authenticatedVisits} <span className="text-sm text-gray-500">({authPercentage}%)</span></p>
+                <p className="text-2xl font-bold text-gray-800">{currentPeriodStats.authenticated} <span className="text-sm text-gray-500">({currentPeriodStats.authPercentage}%)</span></p>
               </div>
             </div>
           </div>
@@ -430,6 +501,7 @@ export default function VisitorAnalyticsClient({
                     <td 
                       className="px-3 py-4 text-sm text-gray-500 truncate"
                       title={new Date(log.created_at).toLocaleString('en-US')}
+                      suppressHydrationWarning={true}
                     >
                       {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                     </td>
@@ -437,7 +509,7 @@ export default function VisitorAnalyticsClient({
                       <div className="font-mono text-gray-700 truncate">{log.ip_address}</div>
                       <div className="text-xs text-gray-500 mt-0.5 truncate">
                         <i className="fas fa-map-marker-alt mr-1"></i>
-                        {getLocationForIP(log.ip_address)}
+                        {formatLocation(log)}
                       </div>
                     </td>
                     <td className="px-3 py-4 text-sm">

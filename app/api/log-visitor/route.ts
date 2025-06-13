@@ -14,6 +14,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User-Agent and IP are required.' }, { status: 400 });
     }
 
+    // Skip logging internal API endpoints
+    if (path.startsWith('/api/geolocation')) {
+      return NextResponse.json({ success: true, skipped: true }, { status: 202 });
+    }
+
     const supabase = await createServiceClient();
 
     // Heuristic: Check if the user agent contains any known bot patterns
