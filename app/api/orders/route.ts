@@ -25,7 +25,9 @@ console.info(JSON.stringify({
   message: "PayPal API environment configuration",
   environment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
   clientIdExists: !!clientId,
+  clientIdFirstChars: clientId ? clientId.substring(0, 10) + '...' : 'undefined',
   clientSecretExists: !!clientSecret,
+  clientSecretFirstChars: clientSecret ? clientSecret.substring(0, 5) + '...' : 'undefined',
   source: "app/api/orders/route.ts static initialization"
 }, null, 2));
 
@@ -149,8 +151,19 @@ export async function POST(request: NextRequest) {
       ],
     };
 
+    console.log("Sending request to PayPal with:", JSON.stringify({
+      environment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
+      requestBody: paypalRequestBody
+    }, null, 2));
+    
     const paypalApiResponse = await ordersController.createOrder({ body: paypalRequestBody, prefer: 'return=minimal' });
     const orderData: Order = paypalApiResponse.result;
+    
+    console.log("PayPal API response:", JSON.stringify({
+      orderId: orderData.id,
+      status: orderData.status,
+      links: orderData.links
+    }, null, 2));
 
     const durationMs = Date.now() - requestStartTime;
     console.info(JSON.stringify({

@@ -11,7 +11,7 @@ interface TestPaymentClientPageProps {
   user: User;
 }
 
-export default function TestPaymentClientPage({ user }: TestPaymentClientPageProps) {
+export default function AlternateTestPaymentClientPage({ user }: TestPaymentClientPageProps) {
   const router = useRouter();
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [sdkReady, setSdkReady] = useState<boolean>(false);
@@ -129,6 +129,7 @@ export default function TestPaymentClientPage({ user }: TestPaymentClientPagePro
 
   return (
     <>
+      {/* HARDCODED PayPal Client ID - doesn't rely on environment variables */}
       <Script
         src={`https://www.paypal.com/sdk/js?client-id=AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe&currency=USD&intent=capture&debug=true`}
         onLoad={() => {
@@ -145,6 +146,7 @@ export default function TestPaymentClientPage({ user }: TestPaymentClientPagePro
             <div className="text-center">
                 <h1 className="text-3xl font-bold text-gray-800">Live Payment Test</h1>
                 <p className="text-gray-500 mt-2">This page is for admin use only to test the live payment flow.</p>
+                <p className="text-sm text-blue-600 mt-2">(Using alternate implementation with hardcoded credentials)</p>
             </div>
 
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">

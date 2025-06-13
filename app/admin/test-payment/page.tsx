@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/supabase-server';
 import { redirect } from 'next/navigation';
-import TestPaymentClientPage from './client-page'; // We will create this next
+import AlternateTestPaymentClientPage from './alternate-client-page';
 import { User } from '@supabase/supabase-js';
 
 export default async function TestPaymentPage() {
@@ -12,6 +12,6 @@ export default async function TestPaymentPage() {
     redirect('/');
   }
 
-  // If the user is the admin, render the client component with user details
-  return <TestPaymentClientPage user={user} />;
+  // If the user is the admin, render the alternate client component with user details
+  return <AlternateTestPaymentClientPage user={user} />;
 } 
