@@ -42,18 +42,36 @@ export default function TestPaymentClientPage({ user }: TestPaymentClientPagePro
       createOrder: async () => {
         setPaymentStatus('loading');
         setCheckoutFormError(null);
-        const response = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        try {
+          console.log('Creating order with:', { 
             priceId: selectedPriceRef.current,
             name: nameRef.current,
             email: emailRef.current
-          }),
-        });
-        const orderData = await response.json();
-        if (orderData.error) throw new Error(orderData.error);
-        return orderData.id;
+          });
+          
+          const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              priceId: selectedPriceRef.current,
+              name: nameRef.current,
+              email: emailRef.current
+            }),
+          });
+          
+          const orderData = await response.json();
+          console.log('Response from orders API:', orderData);
+          
+          if (orderData.error) {
+            console.error('Order creation error:', orderData.error, orderData.details);
+            throw new Error(orderData.error);
+          }
+          return orderData.id;
+        } catch (error) {
+          console.error('Error in createOrder function:', error);
+          setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
+          throw error;
+        }
       },
       onApprove: async (data: any) => {
         try {
@@ -71,6 +89,7 @@ export default function TestPaymentClientPage({ user }: TestPaymentClientPagePro
         }
       },
       onError: (err: any) => {
+        console.error('PayPal button error:', err);
         setCheckoutFormError(err.toString());
         setPaymentStatus('error');
       }
@@ -98,9 +117,15 @@ export default function TestPaymentClientPage({ user }: TestPaymentClientPagePro
   return (
     <>
       <Script
-        src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&intent=capture${process.env.NEXT_PUBLIC_PAYPAL_API_MODE === 'live' ? '' : '&debug=true'}`}
-        onLoad={() => setSdkReady(true)}
-        onError={() => setCheckoutFormError("Failed to load PayPal SDK.")}
+        src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&intent=capture&debug=true`}
+        onLoad={() => {
+          console.log('PayPal SDK loaded successfully');
+          setSdkReady(true);
+        }}
+        onError={(e) => {
+          console.error('PayPal SDK loading error:', e);
+          setCheckoutFormError("Failed to load PayPal SDK.");
+        }}
       />
       <div className="min-h-screen bg-gray-100 flex justify-center items-center p-6">
         <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl p-8 space-y-6">
