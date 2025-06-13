@@ -11,8 +11,32 @@ import { PRICING_OPTIONS } from '@/utils/products';
 import { CreateOrderSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 
-const clientId = process.env.PAYPAL_CLIENT_ID!;
-const clientSecret = process.env.PAYPAL_CLIENT_SECRET!;
+// Base environment settings from environment variables
+let clientId = process.env.PAYPAL_CLIENT_ID || '';
+let clientSecret = process.env.PAYPAL_CLIENT_SECRET || '';
+
+// Production live site fix: ensure we're using the same client ID as hardcoded in the frontend component
+const isProduction = process.env.NODE_ENV === 'production';
+const isLiveMode = process.env.PAYPAL_API_MODE === 'live';
+
+// If we're in production and using live mode, force the client ID to match what's hardcoded in the frontend
+// This ensures both the server and client components are using the same credentials
+if (isProduction && isLiveMode) {
+  // The frontend client-page.tsx is using this hardcoded client ID:
+  const frontendClientId = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
+  
+  if (clientId !== frontendClientId) {
+    console.warn(JSON.stringify({
+      message: "Environment client ID doesn't match frontend client ID, using frontend ID for consistency",
+      source: "app/api/orders/route.ts static initialization"
+    }, null, 2));
+    
+    clientId = frontendClientId;
+    // Note: You must update this with the correct secret that matches the client ID above
+    // IMPORTANT: Add your actual client secret that matches the client ID here
+    // clientSecret = 'YOUR_MATCHING_CLIENT_SECRET_HERE'; 
+  }
+}
 
 // Updated: Determine PayPal environment based on PAYPAL_API_MODE,
 // defaulting to Sandbox if not set or if NODE_ENV is not 'production'.
@@ -192,22 +216,25 @@ export async function POST(request: NextRequest) {
         priceId: priceIdSubmitted,
         userEmail: emailSubmitted,
         errorMessage: error.message,
+        errorName: error.name,
         errorStack: error.stack?.substring(0, 500),
         paypalResponseStatus: error.response?.status,
         // Log more detailed PayPal response, even in prod for better debugging
         paypalResponseDataFull: paypalErrorDetails,
+        paypalErrorDetails: typeof paypalErrorDetails === 'object' ? JSON.stringify(paypalErrorDetails) : String(paypalErrorDetails),
+        paypalResponseHeaders: error.response?.headers,
         paypalEnvironment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
         durationMs,
         source: "app/api/orders/route.ts POST (catch)"
     };
     console.error(JSON.stringify(errorContext, null, 2));
+    
+    // Always log raw error for debugging
+    console.error("FULL PAYPAL ERROR:", error);
 
     const userErrorMessage = 'Failed to create order. Please try again or contact support if the issue persists.';
-    // Provide more specific details from PayPal if available and not in production,
-    // or if specifically enabled for production debugging.
-    const errorDetailsForClient = process.env.NODE_ENV !== 'production' 
-                                  ? (paypalErrorDetails.message || error.message || 'Unknown PayPal error')
-                                  : undefined;
+    // Always provide error details for better debugging
+    const errorDetailsForClient = paypalErrorDetails.message || error.message || 'Unknown PayPal error';
     const statusCode = error.response?.status || 500;
 
     return NextResponse.json(
