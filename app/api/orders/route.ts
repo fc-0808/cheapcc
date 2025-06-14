@@ -32,9 +32,8 @@ if (isProduction && isLiveMode) {
     }, null, 2));
     
     clientId = frontendClientId;
-    // Note: You must update this with the correct secret that matches the client ID above
-    // IMPORTANT: Add your actual client secret that matches the client ID here
-    // clientSecret = 'YOUR_MATCHING_CLIENT_SECRET_HERE'; 
+    // Client secret should only be set via environment variables
+    // DO NOT hardcode secrets here
   }
 }
 
@@ -58,22 +57,53 @@ console.info(JSON.stringify({
 if (!clientId || !clientSecret) {
     console.error(JSON.stringify({
         message: "PayPal Client ID or Secret Key is not configured.",
-        source: "app/api/orders/route.ts static initialization"
+        source: "app/api/orders/route.ts static initialization",
+        missingClientId: !clientId,
+        missingClientSecret: !clientSecret
     }, null, 2));
+    
+    // Throw an error early to prevent attempts to create a client with missing credentials
+    if (!clientSecret) {
+        throw new Error("PayPal client secret is missing. Please set the PAYPAL_CLIENT_SECRET environment variable.");
+    }
+    if (!clientId) {
+        throw new Error("PayPal client ID is missing. Please set the PAYPAL_CLIENT_ID environment variable.");
+    }
 }
 
-const paypalClient = new Client({
-  clientCredentialsAuthCredentials: {
-    oAuthClientId: clientId,
-    oAuthClientSecret: clientSecret
-  },
-  environment: paypalApiEnv,
-  logging: {
-    logLevel: LogLevel.Info, // Consider LogLevel.Error for production to reduce noise
-    logRequest: { logBody: process.env.NODE_ENV !== 'production' }, // Log request body only in dev
-    logResponse: { logHeaders: process.env.NODE_ENV !== 'production' } // Log response headers only in dev
+// Create PayPal client only if we have both required credentials
+let paypalClient: Client;
+try {
+  if (!clientId || !clientSecret) {
+    throw new Error("PayPal credentials missing. Cannot initialize client.");
   }
-});
+  
+  paypalClient = new Client({
+    clientCredentialsAuthCredentials: {
+      oAuthClientId: clientId,
+      oAuthClientSecret: clientSecret
+    },
+    environment: paypalApiEnv,
+    logging: {
+      logLevel: LogLevel.Info, // Consider LogLevel.Error for production to reduce noise
+      logRequest: { logBody: process.env.NODE_ENV !== 'production' }, // Log request body only in dev
+      logResponse: { logHeaders: process.env.NODE_ENV !== 'production' } // Log response headers only in dev
+    }
+  });
+  
+  console.info(JSON.stringify({
+    message: "PayPal client initialized successfully",
+    environment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
+    source: "app/api/orders/route.ts client initialization"
+  }, null, 2));
+} catch (error: any) {
+  console.error(JSON.stringify({
+    message: "Failed to initialize PayPal client",
+    error: error.message,
+    source: "app/api/orders/route.ts client initialization"
+  }, null, 2));
+  throw error;
+}
 
 const ordersController = new OrdersController(paypalClient);
 
@@ -82,6 +112,24 @@ export async function POST(request: NextRequest) {
   let priceIdSubmitted = "N/A";
   let emailSubmitted = "N/A";
   const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
+  
+  // Check if PayPal client was initialized properly
+  if (!clientId || !clientSecret) {
+    console.error(JSON.stringify({
+      message: "PayPal order creation attempted without proper credentials",
+      missingClientId: !clientId,
+      missingClientSecret: !clientSecret,
+      source: "app/api/orders/route.ts POST"
+    }, null, 2));
+    
+    return NextResponse.json(
+      { 
+        error: 'Payment system configuration error. Please contact support.', 
+        details: 'Missing PayPal API credentials'
+      },
+      { status: 500 }
+    );
+  }
 
   try {
     const { limited, retryAfter } = await checkRateLimit(request, limiters.orderCreation);
