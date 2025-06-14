@@ -15,28 +15,6 @@ import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 let clientId = process.env.PAYPAL_CLIENT_ID || '';
 let clientSecret = process.env.PAYPAL_CLIENT_SECRET || '';
 
-// Production live site fix: ensure we're using the same client ID as hardcoded in the frontend component
-const isProduction = process.env.NODE_ENV === 'production';
-const isLiveMode = process.env.PAYPAL_API_MODE === 'live';
-
-// If we're in production and using live mode, force the client ID to match what's hardcoded in the frontend
-// This ensures both the server and client components are using the same credentials
-if (isProduction && isLiveMode) {
-  // The frontend client-page.tsx is using this hardcoded client ID:
-  const frontendClientId = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
-  
-  if (clientId !== frontendClientId) {
-    console.warn(JSON.stringify({
-      message: "Environment client ID doesn't match frontend client ID, using frontend ID for consistency",
-      source: "app/api/orders/route.ts static initialization"
-    }, null, 2));
-    
-    clientId = frontendClientId;
-    // Client secret should only be set via environment variables
-    // DO NOT hardcode secrets here
-  }
-}
-
 // Updated: Determine PayPal environment based on PAYPAL_API_MODE,
 // defaulting to Sandbox if not set or if NODE_ENV is not 'production'.
 const paypalApiEnv = process.env.PAYPAL_API_MODE === 'live'
