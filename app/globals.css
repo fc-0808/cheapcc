@@ -3183,3 +3183,49 @@ input:focus, select:focus, textarea:focus {
 .btn-modern:hover::before {
   left: 100%;
 }
+
+.floating-discount-button {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  z-index: 100;
+  background: linear-gradient(135deg, #ff3366, #ff5f8a);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 50px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.floating-discount-button:hover {
+  background: linear-gradient(135deg, #ff2050, #ff4575);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.floating-discount-button i {
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .floating-discount-button {
+    right: 15px;
+    bottom: 15px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
+
+/* Hide the button if the user prefers reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .floating-discount-button {
+    transition: none;
+  }
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#2c2d5a"/>
+  
+  <!-- Creative Cloud Card -->
+  <g transform="translate(250, 120)">
+    <rect x="0" y="0" width="300" height="200" rx="15" fill="#ff3366"/>
+    <text x="150" y="80" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#ffffff">SUMMER 2025</text>
+    <text x="150" y="130" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#ffffff">CREATIVE CLOUD</text>
+    <text x="150" y="160" font-family="Arial, sans-serif" font-size="16" text-anchor="middle" fill="#ffffff">UPDATES</text>
+  </g>
+  
+  <!-- Abstract Network Dots and Lines -->
+  <circle cx="150" cy="150" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="200" cy="100" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="100" cy="350" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="650" cy="150" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="600" cy="350" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="700" cy="250" r="4" fill="#ffffff" opacity="0.7"/>
+  
+  <line x1="150" y1="150" x2="200" y2="100" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <line x1="150" y1="150" x2="100" y2="350" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <line x1="600" y1="350" x2="650" y2="150" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <line x1="650" y1="150" x2="700" y2="250" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <line x1="600" y1="350" x2="700" y2="250" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Apps Icons -->
+  <circle cx="150" cy="400" r="20" fill="#2dc7ff"/>
+  <text x="150" y="405" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">Ps</text>
+  
+  <circle cx="220" cy="400" r="20" fill="#ff9a00"/>
+  <text x="220" y="405" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">Ai</text>
+  
+  <circle cx="290" cy="400" r="20" fill="#ff2d76"/>
+  <text x="290" y="405" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">Id</text>
+  
+  <circle cx="360" cy="400" r="20" fill="#9a00ff"/>
+  <text x="360" y="405" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">Pr</text>
+  
+  <circle cx="430" cy="400" r="20" fill="#00c8ff"/>
+  <text x="430" y="405" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">Ae</text>
+  
+  <circle cx="500" cy="400" r="20" fill="#00cf86"/>
+  <text x="500" y="405" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">XD</text>
+  
+  <circle cx="570" cy="400" r="20" fill="#ff0000"/>
+  <text x="570" y="405" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">Lr</text>
+</svg> 

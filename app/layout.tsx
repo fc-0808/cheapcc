@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Script from "next/script";
 import { Inter } from 'next/font/google';
+import Link from 'next/link';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -80,6 +81,11 @@ export default function RootLayout({
         <main className="cheapcc-main-content">
           {children}
         </main>
+        {/* Floating Discount Button */}
+        <Link href="/#pricing" className="floating-discount-button">
+          <i className="fas fa-tag"></i>
+          Get Adobe CC at a Discount
+        </Link>
         {/* Footer */}
         <Footer />
       </body>
