@@ -13,15 +13,16 @@ const MAX_STORED_REQUEST_IDS = 1000; // Prevent memory leaks by limiting size
 
 // Track visited paths to prevent duplicate logging within a short time window
 const recentVisits = new Map<string, number>();
-const VISIT_DEBOUNCE_MS = 5000; // 5 seconds debounce
+// Reduce debounce time to match pixel endpoint
+const VISIT_DEBOUNCE_MS = 3000; // 3 seconds debounce
 
 export async function POST(request: NextRequest) {
   try {
     const { 
       path, 
       userAgent, 
-      ip, 
-      userId, 
+      ip: clientProvidedIp, // Renamed to clarify it's client-provided
+      userId: clientProvidedUserId, // Renamed for clarity
       referer,
       requestId,
       secFetchSite,
@@ -29,16 +30,42 @@ export async function POST(request: NextRequest) {
       secFetchDest
     } = await request.json();
 
-    if (!userAgent || !ip) {
-      return NextResponse.json({ error: 'User-Agent and IP are required.' }, { status: 400 });
+    // For client-side requests, get the IP from headers
+    const ip = clientProvidedIp || request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 
+              request.headers.get('x-real-ip') || 
+              '127.0.0.1';
+              
+    // Debug logging in development
+    const isDevMode = process.env.NODE_ENV === 'development';
+    if (isDevMode) {
+      console.log(`[LogVisitor] Processing request for path: ${path}`);
+      console.log(`[LogVisitor] User ID: ${clientProvidedUserId || 'anonymous'}`);
+    }
+
+    if (!userAgent) {
+      return NextResponse.json({ error: 'User-Agent is required.' }, { status: 400 });
+    }
+    
+    // Create service client early to check for user authentication
+    const supabase = await createServiceClient();
+    
+    // If userId wasn't provided by client, try to get it from current session
+    let userId = clientProvidedUserId;
+    if (!userId) {
+      // Try to get user from auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        userId = user.id;
+      }
     }
     
     // Use the requestId for deduplication if available
     if (requestId && processedRequestIds.has(requestId)) {
+      if (isDevMode) console.log(`[LogVisitor] Skipping duplicate request ID: ${requestId}`);
       return NextResponse.json({ success: true, skipped: "duplicate request ID" }, { status: 202 });
     }
     
-          // Store the requestId to prevent duplicates
+    // Store the requestId to prevent duplicates
     if (requestId) {
       processedRequestIds.add(requestId);
       
@@ -56,13 +83,14 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Create a unique key for this visit
-    const visitKey = `${ip}:${path}`;
+    // Create a unique key for this visit - include timestamp to better handle client-side navigation
+    const visitKey = `${ip}:${path}:${Math.floor(Date.now() / VISIT_DEBOUNCE_MS)}`;
     const now = Date.now();
     
     // Check if we've seen this IP+path combination recently (debounce)
     const lastVisitTime = recentVisits.get(visitKey);
     if (lastVisitTime && now - lastVisitTime < VISIT_DEBOUNCE_MS) {
+      if (isDevMode) console.log(`[LogVisitor] Skipping duplicate visit: ${path} (debounced)`);
       return NextResponse.json({ success: true, skipped: "duplicate visit debounced" }, { status: 202 });
     }
     
@@ -79,12 +107,13 @@ export async function POST(request: NextRequest) {
     // Skip Next.js data requests
     const isNextJsDataRequest = request.headers.get('x-nextjs-data') === '1';
     if (isNextJsDataRequest) {
+      if (isDevMode) console.log(`[LogVisitor] Skipping Next.js data request: ${path}`);
       return NextResponse.json({ success: true, skipped: "next.js data request" }, { status: 202 });
     }
 
     // Skip logging internal API endpoints and static assets
     if (
-      path.startsWith('/api/geolocation') ||
+      (path.startsWith('/api/') && !path.startsWith('/api/pixel')) ||
       path.startsWith('/_next/') ||
       path.includes('favicon') ||
       path.endsWith('.svg') ||
@@ -96,12 +125,19 @@ export async function POST(request: NextRequest) {
       path.endsWith('.js') ||
       path.endsWith('.css')
     ) {
+      if (isDevMode) console.log(`[LogVisitor] Skipping asset path: ${path}`);
       return NextResponse.json({ success: true, skipped: true }, { status: 202 });
     }
     
     // Skip data fetching operations by examining sec-fetch headers
-    const isDataFetch = secFetchDest === 'empty' && secFetchMode === 'cors';
-    if (isDataFetch) {
+    // For client-side: empty+cors combination is data fetching
+    // For server-side: navigate+document is a real page visit
+    const isDataFetch = (secFetchDest === 'empty' && secFetchMode === 'cors');
+    const isDocumentNavigation = (secFetchDest === 'document' && secFetchMode === 'navigate');
+    
+    // If the sec-fetch headers indicate a data fetch and NOT a document navigation, skip it
+    if (isDataFetch && !isDocumentNavigation) {
+      if (isDevMode) console.log(`[LogVisitor] Skipping data fetch: ${path}`);
       return NextResponse.json({ success: true, skipped: "data fetch operation" }, { status: 202 });
     }
     
@@ -114,33 +150,35 @@ export async function POST(request: NextRequest) {
       (referer.includes('/blog') && !referer.includes(path));
       
     if (requestsFromBlogIndex) {
+      if (isDevMode) console.log(`[LogVisitor] Skipping blog metadata fetch: ${path}`);
       return NextResponse.json({ success: true, skipped: "blog metadata fetching" }, { status: 202 });
     }
-
-    const supabase = await createServiceClient();
 
     // Heuristic: Check if the user agent contains any known bot patterns
     const isBot = BOT_UA_PATTERNS.some(pattern => userAgent.toLowerCase().includes(pattern));
 
+    if (isDevMode) console.log(`[LogVisitor] Logging visit to: ${path}`);
     const { error } = await supabase.from('visitor_logs').insert({
       path: path,
       user_agent: userAgent,
       ip_address: ip,
       user_id: userId, // Will be null if the user is not logged in
       is_bot_heuristic: isBot,
-      method: request.method
+      method: request.method,
+      referer: referer || null
     });
 
     if (error) {
       // Log the error but don't block the user's navigation
-      console.error('Error logging visitor:', error.message);
+      console.error('[LogVisitor] Error logging visitor:', error.message);
       return NextResponse.json({ error: 'Failed to log visitor data' }, { status: 500 });
     }
 
+    if (isDevMode) console.log(`[LogVisitor] Successfully logged visit to: ${path}`);
     return NextResponse.json({ success: true }, { status: 202 });
 
   } catch (e: any) {
-    console.error('Error in /api/log-visitor:', e.message);
+    console.error('[LogVisitor] Error in /api/log-visitor:', e.message);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 

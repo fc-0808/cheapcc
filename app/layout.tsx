@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Script from "next/script";
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
+import VisitorTracker from "@/components/VisitorTracker";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -37,6 +38,8 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
       </head>
       <body className={`${inter.variable} antialiased bg-white text-[#171717]`}>
+        {/* Client-side visitor tracking component */}
+        <VisitorTracker />
         {/* Schema.org structured data for organization */}
         <Script id="organization-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: `
           {

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
 import { createServerClient } from '@supabase/ssr'
+import { v4 as uuidv4 } from 'uuid';
 
 export async function middleware(request: NextRequest) {
   // First, run the existing session management
@@ -38,25 +39,31 @@ export async function middleware(request: NextRequest) {
     // 4. Skip favicon and static asset requests
     // 5. Skip data revalidation requests
     // 6. Skip requests with specific headers that indicate server-side data operations
-    const isInternalNextRequest = 
-      request.headers.get('x-nextjs-data') === '1' || 
-      request.headers.get('purpose') === 'prefetch' ||
-      request.headers.get('x-middleware-prefetch') === '1' ||
-      request.headers.get('sec-fetch-dest') === 'empty' ||
+    const isNextInternalRequest = 
       pathname.startsWith('/_next/') ||
       pathname.includes('favicon');
       
-    // Check for server-side rendering or internal API requests
-    const isServerSideRequest = !request.headers.get('sec-fetch-site') && !request.headers.get('referer');
+    const isDataRequest = 
+      request.headers.get('x-nextjs-data') === '1' || 
+      request.headers.get('purpose') === 'prefetch' ||
+      request.headers.get('x-middleware-prefetch') === '1';
+    
+    const secFetchDest = request.headers.get('sec-fetch-dest');
+    const secFetchMode = request.headers.get('sec-fetch-mode');
+    
+    // Document requests are actual page visits
+    const isDocumentRequest = secFetchDest === 'document' || !secFetchDest;
     
     const isApiRoute = pathname.startsWith('/api/');
-    const isInternalApiRoute = isApiRoute && (
-      pathname.startsWith('/api/geolocation') || 
-      pathname.startsWith('/api/log-visitor')
+    const isLoggingApiRoute = isApiRoute && (
+      pathname.startsWith('/api/log-visitor') || 
+      pathname.startsWith('/api/pixel')
     );
     
     // Only log actual page visits, not data fetching or internal operations
-    if (!isInternalNextRequest && !isServerSideRequest && (!isApiRoute || !isInternalApiRoute)) {
+    // Note: We're now letting client-side tracking handle most page views
+    // This middleware will only log the initial page load
+    if (!isNextInternalRequest && !isDataRequest && !isLoggingApiRoute && isDocumentRequest) {
       // Skip logging requests that don't look like browser requests
       const isBrowserRequest = 
         userAgent.includes('Mozilla/') || 
@@ -66,30 +73,44 @@ export async function middleware(request: NextRequest) {
         userAgent.includes('Opera/');
       
       if (isBrowserRequest) {
-        // Generate a unique request ID based on timestamp and random string for deduplication
-        const requestId = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-        const loggingApiUrl = `${url.origin}/api/log-visitor`;
+        // Generate a unique request ID using UUID for better uniqueness
+        const requestId = uuidv4();
+        
+        // Use pixel tracking instead of the log-visitor API for consistency
+        const pixelUrl = new URL('/api/pixel', url.origin);
+        pixelUrl.searchParams.set('path', pathname);
+        pixelUrl.searchParams.set('ref', request.headers.get('referer') || '');
+        pixelUrl.searchParams.set('t', Date.now().toString());
+        pixelUrl.searchParams.set('mid', requestId); // middleware request id
+        
+        // Create a safe fetch function that won't fail the middleware
+        const safeFetch = async () => {
+          try {
+            // Use AbortController to prevent hanging requests
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout
+            
+            await fetch(pixelUrl.toString(), {
+              headers: {
+                'User-Agent': userAgent,
+                'X-Forwarded-For': request.headers.get('x-forwarded-for') || 
+                                  request.headers.get('x-real-ip') || 
+                                  '127.0.0.1',
+                'Referer': request.headers.get('referer') || '',
+              },
+              signal: controller.signal,
+            });
+            
+            clearTimeout(timeoutId);
+          } catch (e) {
+            // Silently catch errors to prevent blocking the response
+            console.error('Middleware logging fetch error:', e);
+          }
+        };
         
         // Fire-and-forget the logging request
-        fetch(loggingApiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Referer': request.headers.get('referer') || '',
-          },
-          body: JSON.stringify({
-            path: pathname,
-            userAgent: userAgent,
-            ip: request.headers.get('x-forwarded-for') ?? '127.0.0.1',
-            userId: user?.id ?? null,
-            referer: request.headers.get('referer') || '',
-            secFetchSite: request.headers.get('sec-fetch-site') || null,
-            secFetchMode: request.headers.get('sec-fetch-mode') || null,
-            secFetchDest: request.headers.get('sec-fetch-dest') || null,
-            requestId: requestId
-          }),
-        }).catch(e => {
-          // Silently catch errors to prevent blocking the response
+        safeFetch().catch(e => {
+          // Extra safety - catch any promise rejection that might have escaped
           console.error('Middleware logging error:', e);
         });
       }
@@ -109,8 +130,10 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - /api/log-visitor (to prevent infinite loops)
-     * Feel free to modify this pattern to include more paths.
+     * - /api/health (health check endpoint)
+     * - /api/pixel (pixel tracking endpoint)
+     * - Static assets (images, etc.)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/log-visitor|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/log-visitor|api/health|api/pixel|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
