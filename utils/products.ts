@@ -48,12 +48,13 @@ export const PRICING_OPTIONS: PricingOption[] = [
     price: 124.99,
     description: 'Adobe Creative Cloud - 12 Months',
   },
+  // Admin-only test payment option
   {
-    id: 'test-live',
-    name: '$0.01 Live Test',
+    id: 'test-payment',
+    name: 'Test Payment',
     duration: 'Test',
     price: 0.01,
-    description: 'Adobe Creative Cloud - Live Payment Test',
+    description: 'Adobe Creative Cloud - Test Payment',
   },
 ];
 
@@ -148,6 +149,7 @@ export function calculateExpiryDate(order: OrderLike): Date | null {
     case '3 months': daysToAdd = 90; break;
     case '6 months': daysToAdd = 180; break;
     case '12 months': daysToAdd = 365; break;
+    case 'Test': daysToAdd = 1; break; // Test payment expires after 1 day
     default: return null;
   }
   const expiryDate = new Date(createdAt);

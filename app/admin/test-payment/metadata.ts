@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Admin - Live Payment Test',
-  description: 'A dedicated page for administrators to test the live payment workflow.',
+  title: 'Admin - Test Payment System',
+  description: 'Test the payment processing system with a minimal $0.01 payment',
   robots: {
     index: false,
     follow: false
