@@ -58,7 +58,7 @@ export type UpdateProfileFormData = z.infer<typeof UpdateProfileSchema>;
 
 // --- PayPal Order Creation Schema (for /api/orders) ---
 // Assuming PRICING_OPTIONS is available or you have a way to validate priceId
-const VALID_PRICE_IDS = ["14d", "1m", "3m", "6m", "12m", "test-live"]; // Include test-live for payment testing
+const VALID_PRICE_IDS = ["14d", "1m", "3m", "6m", "12m", "admin-test"]; // Include test-live and admin-test for admin testing
 
 export const CreateOrderSchema = z.object({
   priceId: z.string().refine(val => VALID_PRICE_IDS.includes(val), { message: "Invalid pricing option selected." }),

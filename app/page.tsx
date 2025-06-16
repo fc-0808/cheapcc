@@ -349,6 +349,7 @@ export default function Home() {
         selectedPrice={selectedPrice}
         setSelectedPrice={setSelectedPrice}
         selectedPriceRef={selectedPriceRef}
+        userEmail={email}
       />
       
       <HowItWorksSection />

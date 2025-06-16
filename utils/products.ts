@@ -4,6 +4,7 @@ export interface PricingOption {
   duration: string;
   price: number;
   description: string;
+  adminOnly?: boolean;
 }
 
 export const PRODUCT = {
@@ -48,13 +49,14 @@ export const PRICING_OPTIONS: PricingOption[] = [
     price: 124.99,
     description: 'Adobe Creative Cloud - 12 Months',
   },
-  // Admin-only test payment option
+  // Admin-only test option
   {
-    id: 'test-payment',
-    name: 'Test Payment',
-    duration: 'Test',
+    id: 'admin-test',
+    name: '1 Day',
+    duration: '1 day',
     price: 0.01,
-    description: 'Adobe Creative Cloud - Test Payment',
+    description: 'Admin Testing - 1 Day',
+    adminOnly: true
   },
 ];
 
@@ -144,12 +146,12 @@ export function calculateExpiryDate(order: OrderLike): Date | null {
   const durationStr = getPlanDuration(order);
   let daysToAdd = 0;
   switch (durationStr) {
+    case '1 day': daysToAdd = 1; break;
     case '14 days': daysToAdd = 14; break;
     case '1 month': daysToAdd = 30; break;
     case '3 months': daysToAdd = 90; break;
     case '6 months': daysToAdd = 180; break;
     case '12 months': daysToAdd = 365; break;
-    case 'Test': daysToAdd = 1; break; // Test payment expires after 1 day
     default: return null;
   }
   const expiryDate = new Date(createdAt);

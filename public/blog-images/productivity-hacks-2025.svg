@@ -1,0 +1,100 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <rect width="1200" height="630" fill="url(#paint0_linear)" />
+  
+  <!-- Grid pattern background -->
+  <g opacity="0.1">
+    <path d="M0 90 H1200 M0 180 H1200 M0 270 H1200 M0 360 H1200 M0 450 H1200 M0 540 H1200" 
+          stroke="#FFFFFF" stroke-width="1" />
+    <path d="M100 0 V630 M200 0 V630 M300 0 V630 M400 0 V630 M500 0 V630 M600 0 V630 M700 0 V630 M800 0 V630 M900 0 V630 M1000 0 V630 M1100 0 V630" 
+          stroke="#FFFFFF" stroke-width="1" />
+  </g>
+  
+  <!-- Productivity visualization -->
+  <g transform="translate(300, 150)">
+    <!-- Main productivity dashboard shape -->
+    <rect x="0" y="0" width="600" height="300" rx="15" fill="url(#paint1_linear)" filter="url(#shadow)" />
+    
+    <!-- Speedometer/productivity meter -->
+    <circle cx="150" cy="120" r="80" fill="url(#paint2_radial)" stroke="#FFFFFF" stroke-width="2" />
+    <path d="M150 120 L150 65" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+    <path d="M150 120 L200 145" stroke="#FF3366" stroke-width="4" stroke-linecap="round" />
+    <circle cx="150" cy="120" r="10" fill="#FFFFFF" />
+    
+    <!-- Progress bars -->
+    <rect x="280" y="70" width="250" height="20" rx="10" fill="#FFFFFF" opacity="0.3" />
+    <rect x="280" y="70" width="200" height="20" rx="10" fill="#FF3366" />
+    
+    <rect x="280" y="110" width="250" height="20" rx="10" fill="#FFFFFF" opacity="0.3" />
+    <rect x="280" y="110" width="230" height="20" rx="10" fill="#FF3366" />
+    
+    <rect x="280" y="150" width="250" height="20" rx="10" fill="#FFFFFF" opacity="0.3" />
+    <rect x="280" y="150" width="180" height="20" rx="10" fill="#FF3366" />
+    
+    <!-- Shortcut keys visualization -->
+    <g transform="translate(320, 210)">
+      <rect x="0" y="0" width="40" height="40" rx="5" fill="#FFFFFF" opacity="0.9" />
+      <text x="20" y="27" fill="#2C2D5A" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle">⌘</text>
+      
+      <rect x="50" y="0" width="40" height="40" rx="5" fill="#FFFFFF" opacity="0.9" />
+      <text x="70" y="27" fill="#2C2D5A" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle">⇧</text>
+      
+      <rect x="100" y="0" width="40" height="40" rx="5" fill="#FFFFFF" opacity="0.9" />
+      <text x="120" y="27" fill="#2C2D5A" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle">P</text>
+    </g>
+  </g>
+  
+  <!-- Floating efficiency elements -->
+  <g>
+    <!-- Clock/time element -->
+    <circle cx="200" cy="150" r="30" fill="#2C2D5A" stroke="#FFFFFF" stroke-width="2" opacity="0.8" />
+    <line x1="200" y1="150" x2="200" y2="130" stroke="#FFFFFF" stroke-width="2" />
+    <line x1="200" y1="150" x2="215" y2="155" stroke="#FFFFFF" stroke-width="2" />
+    
+    <!-- Lightning bolt (speed) -->
+    <path d="M1000 180 L980 220 L995 220 L980 260 L1020 210 L1000 210 L1015 180 Z" fill="#FF3366" />
+    
+    <!-- Gear (automation) -->
+    <circle cx="950" cy="450" r="25" fill="none" stroke="#FFFFFF" stroke-width="3" />
+    <path d="M950 425 L950 415 M950 475 L950 485 M975 450 L985 450 M915 450 L925 450 M967 433 L974 426 M926 474 L933 467 M967 467 L974 474 M926 426 L933 433" 
+          stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" />
+    <circle cx="950" cy="450" r="8" fill="#FFFFFF" />
+    
+    <!-- Adobe logo stylized - moved to a non-overlapping position -->
+    <path d="M150 550 L180 500 L210 550 Z" fill="#FF3366" />
+    <path d="M230 550 L245 520 L260 550 Z M265 550 L280 520 L295 550 Z" fill="#FFFFFF" />
+  </g>
+  
+  <!-- Main title text -->
+  <text x="600" y="500" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="40" font-weight="bold" text-anchor="middle">PRODUCTIVITY HACKS 2025</text>
+  <text x="600" y="540" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" opacity="0.8">WORK SMARTER NOT HARDER</text>
+  
+  <!-- Filters and gradients -->
+  <defs>
+    <linearGradient id="paint0_linear" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2C2D5A" />
+      <stop offset="1" stop-color="#1A1A2E" />
+    </linearGradient>
+    
+    <linearGradient id="paint1_linear" x1="0" y1="0" x2="600" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2C2D5A" />
+      <stop offset="1" stop-color="#3A3B6B" />
+    </linearGradient>
+    
+    <radialGradient id="paint2_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                   gradientTransform="translate(150 120) rotate(90) scale(80)">
+      <stop offset="0" stop-color="#3A3B6B" />
+      <stop offset="1" stop-color="#2C2D5A" />
+    </radialGradient>
+    
+    <filter id="shadow" x="-10" y="-10" width="620" height="320" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/>
+      <feOffset dy="4"/>
+      <feGaussianBlur stdDeviation="5"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+  </defs>
+</svg> 
