@@ -959,6 +959,104 @@ input:focus, select:focus, textarea:focus {
   overflow: visible !important;
 }
 
+/* Mobile and tablet specific styles for plan cards */
+@media (max-width: 1023px) {
+  .plan-card {
+    padding: 1.25rem 0.75rem;
+    min-height: auto;
+    margin: 0;
+    height: 100%;
+  }
+  
+  .plan-duration {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .plan-price {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .plan-price::before {
+    font-size: 1.1rem;
+  }
+  
+  .plan-features {
+    margin: 0.5rem 0 1rem;
+  }
+  
+  .plan-features li {
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .select-btn {
+    padding: 0.7rem 0;
+    font-size: 0.95rem;
+  }
+  
+  .one-time-purchase-ribbon,
+  .best-value-ribbon,
+  .admin-ribbon {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.65rem;
+    white-space: nowrap;
+  }
+}
+
+/* Even smaller screens (mobile phones) */
+@media (max-width: 639px) {
+  .plan-card {
+    padding: 1rem 0.5rem;
+  }
+  
+  .plan-duration {
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+  
+  .plan-duration::after {
+    width: 30px;
+    height: 2px;
+  }
+  
+  .plan-price {
+    font-size: 1.6rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  .plan-price::before {
+    font-size: 0.9rem;
+  }
+  
+  .plan-features li {
+    padding-left: 1.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .plan-features li:before {
+    font-size: 0.75rem;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .select-btn {
+    padding: 0.6rem 0;
+    font-size: 0.85rem;
+  }
+  
+  .one-time-purchase-ribbon,
+  .best-value-ribbon,
+  .admin-ribbon {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.6rem;
+    transform: translateX(5%) rotate(10deg);
+  }
+}
+
 .plan-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-xl);
@@ -972,6 +1070,17 @@ input:focus, select:focus, textarea:focus {
   transform: translateY(-5px) scale(1.03);
   z-index: 10;
   position: relative;
+}
+
+/* Adjust hover effect for mobile */
+@media (max-width: 1023px) {
+  .plan-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .plan-card.selected {
+    transform: translateY(-3px) scale(1.02);
+  }
 }
 
 .plan-duration {
@@ -1015,7 +1124,7 @@ input:focus, select:focus, textarea:focus {
   line-height: 1.1;
   transition: color 0.3s ease;
   font-family: var(--font-sans), sans-serif;
-  background: linear-gradient(135deg, #4a35b1 0%, #2c2d5a 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 75%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1232,7 +1341,7 @@ input:focus, select:focus, textarea:focus {
   }
   
   .plan-features li {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
   }
 }
 

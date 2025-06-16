@@ -186,11 +186,75 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
             )}
           </div>
           
-          <div className="md:hidden text-center text-sm text-gray-500 mb-4">
-            <i className="fas fa-arrows-alt-h mr-1.5"></i> Swipe to see all options
+          {/* Mobile & Tablet View */}
+          <div className="lg:hidden">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+              {sortedPricingOptions.length > 0 ? (
+                sortedPricingOptions.map((option) => (
+                  <div
+                    key={option.id}
+                    className={`plan-card mx-0 ${selectedPrice === option.id ? 'selected' : ''} ${option.adminOnly ? 'admin-only' : ''}`}
+                    onClick={() => handlePlanSelect(option.id)}
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={selectedPrice === option.id}
+                    onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && handlePlanSelect(option.id)}
+                  >
+                    {option.id === '14d' && (
+                      <div className="ribbon-container">
+                        <div className="one-time-purchase-ribbon">One-time</div>
+                      </div>
+                    )}
+                    {option.id === '6m' && (
+                      <div className="ribbon-container best-value-container">
+                        <div className="best-value-ribbon">Best Value</div>
+                      </div>
+                    )}
+                    {option.adminOnly && (
+                      <div className="ribbon-container admin-ribbon-container">
+                        <div className="admin-ribbon">Admin</div>
+                      </div>
+                    )}
+                    <div className="plan-duration">{option.duration}</div>
+                    <div className="plan-price">{option.price}</div>
+                    <div className="plan-features hidden sm:block">
+                      <ul>
+                        <li>All Adobe Apps</li>
+                        <li>All AI features</li>
+                        <li>100GB Cloud</li>
+                      </ul>
+                    </div>
+                    <div className="plan-features sm:hidden">
+                      <ul>
+                        <li>All Apps + AI</li>
+                        <li>100GB Cloud</li>
+                        <li>24/7 support</li>
+                      </ul>
+                    </div>
+                    <button
+                      className="select-btn"
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handlePlanSelect(option.id);
+                      }}
+                    >
+                      {selectedPrice === option.id ? 'Selected' : 'Select'}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="p-6 text-center bg-gray-100 rounded-lg shadow-sm col-span-full">
+                  <i className="fas fa-exclamation-circle text-yellow-500 text-2xl mb-2"></i>
+                  <p className="text-gray-600">No pricing options available. Please try refreshing the page.</p>
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className="pricing-scroll-container">
+          {/* Desktop View - Unchanged */}
+          <div className="hidden lg:block">
+            <div className="pricing-scroll-container">
               <div className="overflow-x-auto pb-4" style={{ overflowY: 'visible' }}>
                 <div className="flex justify-center" style={{ minWidth: 'max-content' }}>
                   {sortedPricingOptions.length > 0 ? (
@@ -249,6 +313,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
                   )}
                 </div>
               </div>
+            </div>
           </div>
         </div>
       </section>
