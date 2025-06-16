@@ -4,8 +4,23 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function VisitorTracker() {
+  // Safe access to pathname
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  
+  // Safely handle searchParams with error boundary
+  let searchParamsString = '';
+  let searchParamsError = false;
+  
+  try {
+    // Try to use searchParams, but handle errors gracefully
+    const searchParams = useSearchParams();
+    searchParamsString = searchParams?.toString() || '';
+  } catch (error) {
+    // If we get an error (like on 404 page), just continue without search params
+    searchParamsError = true;
+    console.warn('[VisitorTracker] Could not access search params, continuing without them');
+  }
+  
   const lastPathTracked = useRef<string | null>(null);
   const isTrackingRef = useRef<boolean>(false);
   const [trackingAttempts, setTrackingAttempts] = useState(0);
@@ -14,10 +29,11 @@ export default function VisitorTracker() {
   const debug = process.env.NODE_ENV === 'development';
 
   useEffect(() => {
+    if (!pathname) return; // Skip if pathname is not available
+    
     // Create a full path with search params for more accurate tracking
-    const fullPath = searchParams?.toString() 
-      ? `${pathname}?${searchParams.toString()}`
-      : pathname;
+    const fullPath = searchParamsError ? pathname : 
+      searchParamsString ? `${pathname}?${searchParamsString}` : pathname;
       
     if (debug) {
       console.log(`[VisitorTracker] Path changed to: ${fullPath}`);
@@ -87,7 +103,7 @@ export default function VisitorTracker() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [pathname, searchParams, trackingAttempts]); // Re-run when pathname, search params, or tracking attempts change
+  }, [pathname, searchParamsString, trackingAttempts, searchParamsError]); // Re-run when pathname, search params, or tracking attempts change
 
   // This component doesn't render anything
   return null;
