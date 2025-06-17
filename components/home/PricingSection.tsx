@@ -126,7 +126,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
         "@context": "https://schema.org",
         "@type": "Product",
         "name": "Adobe Creative Cloud All Apps Subscription",
-        "description": "Get genuine Adobe Creative Cloud subscriptions for up to 86% off. Includes all Adobe apps like Photoshop, Illustrator, and Premiere Pro with full functionality and updates.",
+        "description": "Get genuine Adobe Creative Cloud subscriptions for up to 75% off. Includes all Adobe apps like Photoshop, Illustrator, and Premiere Pro with full functionality and updates.",
         "brand": {
           "@type": "Brand",
           "name": "Adobe"

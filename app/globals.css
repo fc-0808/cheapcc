@@ -884,7 +884,7 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 640px) {
   .benefit-card {
-    padding: 1.2rem;
+    padding: 1.35rem;
   }
 }
 
@@ -1342,6 +1342,7 @@ input:focus, select:focus, textarea:focus {
   
   .plan-features li {
     font-size: 0.7rem;
+    font-weight: 700;
   }
 }
 
@@ -3360,6 +3361,13 @@ input:focus, select:focus, textarea:focus {
     bottom: 15px;
     padding: 10px 14px;
     font-size: 13px;
+  }
+}
+
+/* Hide the floating discount button on mobile and tablet views */
+@media (max-width: 1023px) {
+  .floating-discount-button {
+    display: none;
   }
 }
 

@@ -309,7 +309,7 @@ export default function Home() {
           "@context": "https://schema.org",
           "@type": "Product",
           "name": "Adobe Creative Cloud Subscription",
-          "description": "Get genuine Adobe Creative Cloud subscriptions for up to 86% off. Includes all Adobe apps like Photoshop, Illustrator, and Premiere Pro.",
+          "description": "Get genuine Adobe Creative Cloud subscriptions for up to 75% off. Includes all Adobe apps like Photoshop, Illustrator, and Premiere Pro.",
           "brand": {
             "@type": "Brand",
             "name": "Adobe"

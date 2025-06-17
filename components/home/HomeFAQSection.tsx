@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 const HOME_FAQS = [
   {
     q: "How does cheapcc.online offer such low prices?",
-    a: "As an alternative to cheapcc.net, we specialize in offering Adobe Creative Cloud subscriptions at significantly reduced prices. We achieve these savings through volume licensing agreements and strategic partnerships that allow us to pass the savings onto you. This is why we can offer up to 86% off compared to Adobe's official pricing while providing the same authentic product.",
+    a: "As an alternative to cheapcc.net, we specialize in offering Adobe Creative Cloud subscriptions at significantly reduced prices. We achieve these savings through volume licensing agreements and strategic partnerships that allow us to pass the savings onto you. This is why we can offer up to 75% off compared to Adobe's official pricing while providing the same authentic product.",
   },
   {
     q: "Are these genuine Adobe Creative Cloud subscriptions?",

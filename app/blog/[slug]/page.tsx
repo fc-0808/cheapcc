@@ -169,7 +169,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
                     <div>
                       <span className="inline-block px-3 py-1 bg-[#ff336615] text-[#ff3366] text-xs font-semibold rounded-full mb-3">EXCLUSIVE OFFER</span>
                       <h3 className="text-2xl font-bold text-[#2c2d5a] mb-3">Ready to save on Adobe Creative Cloud?</h3>
-                      <p className="text-gray-600 mb-4 sm:mb-0 max-w-md">Get the complete Adobe suite with all premium features for up to <span className="font-semibold text-[#2c2d5a]">86% off</span> official prices</p>
+                      <p className="text-gray-600 mb-4 sm:mb-0 max-w-md">Get the complete Adobe suite with all premium features for up to <span className="font-semibold text-[#2c2d5a]">75% off</span> official prices</p>
                     </div>
                     <div className="flex-shrink-0">
                       <Link 

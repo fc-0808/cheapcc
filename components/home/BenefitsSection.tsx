@@ -30,8 +30,8 @@ export default function BenefitsSection() {
   const benefits = [
     {
       icon: "fas fa-piggy-bank",
-      title: "Massive Savings",
-      description: "Pay up to 86% less than official Adobe pricing while getting the exact same product and benefits.",
+      title: "Save Money",
+      description: "Pay up to 75% less than official Adobe pricing while getting the exact same product and benefits.",
     },
     {
       icon: "fas fa-bolt",

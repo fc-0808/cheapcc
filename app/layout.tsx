@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: '%s | CheapCC - Affordable Adobe CC Subscriptions',
     default: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
   },
-  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 86% off. Instant delivery for all Adobe apps.",
+  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 75% off. Instant delivery for all Adobe apps.",
 };
 
 export default function RootLayout({
@@ -60,7 +60,7 @@ export default function RootLayout({
             "@type": "WebSite",
             "url": "https://cheapcc.online",
             "name": "CheapCC - Affordable Adobe Creative Cloud",
-            "description": "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 86% off.",
+            "description": "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 75% off.",
             "keywords": "cheapcc, cheapcc adobe, cheap creative cloud, adobe cc discount",
             "potentialAction": {
               "@type": "SearchAction",
@@ -75,11 +75,6 @@ export default function RootLayout({
         <main className="cheapcc-main-content">
           {children}
         </main>
-        {/* Floating Discount Button */}
-        <Link href="/#pricing" className="floating-discount-button">
-          <i className="fas fa-tag"></i>
-          Get Adobe CC at a Discount
-        </Link>
         {/* Footer */}
         <Footer />
       </body>

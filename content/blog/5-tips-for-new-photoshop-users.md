@@ -92,7 +92,9 @@ To color code layers or groups:
 
 These five tips will give you a solid foundation as you begin your Photoshop journey. Remember that mastery comes with practice, so don't be afraid to experiment and learn through trial and error.
 
-Ready to start creating with Adobe Photoshop but don't have Adobe Creative Cloud yet? [CheapCC offers genuine Adobe Creative Cloud subscriptions](/#pricing) at up to 86% off the official price, giving you access to Photoshop and all other Creative Cloud applications at an affordable rate.
+## Get Adobe Photoshop through CheapCC
+
+Ready to start your Photoshop journey? CheapCC offers [genuine Adobe Creative Cloud subscriptions](/#pricing) at up to 75% off the official price, giving you access to Photoshop and all other Creative Cloud applications at an affordable rate.
 
 Whether you're a student, freelancer, or professional, having the right tools at the right price makes all the difference in your creative journey.
 

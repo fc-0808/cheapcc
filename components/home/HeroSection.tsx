@@ -125,7 +125,7 @@ export default function HeroSection() {
             {/* Savings badge hidden on screens smaller than md */}
             <div className="hidden md:flex savings-badge mb-8 md:mb-10">
               <div className="savings-badge-inner border border-[#ff3366] bg-transparent backdrop-blur-sm text-[#ff3366]">
-                <i className="fas fa-tags mr-2 text-[#ff3366]" aria-hidden="true" /> Save up to 86% vs Official Pricing
+                <i className="fas fa-tags mr-2 text-[#ff3366]" aria-hidden="true" /> Save up to 75% vs Official Pricing
               </div>
             </div>
             
