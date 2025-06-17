@@ -95,10 +95,6 @@ export default async function DashboardPageContent({
                   <span className="detail-label">Expires</span>
                     <span className="detail-value">{expiryDate ? new Date(expiryDate).toLocaleDateString() : '-'}</span>
                 </li>
-                <li>
-                  <span className="detail-label">Adobe Account</span>
-                  <span className="detail-value">{order.adobe_email || order.email}</span>
-                </li>
               </ul>
             </div>
             );

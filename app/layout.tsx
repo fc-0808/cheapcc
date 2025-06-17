@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Script from "next/script";
 import Link from 'next/link';
 import { Suspense } from 'react';
+import Loading from './loading';
 
 export const metadata: Metadata = {
   title: {
@@ -29,8 +30,29 @@ export default function RootLayout({
         <link rel="preconnect" href="https://www.sandbox.paypal.com" crossOrigin="anonymous" />
         {/* Font Awesome for icons */}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
+        <Script
+          id="gtm-head-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','GTM-M6P65BTX');
+            `,
+          }}
+        />
       </head>
       <body className="font-sans antialiased bg-white text-[#171717]">
+        <noscript>
+          <iframe 
+            src="https://www.googletagmanager.com/ns.html?id=GTM-M6P65BTX"
+            height="0" 
+            width="0" 
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         {/* Schema.org structured data for organization */}
         <Script id="organization-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: `
           {
@@ -71,10 +93,12 @@ export default function RootLayout({
         `}} />
         {/* Header - always logged out state for server component */}
         <Header />
-        {/* Main Content */}
-        <main className="cheapcc-main-content">
-          {children}
-        </main>
+        <Suspense fallback={<Loading />}>
+          {/* Main Content */}
+          <main className="cheapcc-main-content">
+            {children}
+          </main>
+        </Suspense>
         {/* Footer */}
         <Footer />
       </body>
