@@ -69,8 +69,6 @@ export default function ProfilePage() {
   }, [router, supabase]);
 
   // CRITICAL: useEffect for password strength calculation
-  // This effect now ONLY depends on `newPassword`.
-  // It will recalculate `passwordRequirements` every time `newPassword` changes.
   useEffect(() => {
     setPasswordRequirements({
       minLength: newPassword.length >= 8,
@@ -141,20 +139,16 @@ export default function ProfilePage() {
       setPasswordMessageType("success");
       setNewPassword("");
       setConfirmPassword("");
-      setNewPasswordTouched(false); // Reset for next time
+      setNewPasswordTouched(false);
       setConfirmPasswordTouched(false);
       setShowNewPassword(false);
       setShowConfirmPassword(false);
-      // passwordRequirements will update automatically due to newPassword being ""
     }
     setIsSubmittingPassword(false);
   };
-
-  // onChange handler for the "New Password" input field
+  
   const handleNewPasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewPassword(e.target.value);
-    // Set touched to true on the first interaction so the requirements UI becomes visible.
-    // It will remain true for subsequent typing in the same session.
     if (!newPasswordTouched) {
       setNewPasswordTouched(true);
     }
@@ -176,12 +170,10 @@ export default function ProfilePage() {
           </div>
         </div>
         
-        {/* Savings Tag */}
         <div className="absolute -top-2 -right-16 transform rotate-12 bg-[#ff3366] text-white text-xs px-3 py-1 rounded-full font-bold shadow-md animate-bounce" style={{ animationDuration: '2s' }}>
           75% OFF
         </div>
 
-        {/* Loading Progress Animation */}
         <div className="relative h-2 w-48 mx-auto bg-gray-200 rounded-full overflow-hidden mb-4">
           <div className="absolute top-0 left-0 h-full w-1/2 bg-gradient-to-r from-[#2c2d5a] to-[#ff3366] rounded-full animate-[loading_2s_ease-in-out_infinite]"></div>
         </div>
@@ -189,7 +181,6 @@ export default function ProfilePage() {
         <h2 className="text-xs font-semibold text-[#2c2d5a] mb-1">Loading creative goodness...</h2>
       </div>
       
-      {/* Custom keyframes for the loading animation */}
       <style jsx>{`
         @keyframes loading {
           0% { transform: translateX(-100%); }
@@ -205,175 +196,160 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="profile-page-container">
-      <div className="profile-card-container">
-        <h1 className="profile-page-title">
-          <i className="fas fa-user-cog icon"></i> My Profile
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-6 px-4">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg border border-gray-100 p-6 sm:p-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-[#2c2d5a] mb-6 pb-3 border-b border-gray-200 flex items-center gap-3">
+          <i className="fas fa-user-cog text-[#ff3366]"></i>
+          My Profile
         </h1>
-
-        {/* Personal Information Form */}
-        <div className="profile-form-section">
-          <h2 className="profile-section-heading">
-            <i className="fas fa-id-card icon"></i> Personal Information
-          </h2>
-          <form onSubmit={handleProfileUpdate} className="profile-form space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="Enter your full name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]"
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-              <input 
-                id="email" 
-                name="email"
-                type="email"
-                value={email}
-                disabled
-                className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500"
-              />
-              <p className="mt-1 text-xs text-gray-500">Email cannot be changed. Contact support if needed.</p>
-            </div>
-            {profileMessage && (
-              <div className={`profile-message ${profileMessageType}`}>
-                <i
-                  className={`fas ${
-                    profileMessageType === "success"
-                      ? "fa-check-circle"
-                      : "fa-times-circle"
-                  } icon`}
-                ></i>
-                {profileMessage}
-              </div>
-            )}
-            <div>
-              <button
-                type="submit"
-                className="btn-submit btn-update-profile"
-                disabled={isSubmittingProfile}
-              >
-                {isSubmittingProfile ? "Updating..." : "Update Profile"}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Change Password Form */}
-        <div className="profile-form-section">
-          <h2 className="profile-section-heading">
-            <i className="fas fa-key icon"></i> Change Password
-          </h2>
-          <form onSubmit={handlePasswordChangeSubmit} className="profile-form space-y-6">
-            <div>
-              <label htmlFor="newPasswordProfile" className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-              <div className="relative">
+        
+        <div className="space-y-6">
+          {/* Personal Information Form */}
+          <div className="profile-form-section bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+              <i className="fas fa-id-card text-gray-400"></i>
+              Personal Information
+            </h2>
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 <input
-                  id="newPasswordProfile"
-                  name="newPassword"
-                  type={showNewPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={handleNewPasswordInputChange}
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
-                  placeholder="Enter new password"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10"
+                  placeholder="Enter your full name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] text-sm"
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                >
-                  <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
-                </button>
               </div>
-              {/* Direct rendering of password requirements, shown if newPasswordTouched is true */}
-              {newPasswordTouched && (
-                <div className="password-requirements-info mt-2 space-y-0.5">
-                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.minLength ? "text-green-600" : "text-red-500"}`}>
-                    <i className={`fas ${passwordRequirements.minLength ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> At least 8 characters
-                  </p>
-                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasUppercase ? "text-green-600" : "text-red-500"}`}>
-                    <i className={`fas ${passwordRequirements.hasUppercase ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One uppercase letter (A-Z)
-                  </p>
-                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasLowercase ? "text-green-600" : "text-red-500"}`}>
-                    <i className={`fas ${passwordRequirements.hasLowercase ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One lowercase letter (a-z)
-                  </p>
-                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasNumber ? "text-green-600" : "text-red-500"}`}>
-                    <i className={`fas ${passwordRequirements.hasNumber ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One number (0-9)
-                  </p>
-                  <p className={`requirement text-xs flex items-center gap-1.5 ${passwordRequirements.hasSpecialChar ? "text-green-600" : "text-red-500"}`}>
-                    <i className={`fas ${passwordRequirements.hasSpecialChar ? "fa-check-circle" : "fa-times-circle"} text-xs`}></i> One special character
-                  </p>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={email}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 text-sm cursor-not-allowed"
+                />
+              </div>
+              {profileMessage && (
+                <div className={`text-xs p-3 rounded-md flex items-center gap-2 ${profileMessageType === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  <i className={`fas ${profileMessageType === "success" ? "fa-check-circle" : "fa-times-circle"}`}></i>
+                  {profileMessage}
                 </div>
               )}
-            </div>
-            <div>
-              <label htmlFor="confirmPasswordProfile" className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-              <div className="relative">
-                <input
-                  id="confirmPasswordProfile"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    setConfirmPasswordTouched(true);
-                  }}
-                  required
-                  placeholder="Confirm new password"
-                  className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 ${
-                    confirmPasswordTouched && !passwordsMatch
-                      ? "border-red-500 bg-red-50 focus:border-red-500" // Keep custom validation styles
-                      : "border-gray-300 focus:border-[#ff3366]"
-                  }`}
-                />
+              <div>
                 <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700 focus:outline-none"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  type="submit"
+                  className="w-full py-2 px-4 bg-[#2c2d5a] text-white font-semibold rounded-md hover:bg-[#3e3f7a] transition focus:ring-2 focus:ring-[#ff3366] focus:outline-none disabled:opacity-50 text-sm"
+                  disabled={isSubmittingProfile}
                 >
-                  <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  {isSubmittingProfile ? "Updating..." : "Update Profile"}
                 </button>
               </div>
-              {confirmPasswordTouched && !passwordsMatch && (
-                <p className="input-hint text-xs text-red-600 mt-1">New passwords do not match.</p>
-              )}
-            </div>
-            {passwordMessage && (
-              <div className={`profile-message ${passwordMessageType}`}>
-                <i
-                  className={`fas ${
-                    passwordMessageType === "success"
-                      ? "fa-check-circle"
-                      : passwordMessageType === "warning"
-                      ? "fa-exclamation-triangle"
-                      : "fa-times-circle"
-                  } icon`}
-                ></i>
-                {passwordMessage}
+            </form>
+          </div>
+
+          {/* Change Password Form */}
+          <div className="profile-form-section bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center gap-2">
+              <i className="fas fa-key text-gray-400"></i>
+              Change Password
+            </h2>
+            <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="newPasswordProfile" className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <div className="relative">
+                  <input
+                    id="newPasswordProfile"
+                    name="newPassword"
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={handleNewPasswordInputChange}
+                    required
+                    placeholder="Enter new password"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10 text-sm"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  </button>
+                </div>
+                {newPasswordTouched && (
+                  <div className="mt-1.5 space-y-0.5">
+                    <p className={`text-xs flex items-center gap-1.5 ${passwordRequirements.minLength ? "text-green-600" : "text-gray-500"}`}>
+                      <i className={`fas ${passwordRequirements.minLength ? "fa-check-circle" : "fa-times-circle"} fa-xs`}></i> At least 8 characters
+                    </p>
+                    <p className={`text-xs flex items-center gap-1.5 ${passwordRequirements.hasUppercase ? "text-green-600" : "text-gray-500"}`}>
+                      <i className={`fas ${passwordRequirements.hasUppercase ? "fa-check-circle" : "fa-times-circle"} fa-xs`}></i> One uppercase letter
+                    </p>
+                    <p className={`text-xs flex items-center gap-1.5 ${passwordRequirements.hasLowercase ? "text-green-600" : "text-gray-500"}`}>
+                      <i className={`fas ${passwordRequirements.hasLowercase ? "fa-check-circle" : "fa-times-circle"} fa-xs`}></i> One lowercase letter
+                    </p>
+                    <p className={`text-xs flex items-center gap-1.5 ${passwordRequirements.hasNumber ? "text-green-600" : "text-gray-500"}`}>
+                      <i className={`fas ${passwordRequirements.hasNumber ? "fa-check-circle" : "fa-times-circle"} fa-xs`}></i> One number
+                    </p>
+                    <p className={`text-xs flex items-center gap-1.5 ${passwordRequirements.hasSpecialChar ? "text-green-600" : "text-gray-500"}`}>
+                      <i className={`fas ${passwordRequirements.hasSpecialChar ? "fa-check-circle" : "fa-times-circle"} fa-xs`}></i> One special character
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
-            <div>
-              <button
-                type="submit"
-                className="btn-submit btn-change-password"
-                disabled={
-                  isSubmittingPassword ||
-                  !newPassword || // Basic check: newPassword should not be empty
-                  (newPasswordTouched && (!isNewPasswordClientValid || !passwordsMatch))
-                }
-              >
-                {isSubmittingPassword ? "Changing..." : "Change Password"}
-              </button>
-            </div>
-          </form>
+              <div>
+                <label htmlFor="confirmPasswordProfile" className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <div className="relative">
+                  <input
+                    id="confirmPasswordProfile"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => { setConfirmPassword(e.target.value); setConfirmPasswordTouched(true); }}
+                    required
+                    placeholder="Confirm new password"
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 text-sm ${!passwordsMatch ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  </button>
+                </div>
+                {!passwordsMatch && (
+                  <p className="mt-1 text-xs text-red-600">New passwords do not match.</p>
+                )}
+              </div>
+              {passwordMessage && (
+                <div className={`text-xs p-3 rounded-md flex items-center gap-2 ${
+                  passwordMessageType === "success" ? "bg-green-50 text-green-700" :
+                  passwordMessageType === "warning" ? "bg-yellow-50 text-yellow-700" :
+                  "bg-red-50 text-red-700"
+                }`}>
+                  <i className={`fas ${
+                    passwordMessageType === "success" ? "fa-check-circle" :
+                    passwordMessageType === "warning" ? "fa-exclamation-triangle" : "fa-times-circle"
+                  }`}></i>
+                  {passwordMessage}
+                </div>
+              )}
+              <div>
+                <button
+                  type="submit"
+                  className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none disabled:opacity-50 text-sm"
+                  disabled={isSubmittingPassword || !isNewPasswordClientValid || !passwordsMatch || !newPassword}
+                >
+                  {isSubmittingPassword ? "Changing..." : "Change Password"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

@@ -1920,11 +1920,11 @@ input:focus, select:focus, textarea:focus {
 .profile-page-container {
   min-height: calc(100vh - var(--header-height, 70px));
   background-color: var(--gray-50);
-  padding-top: calc(var(--header-height, 70px) + 2.5rem);
-  padding-bottom: 3rem;
+  padding: calc(var(--header-height, 70px) + 0.75rem) 1rem 1.5rem;
   display: flex;
   justify-content: center;
-  align-items: center; /* Center vertically on all screen sizes */
+  align-items: flex-start;
+  overflow-y: auto; /* Allow scrolling if absolutely needed */
 }
 
 .profile-card-container {
@@ -1933,64 +1933,131 @@ input:focus, select:focus, textarea:focus {
   background-color: var(--white);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  padding: 2rem 2.5rem;
+  padding: 1.5rem;
   border: 1px solid var(--gray-200);
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-@media (max-width: 768px) { /* Responsive adjustments for profile page */
-  .profile-page-container {
-    padding-top: calc(var(--header-height, 70px) + 1.5rem); /* Adjust for smaller screens */
-    padding-bottom: 1.5rem;
-  }
-  .profile-card-container {
-    margin-left: 1rem;
-    margin-right: 1rem;
-    padding: 1.5rem;
-  }
-}
-
-/* Desktop-specific adjustments */
-@media (min-width: 1024px) {
-  .profile-page-container {
-    padding-top: calc(var(--header-height, 70px) + 3rem);
-  }
-}
-
-/* Remove the following scrollbar-related styles */
-/* 
-.profile-card-container {
-  max-height: calc(100vh - var(--header-height, 70px) - 6rem);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gray-300) var(--gray-100);
-}
-
-.profile-card-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.profile-card-container::-webkit-scrollbar-track {
-  background: var(--gray-100);
-  border-radius: 3px;
-}
-
-.profile-card-container::-webkit-scrollbar-thumb {
-  background-color: var(--gray-300);
-  border-radius: 3px;
-  border: 1px solid var(--gray-100);
-}
-*/
-
+/* More compact layout for profile form */
 .profile-page-title {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--primary);
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--gray-100);
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* Profile form section styles - more compact spacing */
+.profile-form-section {
+  margin-bottom: 1.5rem;
+}
+
+.profile-section-heading {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem !important;
+}
+
+/* Make form controls more compact */
+.profile-form input {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Make password requirements more compact */
+.password-requirements-info {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  line-height: 1.2;
+}
+
+.password-requirements-info p {
+  margin-bottom: 0.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-height: 700px) {
+  /* Extra compact for shorter screens */
+  .profile-card-container {
+    padding: 1rem;
+  }
+  
+  .profile-page-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .profile-section-heading {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .profile-form {
+    gap: 0.5rem !important;
+  }
+  
+  .btn-submit {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-page-container {
+    padding: calc(var(--header-height, 70px) + 0.5rem) 0.75rem 0.75rem;
+  }
+  
+  .profile-card-container {
+    padding: 1.25rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .profile-page-container {
+    padding-top: calc(var(--header-height, 70px) + 1rem);
+  }
+  
+  .profile-card-container {
+    padding: 1.75rem 2rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  /* For larger screens, we can be a bit more spacious */
+  .profile-card-container {
+    padding: 2rem 2.5rem;
+  }
+  
+  .profile-page-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .profile-form {
+    gap: 1rem !important;
+  }
 }
 
 .content-card .badge {

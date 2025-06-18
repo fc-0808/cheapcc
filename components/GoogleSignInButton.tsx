@@ -12,7 +12,7 @@ export default function GoogleSignInButton() {
       options: {
         // This tells Supabase where to send the user AFTER
         // the login is successfully processed.
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
   };
