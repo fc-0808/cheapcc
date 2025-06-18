@@ -44,24 +44,24 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <a href="/" className="w-fit mx-auto mb-6 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
+    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-6 px-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+        <a href="/" className="w-fit mx-auto mb-4 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
           Cheap <span className="text-[#ff3366]">CC</span>
         </a>
-        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-2 text-center">Reset Your Password</h1>
-        <p className="text-gray-500 text-center mb-6 text-sm">
+        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-1 text-center">Reset Your Password</h1>
+        <p className="text-gray-500 text-center mb-4 text-sm">
           Enter your email address and we&apos;ll send you a link to reset your password.
         </p>
 
         {/* Component for messages from URL parameters */}
-        <Suspense fallback={<div className="mb-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading...</div>}>
+        <Suspense fallback={<div className="mb-3 p-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading...</div>}>
           <ForgotPasswordMessages />
         </Suspense>
 
         {/* For direct form submission feedback */}
         {formSubmissionMessage && (
-          <div className={`mb-4 p-3 rounded-md text-sm font-medium ${
+          <div className={`mb-3 p-2 rounded-md text-sm font-medium ${
             formSubmissionMessageType === 'success' ? 'bg-green-100 text-green-700' :
             formSubmissionMessageType === 'error' ? 'bg-red-100 text-red-700' : ''
           }`}>
@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[#2c2d5a] mb-1">Email address</label>
             <input
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
             </button>
           </div>
         </form>
-        <div className="text-center mt-6 text-sm text-gray-500">
+        <div className="text-center mt-4 text-sm text-gray-500">
           Remember your password?{' '}
           <Link href="/login" legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">
             Log In

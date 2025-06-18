@@ -5,6 +5,7 @@ import { signup } from './actions';
 import { useEffect, useState, useRef, Suspense } from 'react';
 import ReCAPTCHA from "react-google-recaptcha";
 import RegisterPageURLMessages from '@/components/RegisterPageURLMessages';
+import GoogleSignInButton from '@/components/GoogleSignInButton';
 
 export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState('');
@@ -120,47 +121,32 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-xl p-8 sm:p-10 space-y-6">
-        {/* Logo Section */}
-        <div className="flex justify-center">
-          <a
-            href="/"
-            className="logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition"
-            style={{
-              fontFamily: 'Inter, Segoe UI, Arial, sans-serif',
-              letterSpacing: '0.01em',
-            }}
-          >
-            Cheap
-            <span className="text-[#ff3366]">CC</span>
-          </a>
-        </div>
-
-        {/* Header Text */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[#2c2d5a] mb-2">
-            Create your account
-          </h1>
-          <p className="text-gray-500 text-sm mb-6">
-            Join CheapCC and start saving on Adobe Creative Cloud
-          </p>
-        </div>
+    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-6 px-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+        <a href="/" className="w-fit mx-auto mb-4 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
+          Cheap <span className="text-[#ff3366]">CC</span>
+        </a>
+        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-1 text-center">
+          Create your account
+        </h1>
+        <p className="text-gray-500 text-center mb-4 text-sm">
+          Join CheapCC and start saving on Adobe Creative Cloud
+        </p>
 
         {/* Component to display messages from URL parameters */}
-        <Suspense fallback={<div className="mb-4 p-3 rounded-md text-sm font-medium bg-gray-100">Loading messages...</div>}>
+        <Suspense fallback={<div className="mb-3 p-2 rounded-md text-sm font-medium bg-gray-100">Loading messages...</div>}>
           <RegisterPageURLMessages />
         </Suspense>
 
         {/* Display client-side validation error messages */}
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-md text-sm font-medium bg-red-100 text-red-700">
+          <div className="mb-3 p-2 rounded-md text-sm font-medium bg-red-100 text-red-700">
             {errorMessage}
           </div>
         )}
 
         {/* Registration Form */}
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        <form className="space-y-3" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="name"
@@ -228,9 +214,8 @@ export default function RegisterPage() {
             </div>
             
             {passwordTouched && (
-              <div className="mt-2 text-sm space-y-1">
-                <p className="font-medium text-gray-700">Password must contain:</p>
-                <div className="flex flex-col gap-1">
+              <div className="mt-1 text-xs">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                   <p className={passwordRequirements.minLength ? 'text-green-600' : 'text-gray-500'}>
                     <i className={`fas ${passwordRequirements.minLength ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
                     At least 8 characters
@@ -245,7 +230,7 @@ export default function RegisterPage() {
                   </p>
                   <p className={passwordRequirements.hasNumber ? 'text-green-600' : 'text-gray-500'}>
                     <i className={`fas ${passwordRequirements.hasNumber ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
-                    One number (0-9)
+                    One number
                   </p>
                   <p className={passwordRequirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}>
                     <i className={`fas ${passwordRequirements.hasSpecialChar ? 'fa-check-circle' : 'fa-circle'} mr-1`}></i>
@@ -303,15 +288,25 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full py-3 px-4 bg-[#ff3366] text-white font-semibold rounded-lg hover:bg-[#e62e5c] transition-colors duration-300 focus:ring-4 focus:ring-[#ff3366]/50 focus:outline-none shadow-md hover:shadow-lg transform hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 disabled:hover:-translate-y-0"
+            className="w-full py-2 px-4 bg-gradient-to-r from-[#ff3366] to-[#ff5c86] text-white font-semibold rounded-md hover:from-[#ff2050] hover:to-[#ff4575] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer disabled:opacity-60 shadow-md hover:shadow-lg hover:translate-y-[-1px]"
             disabled={isSubmitting || (confirmPasswordTouched && !passwordsMatch) || !isPasswordValid || !recaptchaToken}
           >
             {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Or</span>
+          </div>
+        </div>
+        <GoogleSignInButton />
+        
         {/* Login Link */}
-        <div className="text-center mt-6 text-sm text-gray-600">
+        <div className="text-center mt-4 text-sm text-gray-500">
           Already have an account?{' '}
           <Link
             href="/login"

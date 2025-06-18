@@ -21,11 +21,14 @@ const Footer: React.FC = () => (
             <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
               <i className="fab fa-facebook-f text-lg"></i>
             </a>
-            <a href="#" aria-label="Twitter" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
-              <i className="fab fa-twitter text-lg"></i>
+            <a href="https://x.com/cheapcc137024" aria-label="X (Twitter)" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
+              <i className="fab fa-x-twitter text-lg"></i>
             </a>
             <a href="#" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
               <i className="fab fa-instagram text-lg"></i>
+            </a>
+            <a href="https://www.youtube.com/@cheapcc-online" aria-label="YouTube" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
+              <i className="fab fa-youtube text-lg"></i>
             </a>
           </div>
         </div>

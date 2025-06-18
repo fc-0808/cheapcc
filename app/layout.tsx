@@ -91,7 +91,7 @@ export default function RootLayout({
             }
           }
         `}} />
-        {/* Header - always logged out state for server component */}
+        {/* Header */}
         <Header />
         <Suspense fallback={<Loading />}>
           {/* Main Content */}

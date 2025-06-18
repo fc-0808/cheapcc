@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { login } from './actions';
 import { useRouter } from 'next/navigation';
 import LoginPageURLMessages from '@/components/LoginPageURLMessages';
+import GoogleSignInButton from '@/components/GoogleSignInButton';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,20 +39,20 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-12 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <a href="/" className="w-fit mx-auto mb-6 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
+    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-6 px-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+        <a href="/" className="w-fit mx-auto mb-4 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
           Cheap <span className="text-[#ff3366]">CC</span>
         </a>
-        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-2 text-center">Sign in to your account</h1>
-        <p className="text-gray-500 text-center mb-6 text-sm">Welcome back! Please enter your details.</p>
+        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-1 text-center">Sign in to your account</h1>
+        <p className="text-gray-500 text-center mb-4 text-sm">Welcome back! Please enter your details.</p>
         
-        <Suspense fallback={<div className="mb-4 p-3 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading messages...</div>}>
+        <Suspense fallback={<div className="mb-3 p-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading messages...</div>}>
           <LoginPageURLMessages />
         </Suspense>
         
         {formMessage && (
-          <div className={`mb-4 p-3 rounded-md text-sm font-medium ${
+          <div className={`mb-3 p-2 rounded-md text-sm font-medium ${
             formMessageType === 'success' ? 'bg-green-100 text-green-700' :
             formMessageType === 'error' ? 'bg-red-100 text-red-700' :
             formMessageType === 'info' ? 'bg-blue-100 text-blue-700' : ''
@@ -60,7 +61,7 @@ export default function LoginPage() {
           </div>
         )}
         
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[#2c2d5a] mb-1">Email address</label>
             <input
@@ -104,14 +105,25 @@ export default function LoginPage() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer disabled:opacity-60"
+              className="w-full py-2 px-4 bg-gradient-to-r from-[#ff3366] to-[#ff5c86] text-white font-semibold rounded-md hover:from-[#ff2050] hover:to-[#ff4575] transition focus:ring-2 focus:ring-[#2c2d5a] focus:outline-none cursor-pointer disabled:opacity-60 shadow-md hover:shadow-lg hover:translate-y-[-1px]"
               disabled={isLoading}
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
           </div>
         </form>
-        <div className="text-center mt-6 text-sm text-gray-500">
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-white px-2 text-gray-500">Or</span>
+          </div>
+        </div>
+        <GoogleSignInButton />
+        
+        <div className="text-center mt-4 text-sm text-gray-500">
           Don&apos;t have an account?{' '}
           <Link href="/register" legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">Register</Link>
         </div>
