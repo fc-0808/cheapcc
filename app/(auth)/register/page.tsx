@@ -121,15 +121,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-6 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
-        <a href="/" className="w-fit mx-auto mb-4 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
+    <main className="min-h-screen flex items-start sm:items-center justify-center bg-[#f8f9fa] pt-2 pb-4 px-4 sm:pt-4 sm:pb-6 overflow-y-auto">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-5 sm:p-6 mt-12 sm:mt-0 mb-2">
+        <a href="/" className="w-fit mx-auto mb-2 sm:mb-3 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
           Cheap <span className="text-[#ff3366]">CC</span>
         </a>
-        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-1 text-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-[#2c2d5a] mb-1 text-center">
           Create your account
         </h1>
-        <p className="text-gray-500 text-center mb-4 text-sm">
+        <p className="text-gray-500 text-center mb-2 sm:mb-3 text-sm">
           Join CheapCC and start saving on Adobe Creative Cloud
         </p>
 
@@ -146,7 +146,7 @@ export default function RegisterPage() {
         )}
 
         {/* Registration Form */}
-        <form className="space-y-3" onSubmit={handleSubmit}>
+        <form className="space-y-2 sm:space-y-3" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="name"
@@ -295,7 +295,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="relative my-4">
+        <div className="relative my-3 sm:my-4">
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
             <div className="w-full border-t border-gray-300" />
           </div>
@@ -306,7 +306,7 @@ export default function RegisterPage() {
         <GoogleSignInButton />
         
         {/* Login Link */}
-        <div className="text-center mt-4 text-sm text-gray-500">
+        <div className="text-center mt-3 sm:mt-4 text-sm text-gray-500">
           Already have an account?{' '}
           <Link
             href="/login"

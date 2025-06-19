@@ -47,8 +47,8 @@ export default async function DashboardLayout({
               </>
             ) : (
               <>
-                <h1>Welcome back, <span className="text-[#ff3366] font-extrabold">{userName}</span></h1>
-                <p>Here's an overview of your account and services.</p>
+            <h1>Welcome back, <span className="text-[#ff3366] font-extrabold">{userName}</span></h1>
+            <p>Here's an overview of your account and services.</p>
               </>
             )}
           </div>

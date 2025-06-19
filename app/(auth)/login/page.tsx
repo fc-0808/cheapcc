@@ -39,13 +39,13 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f8f9fa] py-6 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
-        <a href="/" className="w-fit mx-auto mb-4 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
+    <main className="min-h-screen flex items-start sm:items-center justify-center bg-[#f8f9fa] pt-2 pb-4 px-4 sm:pt-4 sm:pb-6 overflow-y-auto">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-5 sm:p-6 mt-22 sm:mt-0 mb-2">
+        <a href="/" className="w-fit mx-auto mb-2 sm:mb-3 logo text-3xl font-extrabold text-[#2c2d5a] tracking-tight flex items-center gap-2 hover:text-[#ff3366] transition" style={{fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em'}}>
           Cheap <span className="text-[#ff3366]">CC</span>
         </a>
-        <h1 className="text-2xl font-bold text-[#2c2d5a] mb-1 text-center">Sign in to your account</h1>
-        <p className="text-gray-500 text-center mb-4 text-sm">Welcome back! Please enter your details.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#2c2d5a] mb-1 text-center">Sign in to your account</h1>
+        <p className="text-gray-500 text-center mb-3 text-sm">Welcome back! Please enter your details.</p>
         
         <Suspense fallback={<div className="mb-3 p-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700">Loading messages...</div>}>
           <LoginPageURLMessages />
@@ -61,7 +61,7 @@ export default function LoginPage() {
           </div>
         )}
         
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-3 sm:space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[#2c2d5a] mb-1">Email address</label>
             <input
@@ -113,7 +113,7 @@ export default function LoginPage() {
           </div>
         </form>
 
-        <div className="relative my-4">
+        <div className="relative my-3 sm:my-4">
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
             <div className="w-full border-t border-gray-300" />
           </div>
@@ -123,7 +123,7 @@ export default function LoginPage() {
         </div>
         <GoogleSignInButton />
         
-        <div className="text-center mt-4 text-sm text-gray-500">
+        <div className="text-center mt-3 sm:mt-4 text-sm text-gray-500">
           Don&apos;t have an account?{' '}
           <Link href="/register" legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">Register</Link>
         </div>
