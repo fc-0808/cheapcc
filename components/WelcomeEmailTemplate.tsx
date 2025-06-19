@@ -26,25 +26,36 @@ export const WelcomeEmailTemplate: React.FC<Readonly<WelcomeEmailTemplateProps>>
             <h2 style={{ color: '#2c2d5a', marginTop: 0, fontSize: 24, fontWeight: 600 }}>
               Welcome to CheapCC, {name}!
             </h2>
-            <p style={{ color: '#4a4a4a', lineHeight: 1.6, fontSize: 16 }}>
-              Thank you for creating your account. You now have access to exclusive Adobe Creative Cloud subscription offers at unbeatable prices.
+            <p style={{ color: '#4a4a4a', lineHeight: 1.6, fontSize: 16, marginBottom: 25 }}>
+              Thank you for creating your account. Your account is now ready — you can browse plans, make purchases, and manage your Adobe Creative Cloud subscriptions at unbeatable prices.
             </p>
-            <div style={{ background: '#edf7ff', borderLeft: '4px solid #2c2d5a', borderRadius: 6, padding: 16, margin: '24px 0', color: '#2c2d5a', fontSize: 15 }}>
-              <strong>Your account is ready to use.</strong> You can now browse plans, make purchases, and manage your subscriptions.
-            </div>
+            
             <div style={{ textAlign: 'center', margin: '30px 0' }}>
               <a
                 href="https://cheapcc.online/dashboard"
-                style={{ backgroundColor: '#ff3366', color: '#ffffff', padding: '14px 28px', textDecoration: 'none', borderRadius: 5, fontWeight: 'bold', display: 'inline-block', fontSize: 16, border: 'none', cursor: 'pointer' }}
+                style={{ 
+                  backgroundColor: '#ff3366',
+                  color: '#ffffff',
+                  padding: '14px 28px',
+                  textDecoration: 'none',
+                  borderRadius: 5,
+                  fontWeight: 'bold',
+                  display: 'inline-block',
+                  fontSize: 16,
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 6px rgba(255, 51, 102, 0.15)'
+                }}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Browse Subscription Plans
               </a>
             </div>
+            
             <div style={{ marginBottom: 20 }}>
               <p style={{ marginBottom: 18 }}>If you have any questions or need help, please visit our <a href="https://cheapcc.online" style={{ color: '#ff3366', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">Help Center</a> or contact our support team at <a href="mailto:support@cheapcc.online" style={{ color: '#ff3366' }}>support@cheapcc.online</a>.</p>
-              <p style={{ marginBottom: 0 }}>We're excited to have you as a customer!</p>
+              <p style={{ marginBottom: 0 }}>We're excited to have you with us!</p>
             </div>
           </div>
           <div style={{ textAlign: 'center', fontSize: '0.85em', color: '#888888', padding: '20px 25px', borderTop: '1px solid #eeeeee' }}>
