@@ -11,11 +11,15 @@ import {
   calculateExpiryDate, 
 } from '@/utils/products';
 
+interface SearchParams {
+  [key: string]: string | string[] | undefined;
+}
+
 // This is the content for the app/dashboard route
 export default async function DashboardPageContent({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: SearchParams;
 }) {
   const supabase = await createClient();
   // We don't need to get the user again, layout does that. We just need the data.

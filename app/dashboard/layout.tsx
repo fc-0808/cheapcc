@@ -7,8 +7,10 @@ import DashboardClient from './dashboard-client';
 // This is the shared layout for all dashboard pages (server component)
 export default async function DashboardLayout({
   children,
+  searchParams,
 }: {
   children: React.ReactNode;
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const supabase = await createClient();
   const {
@@ -18,6 +20,8 @@ export default async function DashboardLayout({
   if (!user) {
     redirect('/login');
   }
+
+  const isNewUser = searchParams?.welcome === 'new';
 
   const userId = user.id;
   const { data: profileData } = await supabase
@@ -33,9 +37,20 @@ export default async function DashboardLayout({
       <div className="dashboard-container">
         <main className="dashboard-content">
           <div className="dashboard-welcome">
-            {/* This welcome message will now appear on ALL dashboard pages */}
-            <h1>Welcome back, <span className="text-[#ff3366] font-extrabold">{userName}</span></h1>
-            <p>Here's an overview of your account and services.</p>
+            {isNewUser ? (
+              <>
+                <h1>Welcome to CheapCC, <span className="text-[#ff3366] font-extrabold">{userName}</span>!</h1>
+                <p>
+                  Thanks for joining us! We've sent a welcome email to your inbox with more information.
+                  Here's your dashboard where you can manage your Adobe CC subscriptions.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1>Welcome back, <span className="text-[#ff3366] font-extrabold">{userName}</span></h1>
+                <p>Here's an overview of your account and services.</p>
+              </>
+            )}
           </div>
 
           {/* The unique page content (like stats or the orders table) will be rendered here */}

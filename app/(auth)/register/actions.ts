@@ -9,6 +9,7 @@ import { SignupSchema } from '@/lib/schemas'
 import { headers } from 'next/headers'
 import { checkRateLimitByIp, limiters } from '@/utils/rate-limiter'
 import { ZodError } from 'zod'
+import { sendWelcomeEmail } from '@/utils/send-email'
 
 function formatZodError(error: ZodError) {
   const firstError = error.errors[0];
@@ -133,6 +134,24 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
         error: profileException instanceof Error ? profileException.message : String(profileException)
       }, null, 2));
       // Continue even if profile creation throws - the user is still authenticated
+    }
+
+    // Send welcome email to the newly registered user
+    try {
+      await sendWelcomeEmail(email, name);
+      console.info(JSON.stringify({
+        ...logContext,
+        event: "welcome_email_sent",
+        userId: signUpData.user.id
+      }, null, 2));
+    } catch (emailError) {
+      console.error(JSON.stringify({
+        ...logContext,
+        event: "welcome_email_error",
+        userId: signUpData.user.id,
+        error: emailError instanceof Error ? emailError.message : String(emailError)
+      }, null, 2));
+      // Continue even if email sending fails - the user is still registered and authenticated
     }
 
     revalidatePath('/', 'layout');
