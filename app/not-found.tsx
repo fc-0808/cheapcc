@@ -37,6 +37,7 @@ export default function NotFound() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/"
+              prefetch={false}
               className="px-6 py-2 bg-[#2c2d5a] text-white rounded-md hover:bg-[#3e3f7a] transition-colors"
             >
               Go to Homepage
@@ -44,6 +45,7 @@ export default function NotFound() {
             
             <Link 
               href="/dashboard"
+              prefetch={false}
               className="px-6 py-2 border border-[#2c2d5a] text-[#2c2d5a] rounded-md hover:bg-[#f0f0f5] transition-colors"
             >
               Go to Dashboard

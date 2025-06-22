@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef, Suspense, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
 import type { Session } from '@supabase/supabase-js';
 import UrlMessageDisplay from "@/components/UrlMessageDisplay";
-import Script from 'next/script';
-import { PRICING_OPTIONS } from '@/utils/products';
 
-// Import new section components
+// Import section components
 import HeroSection from "@/components/home/HeroSection";
 import SocialProofSection from "@/components/home/SocialProofSection";
 import BenefitsSection from "@/components/home/BenefitsSection";
@@ -17,8 +15,6 @@ import HowItWorksSection from "@/components/home/HowItWorksSection";
 import CheckoutSection from "@/components/home/CheckoutSection";
 import HomeFAQSection from "@/components/home/HomeFAQSection";
 import LoginPopup from "@/components/home/LoginPopup";
-
-// PRICING_OPTIONS will be imported by PricingSection and CheckoutSection directly
 
 export default function Home() {
   const router = useRouter();
@@ -29,7 +25,6 @@ export default function Home() {
   const [email, setEmail] = useState<string>('');
   const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
   const [canPay, setCanPay] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
   
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [hasPopupBeenShown, setHasPopupBeenShown] = useState(false);
@@ -43,7 +38,7 @@ export default function Home() {
 
   const [checkoutFormError, setCheckoutFormError] = useState<string | null>(null);
 
-  // Still need this for login popup logic
+  // For login popup logic
   const checkoutRef = useRef<HTMLDivElement>(null);
   const [checkoutVisible, setCheckoutVisible] = useState(false);
 
@@ -194,7 +189,6 @@ export default function Home() {
   
   // Component initialization
   useEffect(() => {
-    setIsInitialized(true);
     if (typeof window !== 'undefined' && window.paypal && !sdkReady) {
         console.log('PayPal SDK already present on window, calling handlePayPalLoad.');
       handlePayPalLoad();
@@ -302,34 +296,6 @@ export default function Home() {
 
   return (
     <main className="bg-white">
-      <Script
-        id="product-schema"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": "Adobe Creative Cloud Subscription",
-          "description": "Get genuine Adobe Creative Cloud subscriptions for up to 75% off. Includes all Adobe apps like Photoshop, Illustrator, and Premiere Pro.",
-          "brand": {
-            "@type": "Brand",
-            "name": "Adobe"
-          },
-          "image": "https://cheapcc.online/og-image.jpg",
-          "offers": {
-            "@type": "AggregateOffer",
-            "priceCurrency": "USD",
-            "lowPrice": "4.99",
-            "highPrice": "124.99",
-            "offerCount": PRICING_OPTIONS.length,
-            "offers": PRICING_OPTIONS.map(option => ({
-              "@type": "Offer",
-              "name": option.description,
-              "price": option.price,
-              "priceCurrency": "USD"
-            }))
-          }
-        }) }}
-      />
       <LoginPopup 
         show={showLoginPopup} 
         onClose={() => setShowLoginPopup(false)}

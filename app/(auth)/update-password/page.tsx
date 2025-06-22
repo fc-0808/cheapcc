@@ -269,7 +269,7 @@ export default function UpdatePasswordPage() {
         
         <div className="text-center mt-6 text-sm text-gray-500">
             Back to{' '}
-            <Link href="/login" className="text-[#ff3366] hover:underline font-medium">
+            <Link href="/login" prefetch={false} className="text-[#ff3366] hover:underline font-medium">
                 Log In
             </Link>
         </div>

@@ -28,6 +28,7 @@ export default async function OrdersContent() {
         <h2>Order History</h2>
         <Link 
           href="/dashboard" 
+          prefetch={false}
           className="inline-flex items-center px-4 py-2 bg-[#2c2d5a] hover:bg-[#3e3f7d] text-white font-medium rounded-md transition-colors duration-200 shadow-sm cursor-pointer"
         >
           <i className="fas fa-arrow-left mr-2"></i>
@@ -74,7 +75,7 @@ export default async function OrdersContent() {
         <div className="empty-state">
           <i className="fas fa-shopping-cart"></i>
           <p>You haven't placed any orders yet.</p>
-          <Link href="/#pricing" className="btn btn-accent">Browse Plans</Link>
+          <Link href="/#pricing" prefetch={false} className="btn btn-accent">Browse Plans</Link>
         </div>
       )}
     </div>

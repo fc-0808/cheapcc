@@ -114,7 +114,7 @@ export default async function DashboardPageContent({
                 </p>
               </div>
             )}
-            <Link href="/#pricing" className="btn btn-accent mt-3">View Available Plans</Link>
+            <Link href="/#pricing" prefetch={false} className="btn btn-accent mt-3">View Available Plans</Link>
           </div>
         )}
       </div>
@@ -123,7 +123,7 @@ export default async function DashboardPageContent({
       <div className="content-card">
         <h2>
           Recent Orders
-          <Link href="/dashboard/orders" className="btn btn-sm btn-outline">View All</Link>
+          <Link href="/dashboard/orders" prefetch={false} className="btn btn-sm btn-outline">View All</Link>
         </h2>
         {recentOrders.length > 0 ? (
           <div className="table-responsive">
@@ -162,7 +162,7 @@ export default async function DashboardPageContent({
           <div className="empty-state">
             <i className="fas fa-shopping-cart"></i>
             <p>You haven't placed any orders yet.</p>
-            <Link href="/#pricing" className="btn btn-accent">Browse Plans</Link>
+            <Link href="/#pricing" prefetch={false} className="btn btn-accent">Browse Plans</Link>
           </div>
         )}
       </div>
@@ -179,7 +179,7 @@ export default async function DashboardPageContent({
           </div>
         </div>
         <div className="text-center mt-4">
-          <Link href="mailto:support@cheapcc.online" className="btn btn-outline">Contact Support</Link>
+          <Link href="mailto:support@cheapcc.online" prefetch={false} className="btn btn-outline">Contact Support</Link>
         </div>
       </div>
     </>

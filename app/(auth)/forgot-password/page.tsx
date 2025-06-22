@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
         </form>
         <div className="text-center mt-4 text-sm text-gray-500">
           Remember your password?{' '}
-          <Link href="/login" legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">
+          <Link href="/login" prefetch={false} legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">
             Log In
           </Link>
         </div>

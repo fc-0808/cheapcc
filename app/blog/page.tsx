@@ -36,7 +36,7 @@ export default function Blog() {
             </svg>
             <h2 className="text-xl font-semibold text-gray-700 mb-2">No blog posts yet - check back soon!</h2>
             <p className="text-gray-500 mb-6">We're working on some exciting content for you.</p>
-            <Link href="/" className="inline-flex items-center px-5 py-2 text-[#ff3366] border border-[#ff3366] hover:bg-[#ff3366] hover:text-white transition-colors rounded-lg font-medium">
+            <Link href="/" prefetch={false} className="inline-flex items-center px-5 py-2 text-[#ff3366] border border-[#ff3366] hover:bg-[#ff3366] hover:text-white transition-colors rounded-lg font-medium">
               Return to Home
               <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -50,7 +50,7 @@ export default function Blog() {
                 key={post.slug} 
                 className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
               >
-                <Link href={`/blog/${post.slug}`} className="block h-full">
+                <Link href={`/blog/${post.slug}`} prefetch={false} className="block h-full">
                   {post.featuredImage && (
                     <div className="relative h-52 w-full overflow-hidden">
                       <Image
@@ -89,7 +89,7 @@ export default function Blog() {
 
         {posts.length > 0 && (
           <div className="mt-16 text-center">
-            <Link href="/#pricing" className="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group border border-[#ff336620]">
+            <Link href="/#pricing" prefetch={false} className="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group border border-[#ff336620]">
               <span className="relative z-10">Get Adobe CC at a Discount</span>
               <svg className="w-5 h-5 ml-2 relative z-10 transition-transform duration-300 group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />

@@ -168,7 +168,7 @@ export default function OrderSuccessPage() {
           </div>
         </div>
         <div className="mt-8 text-center">
-          <Link href="/" className="text-[#2c2d5a] hover:text-[#ff3366] transition inline-flex items-center">
+          <Link href="/" prefetch={false} className="text-[#2c2d5a] hover:text-[#ff3366] transition inline-flex items-center">
             <i className="fas fa-arrow-left mr-2"></i> Return to Home
           </Link>
         </div>

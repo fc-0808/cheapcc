@@ -242,7 +242,7 @@ export default function Header() {
   return (
     <header className={`${headerClasses} ${visibilityClasses}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-        <Link href="/" onClick={handleLogoClick} className="flex items-center">
+        <Link href="/" prefetch={false} onClick={handleLogoClick} className="flex items-center">
           <span className="font-extrabold text-xl tracking-tight text-gradient bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
             Cheap <span className="text-[#ff3366] font-bold">CC</span>
           </span>
@@ -266,6 +266,7 @@ export default function Header() {
           {/* Blog link for desktop */}
           <Link 
             href="/blog" 
+            prefetch={false}
             className={`${navLinkClasses} ${isBlogPage ? 'font-bold' : ''}`}
             onClick={handleNavLinkClick}
           >
@@ -308,6 +309,7 @@ export default function Header() {
                   </div>
                   <Link 
                     href="/dashboard" 
+                    prefetch={false}
                     onClick={handleNavLinkClick}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                   >
@@ -318,6 +320,7 @@ export default function Header() {
                   </Link>
                   <Link 
                     href="/profile" 
+                    prefetch={false}
                     onClick={handleNavLinkClick}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                   >
@@ -389,6 +392,7 @@ export default function Header() {
                 </Link>
                 <Link 
                   href="/profile" 
+                  prefetch={false}
                   onClick={handleNavLinkClick}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
@@ -411,6 +415,7 @@ export default function Header() {
               <>
                 <Link 
                   href="/login" 
+                  prefetch={false}
                   onClick={handleNavLinkClick}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
@@ -421,6 +426,7 @@ export default function Header() {
                 </Link>
                 <Link 
                   href="/register" 
+                  prefetch={false}
                   onClick={handleNavLinkClick}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors`}
                 >
@@ -434,6 +440,7 @@ export default function Header() {
             {/* Blog link for mobile */}
             <Link 
               href="/blog" 
+              prefetch={false}
               onClick={handleNavLinkClick}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium ${usesDarkTheme ? 'text-gray-800 hover:bg-gray-100' : 'text-white/90 hover:bg-white/10'} transition-colors ${isBlogPage ? 'font-bold' : ''}`}
             >

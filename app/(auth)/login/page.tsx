@@ -97,7 +97,7 @@ export default function LoginPage() {
               </button>
             </div>
             <div className="mt-2 text-right">
-              <Link href="/forgot-password" legacyBehavior={false} className="text-sm text-[#ff3366] hover:underline font-medium">
+              <Link href="/forgot-password" prefetch={false} legacyBehavior={false} className="text-sm text-[#ff3366] hover:underline font-medium">
                 Forgot password?
               </Link>
             </div>
@@ -125,7 +125,7 @@ export default function LoginPage() {
         
         <div className="text-center mt-3 sm:mt-4 text-sm text-gray-500">
           Don&apos;t have an account?{' '}
-          <Link href="/register" legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">Register</Link>
+          <Link href="/register" prefetch={false} legacyBehavior={false} className="text-[#ff3366] hover:underline font-medium">Register</Link>
         </div>
       </div>
     </main>

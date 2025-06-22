@@ -10,7 +10,7 @@ const Footer: React.FC = () => (
             className="text-xl sm:text-2xl font-bold mb-3"
             style={{ fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em' }}
           >
-            <Link href="/" className="text-white hover:text-gray-200 transition-colors duration-150">
+            <Link href="/" prefetch={false} className="text-white hover:text-gray-200 transition-colors duration-150">
               Cheap <span className="text-[#ff3366]">CC</span>
             </Link>
           </h3>
@@ -39,19 +39,19 @@ const Footer: React.FC = () => (
           </h3>
           <ul className="footer-links space-y-2">
             <li>
-              <Link href="/" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <Link href="/" prefetch={false} className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-home footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
                 <span className="text-sm">Home</span>
               </Link>
             </li>
             <li>
-              <Link href="/#pricing" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <Link href="/#pricing" prefetch={false} className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-tags footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
                 <span className="text-sm">Pricing</span>
               </Link>
             </li>
             <li>
-              <Link href="/faq" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <Link href="/faq" prefetch={false} className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-question-circle footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
                 <span className="text-sm">FAQ</span>
               </Link>
@@ -71,19 +71,19 @@ const Footer: React.FC = () => (
           </h3>
           <ul className="footer-links space-y-2">
             <li>
-              <Link href="/terms" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <Link href="/terms" prefetch={false} className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-file-contract footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
                 <span className="text-sm">Terms of Service</span>
               </Link>
             </li>
             <li>
-              <Link href="/privacy" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <Link href="/privacy" prefetch={false} className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-shield-alt footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
                 <span className="text-sm">Privacy Policy</span>
               </Link>
             </li>
             <li>
-              <Link href="/refund" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <Link href="/refund" prefetch={false} className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-undo-alt footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
                 <span className="text-sm">Refund Policy</span>
               </Link>
@@ -103,7 +103,7 @@ const Footer: React.FC = () => (
               </a>
             </li>
             <li>
-              <Link href="/#faq" className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
+              <Link href="/#faq" prefetch={false} className="footer-link text-gray-300 hover:text-[#ff3366] transition-colors duration-150 flex items-center">
                 <i className="fas fa-comments footer-link-icon mr-2 text-[#ff3366] text-xs"></i>
                 <span className="text-sm">Help Center</span>
               </Link>

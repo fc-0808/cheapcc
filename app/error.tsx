@@ -54,6 +54,7 @@ export default function Error({
             
             <Link 
               href="/"
+              prefetch={false}
               className="px-6 py-2 border border-[#2c2d5a] text-[#2c2d5a] rounded-md hover:bg-[#f0f0f5] transition-colors"
             >
               Go to Homepage

@@ -135,7 +135,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
               </div>
             )}
             <div className="p-6 sm:p-8">
-              <Link href="/blog" className="inline-flex items-center text-[#ff3366] hover:text-[#2c2d5a] mb-6 transition-colors">
+              <Link href="/blog" prefetch={false} className="inline-flex items-center text-[#ff3366] hover:text-[#2c2d5a] mb-6 transition-colors">
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
                 </svg>
@@ -174,6 +174,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
                     <div className="flex-shrink-0">
                       <Link 
                         href="/#pricing" 
+                        prefetch={false}
                         className="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1 border border-[#ff336620] relative overflow-hidden group"
                       >
                         <span className="relative z-10">View Pricing Plans</span>

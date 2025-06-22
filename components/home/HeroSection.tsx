@@ -17,14 +17,13 @@ export default function HeroSection() {
     // Create floating particles/stars when component mounts
     if (starContainerRef.current) {
       const container = starContainerRef.current;
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
       
       // Clear any existing stars
       container.innerHTML = '';
       
       // Create stars with different sizes and animation speeds
-      for (let i = 0; i < 60; i++) {
+      // Reduced number of stars from 60 to 40 for better performance
+      for (let i = 0; i < 40; i++) {
         const star = document.createElement('div');
         const size = Math.random() * 3 + 1; // Random size between 1-4px
         const opacity = Math.random() * 0.5 + 0.3; // Random opacity
@@ -39,10 +38,10 @@ export default function HeroSection() {
         star.style.opacity = opacity.toString();
         star.style.boxShadow = `0 0 ${size * 2}px rgba(255, 255, 255, ${opacity})`;
         
-        // Random animation duration between 20-50s
-        const animDuration = Math.random() * 30 + 20;
+        // Simplified animation with fewer variations
+        const animDuration = Math.random() * 20 + 40; // 20-40s range instead of 20-50s
         star.style.animation = `float ${animDuration}s infinite ease-in-out`;
-        star.style.animationDelay = `${Math.random() * 10}s`;
+        star.style.animationDelay = `${Math.random() * 5}s`; // 0-5s delay instead of 0-10s
         
         container.appendChild(star);
       }
