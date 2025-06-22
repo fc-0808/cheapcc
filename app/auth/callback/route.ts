@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/supabase-server';
+import { sendWelcomeEmail } from '@/utils/send-email';
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -18,16 +19,11 @@ export async function GET(request: NextRequest) {
   if (type === 'recovery') {
     const updatePasswordUrl = new URL('/auth/update-password', origin);
     
-    // Determine the token to use for the fragment:
-    // Supabase usually sends 'token' in query for its own /v1/recovery, then redirects with fragment.
-    // If your observation 'code=...' is from the query string after Supabase's own redirect, we use that.
     const recoveryTokenForFragment = tokenFromQuery || codeFromQuery;
 
     if (recoveryTokenForFragment) {
-      // Construct the fragment that the Supabase JS client expects on /auth/update-password
       updatePasswordUrl.hash = `access_token=${recoveryTokenForFragment}&token_type=bearer&type=recovery`;
       
-      // Append other potential Supabase recovery fragment parameters if they were sent as query params
       const refreshToken = searchParams.get('refresh_token');
       const expiresIn = searchParams.get('expires_in');
       if (refreshToken) updatePasswordUrl.hash += `&refresh_token=${refreshToken}`;
@@ -37,15 +33,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(updatePasswordUrl.toString());
 
     } else if (incomingHash && incomingHash.includes('access_token=') && incomingHash.includes('type=recovery')) {
-      // If the fragment is ALREADY correctly on the URL hitting /auth/callback.
-      // This means Supabase's /auth/v1/recovery endpoint redirected here with the fragment.
       console.log(`AuthCallback_RECOVERY_FRAGMENT_ALREADY_PRESENT: Fragment is '${incomingHash}'. Redirecting to /auth/update-password (browser should preserve fragment).`);
       return NextResponse.redirect(updatePasswordUrl.toString());
     } else {
-      // Fallback: Type is 'recovery' but no token/code in query and no valid fragment on this request.
-      // This is an unexpected state for recovery if Supabase is working as documented.
       console.error(`AuthCallback_RECOVERY_ERROR_MISSING_TOKEN: Type 'recovery' but no usable token/code in query params and no valid incoming fragment. URL: ${request.url}`);
-      const errorRedirectUrl = new URL('/login', origin); // Redirect to login with an error
+      const errorRedirectUrl = new URL('/login', origin);
       errorRedirectUrl.searchParams.set('error', 'password_reset_error');
       errorRedirectUrl.searchParams.set('error_description', 'Invalid or incomplete password reset link.');
       return NextResponse.redirect(errorRedirectUrl.toString());
@@ -63,7 +55,8 @@ export async function GET(request: NextRequest) {
     errorRedirectUrl.searchParams.set('error_description', 'Authentication token is missing.');
     return NextResponse.redirect(errorRedirectUrl);
   }
-
+  
+  // This part handles OAuth, magic links, and email confirmations
   if (type === 'signup' || type === 'invite' || type === 'magiclink' || (type === null && exchangeToken)) {
     if (!exchangeToken) {
         console.error('AuthCallback_SESSION_EXCHANGE_CRITICAL_NO_TOKEN_ERROR:', { type });
@@ -71,7 +64,10 @@ export async function GET(request: NextRequest) {
         errorRedirectUrl.searchParams.set('error', 'internal_error_token_absent_for_session_exchange');
         return NextResponse.redirect(errorRedirectUrl);
     }
-    const { error } = await supabase.auth.exchangeCodeForSession(exchangeToken);
+    
+    // Exchange the code for a session and get user data
+    const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(exchangeToken);
+
     if (error) {
       console.error(`AuthCallback_SESSION_EXCHANGE_ERROR: type ${type || 'unknown_code_flow'} - ${error.message} (Status: ${error.status})`);
       const errorRedirectUrl = new URL( (type === 'signup' || type === 'invite') ? '/login' : '/', origin);
@@ -79,9 +75,55 @@ export async function GET(request: NextRequest) {
       errorRedirectUrl.searchParams.set('error_description', error.message);
       return NextResponse.redirect(errorRedirectUrl);
     }
+    
     const next = searchParams.get('next') ?? '/dashboard';
-    console.log(`AuthCallback_SESSION_EXCHANGE_SUCCESS: type '${type || 'unknown_code_flow'}'. Redirecting to '${next}'.`);
     const successRedirectUrl = new URL(next, origin);
+    
+    if (user) {
+      // New user check based on timestamps.
+      // A new user's last_sign_in_at is either null or very close to created_at.
+      const createdAt = new Date(user.created_at);
+      const lastSignInAt = user.last_sign_in_at ? new Date(user.last_sign_in_at) : createdAt;
+      const timeDifference = Math.abs(lastSignInAt.getTime() - createdAt.getTime());
+      
+      // If the difference is less than 5 seconds, we assume it's the user's first sign-in.
+      const isNewUser = timeDifference < 5000;
+
+      if (isNewUser) {
+        console.log(`AuthCallback_NEW_USER_DETECTED: Timestamps indicate new user. Created: ${user.created_at}, Last Sign In: ${user.last_sign_in_at}`);
+        const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'there';
+        const userEmail = user.email;
+
+        // Check if a profile exists to avoid insertion errors if a trigger is active.
+        const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
+
+        if (!profile) {
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({ id: user.id, name: userName, email: userEmail });
+
+          if (insertError) {
+            console.error(`AuthCallback_PROFILE_CREATION_ERROR: Failed to create profile for new user ${user.id}: ${insertError.message}`);
+          }
+        }
+
+        // Send welcome email for the new user.
+        if (userEmail) {
+          try {
+            await sendWelcomeEmail(userEmail, userName);
+            console.log(`AuthCallback_OAUTH_NEW_USER: Welcome email sent to new OAuth user ${userEmail}`);
+          } catch (emailError) {
+            console.error(`AuthCallback_OAUTH_NEW_USER_EMAIL_ERROR: Failed to send welcome email to ${userEmail}`, emailError);
+          }
+        }
+        
+        successRedirectUrl.searchParams.set('welcome', 'new');
+      } else {
+        console.log(`AuthCallback_EXISTING_USER_DETECTED: Timestamps indicate existing user. Created: ${user.created_at}, Last Sign In: ${user.last_sign_in_at}`);
+      }
+    }
+    
+    console.log(`AuthCallback_SESSION_EXCHANGE_SUCCESS: type '${type || 'unknown_code_flow'}'. Redirecting to '${successRedirectUrl.toString()}'.`);
     if (type === 'signup' || type === 'invite'){
       successRedirectUrl.searchParams.set('message', 'Account confirmed successfully! You are now logged in.');
     }
