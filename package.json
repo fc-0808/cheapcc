@@ -16,6 +16,7 @@
     "@types/react-google-recaptcha": "^2.1.9",
     "@types/three": "^0.177.0",
     "@vercel/edge": "^1.2.2",
+    "critters": "^0.0.23",
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
     "next": "^15.3.3",
