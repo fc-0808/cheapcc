@@ -63,7 +63,7 @@ export default async function DashboardPageContent() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Stats Cards - Hidden on mobile */}
       <div className="stats-grid">
         {stats.map(stat => (
           <div className="stat-card" key={stat.title}>
@@ -73,9 +73,41 @@ export default async function DashboardPageContent() {
             </div>
             <div className="stat-value">
               {stat.value}
-            </div>
+              </div>
           </div>
         ))}
+      </div>
+
+      {/* Mobile Summary - Only visible on small screens */}
+      <div className="sm:hidden mobile-stats-summary">
+        <div className="mobile-stats-item">
+          <span className="mobile-stats-label">
+            <i className="fas fa-check-circle"></i>
+            Active Plans
+          </span>
+          <span className="mobile-stats-value">{activeOrders.length}</span>
+        </div>
+        <div className="mobile-stats-item">
+          <span className="mobile-stats-label">
+            <i className="fas fa-shopping-cart"></i>
+            Total Orders
+          </span>
+          <span className="mobile-stats-value">{totalOrders}</span>
+        </div>
+        <div className="mobile-stats-item">
+          <span className="mobile-stats-label">
+            <i className="fas fa-credit-card"></i>
+            Total Spent
+          </span>
+          <span className="mobile-stats-value">{formatCurrency(totalSpent)}</span>
+        </div>
+        <div className="mobile-stats-item">
+          <span className="mobile-stats-label">
+            <i className="fas fa-piggy-bank"></i>
+            Total Saved
+          </span>
+          <span className="mobile-stats-value accent">{formatCurrency(totalSavings)}</span>
+        </div>
       </div>
 
       {/* Active Subscriptions */}
