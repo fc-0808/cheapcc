@@ -180,3 +180,88 @@ export async function addUserToMarketingAudience(email: string, name: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function updateUserMarketingPreference(email: string, name: string, isSubscribed: boolean) {
+  if (!resendApiKey || !resendAudienceId) {
+    console.warn(JSON.stringify({
+      message: "Cannot update marketing preference: Resend API Key or Audience ID not configured.",
+      email, isSubscribed,
+      source: "updateUserMarketingPreference"
+    }, null, 2));
+    return { success: false, error: "Missing API key or audience ID" };
+  }
+
+  try {
+    const { data: existingContact, error: getError } = await resend.contacts.get({
+      audienceId: resendAudienceId,
+      email: email,
+    });
+
+    if (getError && getError.name !== 'not_found') {
+      // An error other than "not found" occurred
+      throw getError;
+    }
+
+    const nameParts = name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    if (existingContact) {
+      // Contact exists, update them
+      const { data, error } = await resend.contacts.update({
+        id: existingContact.id,
+        audienceId: resendAudienceId,
+        unsubscribed: !isSubscribed, // resend uses 'unsubscribed' flag
+        firstName,
+        lastName,
+      });
+
+      if (error) throw error;
+      
+      console.info(JSON.stringify({
+        message: "Successfully updated contact's marketing preference.",
+        email, isSubscribed, contact_id: data?.id,
+        source: "updateUserMarketingPreference (update)",
+      }, null, 2));
+      return { success: true };
+
+    } else if (isSubscribed) {
+      // Contact does not exist and user wants to subscribe, so create them
+      const { data, error } = await resend.contacts.create({
+        email,
+        firstName,
+        lastName,
+        unsubscribed: false,
+        audienceId: resendAudienceId,
+      });
+
+      if (error) throw error;
+
+      console.info(JSON.stringify({
+        message: "Successfully created contact and set marketing preference.",
+        email, isSubscribed, contact_id: data?.id,
+        source: "updateUserMarketingPreference (create)",
+      }, null, 2));
+      return { success: true };
+
+    } else {
+      // Contact does not exist and user wants to unsubscribe, do nothing.
+      console.info(JSON.stringify({
+        message: "User wants to unsubscribe but was not found in marketing audience. No action taken.",
+        email, isSubscribed,
+        source: "updateUserMarketingPreference (no-op)",
+      }, null, 2));
+      return { success: true };
+    }
+
+  } catch (error: any) {
+    console.error(JSON.stringify({
+      message: "Failed to update marketing preference due to an unexpected error.",
+      email, isSubscribed,
+      errorMessage: error.message,
+      errorName: error.name,
+      source: "updateUserMarketingPreference (catch block)",
+    }, null, 2));
+    return { success: false, error: error.message };
+  }
+}

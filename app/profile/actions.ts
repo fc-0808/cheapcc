@@ -4,10 +4,12 @@
 import { revalidatePath } from 'next/cache';
 // import { redirect } from 'next/navigation'; // Not used if returning objects
 import { createClient } from '@/utils/supabase/supabase-server';
-import { UpdateProfileSchema, UpdatePasswordSchema as ProfileUpdatePasswordSchema } from '@/lib/schemas';
+import { UpdateProfileSchema, UpdatePasswordSchema as ProfileUpdatePasswordSchema, UpdatePreferencesSchema } from '@/lib/schemas';
 import { headers } from 'next/headers';
 import { checkRateLimitByIp, limiters } from '@/utils/rate-limiter';
 import { ZodError } from 'zod';
+import { updateUserMarketingPreference } from '@/utils/send-email';
+
 
 function formatZodError(error: ZodError) {
   const firstError = error.errors[0];
@@ -185,3 +187,64 @@ export async function changeUserPasswordOnProfile(formData: FormData): Promise<{
     return { error: unexpectedErrorMessage };
   }
 } 
+
+export async function updatePreferences(formData: FormData): Promise<{ error?: string; success?: boolean; message?: string }> {
+  const actionName = "updatePreferences";
+  const headersList = await headers();
+  const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
+  let userIdForLog = "N/A_USER_AUTH_FAILED";
+
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.warn(JSON.stringify({
+        action: actionName, ip, event: "auth_failed",
+        error: userError?.message || "User not authenticated.",
+        source: "app/profile/actions.ts (updatePreferences)"
+    }, null, 2));
+    return { error: "User not authenticated. Please log in again." };
+  }
+  
+  userIdForLog = user.id;
+  const logContext = { action: actionName, ip, userId: userIdForLog, email: user.email, source: "app/profile/actions.ts (updatePreferences)" };
+
+  try {
+    const rawFormData = {
+      marketingConsent: formData.get('marketingConsent') === 'on',
+    };
+
+    const validationResult = UpdatePreferencesSchema.safeParse(rawFormData);
+
+    if (!validationResult.success) {
+      const errorMessage = "Invalid data provided.";
+      console.warn(JSON.stringify({ ...logContext, event: "validation_failed", error: validationResult.error.format() }, null, 2));
+      return { error: errorMessage };
+    }
+
+    const { marketingConsent } = validationResult.data;
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ is_subscribed_to_marketing: marketingConsent, updated_at: new Date().toISOString() })
+      .eq('id', user.id);
+
+    if (profileError) {
+      console.error(JSON.stringify({ ...logContext, event: "supabase_profiles_update_error", marketingConsent, dbError: profileError.message }, null, 2));
+      return { error: `Failed to update preferences: ${profileError.message}` };
+    }
+    
+    // Also update marketing service (Resend)
+    const userName = user.user_metadata?.name || user.email?.split('@')[0] || 'Customer';
+    await updateUserMarketingPreference(user.email!, userName, marketingConsent);
+
+    console.info(JSON.stringify({ ...logContext, event: "preferences_update_successful", newPreference: marketingConsent }, null, 2));
+    revalidatePath('/profile');
+    return { success: true, message: "Preferences updated successfully!" };
+
+  } catch (error: any) {
+    const unexpectedErrorMessage = "An unexpected error occurred while updating your preferences.";
+    console.error(JSON.stringify({ ...logContext, event: "update_preferences_action_exception", errorMessage: error.message }, null, 2));
+    return { error: unexpectedErrorMessage };
+  }
+}

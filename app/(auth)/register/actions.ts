@@ -112,7 +112,7 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
     try {
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([
+        .upsert([
           { 
             id: signUpData.user.id,
             name: name,

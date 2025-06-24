@@ -72,4 +72,10 @@ export type CreateOrderPayload = z.infer<typeof CreateOrderSchema>;
 export const CaptureOrderSchema = z.object({
   orderID: z.string().min(1, { message: "PayPal Order ID is required." }),
 });
-export type CaptureOrderPayload = z.infer<typeof CaptureOrderSchema>; 
+export type CaptureOrderPayload = z.infer<typeof CaptureOrderSchema>;
+
+// --- Profile Preferences Schema ---
+export const UpdatePreferencesSchema = z.object({
+    marketingConsent: z.boolean().default(false),
+});
+export type UpdatePreferencesFormData = z.infer<typeof UpdatePreferencesSchema>;
