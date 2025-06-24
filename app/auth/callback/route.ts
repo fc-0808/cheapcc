@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   console.log(`AuthCallback_ROUTE_PARAMS: Type=${type}, CodeParam=${codeFromQuery}, TokenParam=${tokenFromQuery}, IncomingHash=${incomingHash}, Error=${errorParam}, ErrorDesc=${errorDescriptionParam}`);
 
   if (type === 'recovery') {
-    const updatePasswordUrl = new URL('/auth/update-password', origin);
+    const updatePasswordUrl = new URL('/update-password', origin);
     
     const recoveryTokenForFragment = tokenFromQuery || codeFromQuery;
 
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(updatePasswordUrl.toString());
 
     } else if (incomingHash && incomingHash.includes('access_token=') && incomingHash.includes('type=recovery')) {
-      console.log(`AuthCallback_RECOVERY_FRAGMENT_ALREADY_PRESENT: Fragment is '${incomingHash}'. Redirecting to /auth/update-password (browser should preserve fragment).`);
+      console.log(`AuthCallback_RECOVERY_FRAGMENT_ALREADY_PRESENT: Fragment is '${incomingHash}'. Redirecting to /update-password (browser should preserve fragment).`);
       return NextResponse.redirect(updatePasswordUrl.toString());
     } else {
       console.error(`AuthCallback_RECOVERY_ERROR_MISSING_TOKEN: Type 'recovery' but no usable token/code in query params and no valid incoming fragment. URL: ${request.url}`);

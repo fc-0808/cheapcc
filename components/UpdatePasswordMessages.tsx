@@ -17,7 +17,7 @@ export default function UpdatePasswordMessages() {
       setMessageType('error');
       // Clean the URL
       if (typeof window !== "undefined") {
-        window.history.replaceState({}, document.title, '/auth/update-password');
+        window.history.replaceState({}, document.title, '/update-password');
       }
     } else if (success) {
        // This page might receive a 'success=password_reset' param from /login after a successful reset.
@@ -26,7 +26,7 @@ export default function UpdatePasswordMessages() {
        // setMessage('Operation successful!'); // Example
        // setMessageType('success'); // Example
        // if (typeof window !== "undefined") {
-       //   window.history.replaceState({}, document.title, '/auth/update-password');
+       //   window.history.replaceState({}, document.title, '/update-password');
        // }
     }
   }, [searchParams]);
@@ -43,4 +43,4 @@ export default function UpdatePasswordMessages() {
       {message}
     </div>
   );
-} 
+}

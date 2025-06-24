@@ -28,7 +28,7 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
     if (limited) {
       const errorMessage = `Too many password update attempts. Please try again ${retryAfter ? `in ${retryAfter} seconds` : 'later'}.`;
       console.warn(JSON.stringify({ ...logContext, event: "rate_limit_exceeded", retryAfter }, null, 2));
-      redirect(`/auth/update-password?error=${encodeURIComponent(errorMessage)}`);
+      redirect(`/update-password?error=${encodeURIComponent(errorMessage)}`);
     }
 
     const rawFormData = {
@@ -43,7 +43,7 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
       console.warn(JSON.stringify({
         ...logContext, event: "validation_failed", error: errorMessage,
       }, null, 2));
-      redirect(`/auth/update-password?error=${encodeURIComponent(errorMessage)}`);
+      redirect(`/update-password?error=${encodeURIComponent(errorMessage)}`);
     }
 
     const { newPassword } = validationResult.data;
@@ -59,7 +59,7 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
         supabaseError: updateError.message,
         supabaseStatus: updateError.status,
       }, null, 2));
-      redirect(`/auth/update-password?error=${encodeURIComponent(updateError.message)}`);
+      redirect(`/update-password?error=${encodeURIComponent(updateError.message)}`);
     }
 
     console.info(JSON.stringify({
@@ -83,6 +83,6 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
         errorMessage: error.message,
         errorStack: error.stack?.substring(0, 1000),
     }, null, 2));
-    redirect(`/auth/update-password?error=${encodeURIComponent(unexpectedErrorMessage)}`);
+    redirect(`/update-password?error=${encodeURIComponent(unexpectedErrorMessage)}`);
   }
 }

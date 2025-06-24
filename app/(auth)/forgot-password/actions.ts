@@ -64,7 +64,7 @@ export async function requestPasswordReset(formData: FormData): Promise<{ error?
     }
 
     const supabase = await createClient();
-    const redirectUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/update-password`; 
+    const redirectUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/update-password`; 
 
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: redirectUrl,

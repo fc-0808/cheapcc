@@ -324,7 +324,7 @@ export default function Header() {
                   <div className="border-t border-gray-100 my-1"></div>
                   <button 
                     onClick={handleLogout}
-                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     <span className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center">
                       <i className="fas fa-sign-out-alt text-pink-700"></i>
