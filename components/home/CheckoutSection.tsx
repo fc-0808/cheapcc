@@ -235,7 +235,7 @@ export default function CheckoutSection({
               <p className="flex justify-between text-gray-600">Your Savings <span className="font-medium text-[#10b981]">{Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}%</span></p>
             </div>
             <hr className="my-3 sm:my-4 border-gray-200"/>
-            <p className="flex justify-between text-base sm:text-lg font-bold text-[#2c2d5a]">Total <span className="text-[#ff3366]">${selectedPriceOption.price.toFixed(2)}</span></p>
+            <p className="flex justify-between text-base sm:text-lg font-bold text-[#2c2d5a]">Total <span className="text-[#ff3366]">${selectedPriceOption.price.toFixed(2)} <span className="text-xs">USD</span></span></p>
             <div className="trust-guarantee mt-3 sm:mt-4 text-xs text-gray-600 space-y-1">
               <div className="guarantee-badge"><i className="fas fa-check-circle text-[#10b981] mr-1" /> 100% Satisfaction Guarantee</div>
               <div className="guarantee-badge"><i className="fas fa-check-circle text-[#10b981] mr-1" /> 24/7 Customer Support</div>

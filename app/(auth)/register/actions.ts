@@ -9,7 +9,7 @@ import { SignupSchema } from '@/lib/schemas'
 import { headers } from 'next/headers'
 import { checkRateLimitByIp, limiters } from '@/utils/rate-limiter'
 import { ZodError } from 'zod'
-import { sendWelcomeEmail } from '@/utils/send-email'
+import { sendWelcomeEmail, addUserToMarketingAudience } from '@/utils/send-email'
 
 function formatZodError(error: ZodError) {
   const firstError = error.errors[0];
@@ -35,6 +35,9 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
       redirect(`/register?error=${encodeURIComponent(errorMessage)}`);
     }
 
+    // Get marketing opt-in value
+    const marketingOptIn = formData.get('marketingOptIn') === 'on';
+    
     const rawFormData = {
       name: formData.get('name'),
       email: formData.get('email'),
@@ -114,6 +117,7 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
             id: signUpData.user.id,
             name: name,
             email: email,
+            is_subscribed_to_marketing: marketingOptIn, // Store marketing preference
           }
         ]);
       
@@ -152,6 +156,26 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
         error: emailError instanceof Error ? emailError.message : String(emailError)
       }, null, 2));
       // Continue even if email sending fails - the user is still registered and authenticated
+    }
+    
+    // Add user to marketing audience if they opted in
+    if (marketingOptIn) {
+      try {
+        await addUserToMarketingAudience(email, name);
+        console.info(JSON.stringify({
+          ...logContext,
+          event: "user_added_to_marketing_audience",
+          userId: signUpData.user.id
+        }, null, 2));
+      } catch (marketingError) {
+        console.error(JSON.stringify({
+          ...logContext, 
+          event: "marketing_audience_addition_error",
+          userId: signUpData.user.id,
+          error: marketingError instanceof Error ? marketingError.message : String(marketingError)
+        }, null, 2));
+        // Continue even if marketing addition fails - the user registration flow should not be affected
+      }
     }
 
     revalidatePath('/', 'layout');

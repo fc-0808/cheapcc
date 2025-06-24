@@ -276,6 +276,20 @@ export default function RegisterPage() {
             )}
           </div>
 
+          <div className="flex items-center my-2">
+            <input
+              id="marketing-opt-in"
+              name="marketingOptIn"
+              type="checkbox"
+              defaultChecked
+              className="h-4 w-4 rounded border-gray-300 text-[#ff3366] focus:ring-[#ff3366] transition"
+              disabled={isSubmitting}
+            />
+            <label htmlFor="marketing-opt-in" className="ml-2 block text-sm text-gray-700">
+              Receive news and special offers from CheapCC.
+            </label>
+          </div>
+
           <div className="flex justify-center">
              <ReCAPTCHA
                 ref={recaptchaRef}

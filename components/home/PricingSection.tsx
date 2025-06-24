@@ -315,6 +315,9 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
               </div>
             </div>
           </div>
+          
+          {/* Add currency note */}
+          <div className="text-right mt-2 text-sm text-gray-500 italic">*All prices are listed in USD</div>
         </div>
       </section>
     </>

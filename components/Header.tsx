@@ -73,22 +73,18 @@ export default function Header() {
         } else {
           setUser(session?.user ?? null);
           
-          // Get user name from metadata or profile
+          // Always get user name from profile table
           if (session?.user) {
-            let name = session.user.user_metadata?.name || '';
+            // Get name from the profile table
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('name')
+              .eq('id', session.user.id)
+              .maybeSingle();
+              
+            let name = profileData?.name || '';
             
-            // If no name in metadata, try to get it from the profile
-            if (!name) {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('name')
-                .eq('id', session.user.id)
-                .maybeSingle();
-                
-              name = profileData?.name || '';
-            }
-            
-            // If still no name, use the first part of the email
+            // If no name in profile, use the first part of the email as fallback
             if (!name && session.user.email) {
               name = session.user.email.split('@')[0];
             }
@@ -119,20 +115,16 @@ export default function Header() {
       // Update user name when auth state changes
       if (session?.user) {
         const updateUserName = async () => {
-          let name = session.user.user_metadata?.name || '';
+            // Always get name from the profile table
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', session.user.id)
+            .maybeSingle();
+            
+          let name = profileData?.name || '';
           
-          // If no name in metadata, try to get it from the profile
-          if (!name) {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('name')
-              .eq('id', session.user.id)
-              .maybeSingle();
-              
-            name = profileData?.name || '';
-          }
-          
-          // If still no name, use the first part of the email
+          // If no name in profile, use the first part of the email as fallback
           if (!name && session.user.email) {
             name = session.user.email.split('@')[0];
           }

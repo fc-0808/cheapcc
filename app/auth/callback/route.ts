@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/supabase-server';
-import { sendWelcomeEmail } from '@/utils/send-email';
+import { sendWelcomeEmail, addUserToMarketingAudience } from '@/utils/send-email';
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -100,7 +100,12 @@ export async function GET(request: NextRequest) {
         if (!profile) {
           const { error: insertError } = await supabase
             .from('profiles')
-            .insert({ id: user.id, name: userName, email: userEmail });
+            .insert({ 
+              id: user.id, 
+              name: userName, 
+              email: userEmail,
+              is_subscribed_to_marketing: false // Default to false for OAuth users
+            });
 
           if (insertError) {
             console.error(`AuthCallback_PROFILE_CREATION_ERROR: Failed to create profile for new user ${user.id}: ${insertError.message}`);
@@ -117,7 +122,15 @@ export async function GET(request: NextRequest) {
           }
         }
         
-        successRedirectUrl.searchParams.set('welcome', 'new');
+        // Redirect new OAuth users to onboarding page to get marketing consent
+        const welcomeOnboardingUrl = new URL('/welcome-onboarding', origin);
+        welcomeOnboardingUrl.searchParams.set('name', userName);
+        welcomeOnboardingUrl.searchParams.set('email', userEmail || '');
+        console.log(`AuthCallback_OAUTH_NEW_USER: Redirecting to welcome onboarding page: ${welcomeOnboardingUrl.toString()}`);
+        return NextResponse.redirect(welcomeOnboardingUrl.toString());
+        
+        // Not using this since we're redirecting directly above
+        // successRedirectUrl.searchParams.set('welcome', 'new');
       } else {
         console.log(`AuthCallback_EXISTING_USER_DETECTED: Timestamps indicate existing user. Created: ${user.created_at}, Last Sign In: ${user.last_sign_in_at}`);
       }

@@ -4,6 +4,7 @@ import { WelcomeEmailTemplate } from '@/components/WelcomeEmailTemplate';
 import React from 'react';
 
 const resendApiKey = process.env.RESEND_API_KEY;
+const resendAudienceId = process.env.RESEND_AUDIENCE_ID;
 
 if (!resendApiKey) {
   console.error(JSON.stringify({
@@ -121,3 +122,61 @@ export async function sendWelcomeEmail(to: string, name: string) {
     return { data: null, error: { name: error.name || "UnhandledException", message: error.message } };
   }
 } 
+export async function addUserToMarketingAudience(email: string, name: string) {
+  if (!resendApiKey || !resendAudienceId) {
+    console.warn(JSON.stringify({
+      message: "Cannot add user to marketing audience: Resend API Key or Audience ID not configured.",
+      email,
+      source: "addUserToMarketingAudience"
+    }, null, 2));
+    return { success: false, error: "Missing API key or audience ID" };
+  }
+
+  try {
+    // Split the name into first name and last name
+    const nameParts = name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    const result = await resend.contacts.create({
+      email,
+      firstName,
+      lastName,
+      unsubscribed: false,
+      audienceId: resendAudienceId,
+    });
+
+    if (result.error) {
+      console.error(JSON.stringify({
+        message: "Resend API returned an error adding contact to audience.",
+        email,
+        name,
+        resendErrorName: result.error.name,
+        resendErrorMessage: result.error.message,
+        source: "addUserToMarketingAudience",
+      }, null, 2));
+      return { success: false, error: result.error.message };
+    }
+
+    console.info(JSON.stringify({
+      message: "Successfully added contact to marketing audience.",
+      email,
+      name,
+      contact_id: result.data?.id,
+      source: "addUserToMarketingAudience",
+    }, null, 2));
+    return { success: true };
+
+  } catch (error: any) {
+    console.error(JSON.stringify({
+      message: "Failed to add contact to marketing audience due to an unexpected error.",
+      email,
+      name,
+      errorMessage: error.message,
+      errorStack: error.stack,
+      errorName: error.name,
+      source: "addUserToMarketingAudience (catch block)",
+    }, null, 2));
+    return { success: false, error: error.message };
+  }
+}
