@@ -11,21 +11,10 @@ import {
   calculateExpiryDate, 
 } from '@/utils/products';
 
-interface SearchParams {
-  [key: string]: string | string[] | undefined;
-}
-
-// This is the content for the app/dashboard route
-export default async function DashboardPageContent({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
+export default async function DashboardPageContent() {
   const supabase = await createClient();
-  // We don't need to get the user again, layout does that. We just need the data.
   const { data: { user } } = await supabase.auth.getUser();
   const userEmail = user?.email || '';
-  const userName = user?.user_metadata?.name || '';
   
   const { data } = await supabase
     .from('orders')
@@ -40,118 +29,132 @@ export default async function DashboardPageContent({
   const totalSavings = orders.reduce((sum: number, order) => sum + calculateSavings(order), 0);
   const recentOrders = orders.slice(0, 5);
 
+  // Helper function to get expiry date (prioritize stored expiry_date over calculated)
+  const getExpiryDate = (order: any): Date | null => {
+    if (order.expiry_date) {
+      return new Date(order.expiry_date);
+    }
+    return calculateExpiryDate(order);
+  };
+
+  // Helper function to calculate days left
+  const calculateDaysLeft = (expiryDate: Date | null): number => {
+    if (!expiryDate) return 0;
+    const today = new Date();
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  // Helper function to get days left indicator class and icon
+  const getDaysLeftIndicator = (daysLeft: number) => {
+    if (daysLeft <= 0) return { class: 'critical', icon: 'fa-exclamation-circle' };
+    if (daysLeft <= 7) return { class: 'critical', icon: 'fa-exclamation-circle' };
+    if (daysLeft <= 14) return { class: 'warning', icon: 'fa-exclamation-triangle' };
+    return { class: 'good', icon: 'fa-check-circle' };
+  };
+
+  const stats = [
+    { title: 'Active Subscriptions', value: activeOrders.length, icon: 'fa-check-circle' },
+    { title: 'Total Orders', value: totalOrders, icon: 'fa-shopping-cart' },
+    { title: 'Total Spent', value: formatCurrency(totalSpent), icon: 'fa-credit-card' },
+    { title: 'Total Saved', value: formatCurrency(totalSavings), icon: 'fa-piggy-bank' },
+  ];
+
   return (
-    <>
+    <div className="space-y-6">
       {/* Stats Cards */}
       <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Active Subscriptions</h3>
-          <div className="stat-value">{activeOrders.length}</div>
-          <div className="stat-icon"><i className="fas fa-check-circle"></i></div>
-        </div>
-        <div className="stat-card">
-          <h3>Total Orders</h3>
-          <div className="stat-value">{totalOrders}</div>
-          <div className="stat-icon"><i className="fas fa-shopping-cart"></i></div>
-        </div>
-        <div className="stat-card">
-          <h3>Total Spent</h3>
-          <div className="stat-value">{formatCurrency(totalSpent)}</div>
-          <div className="stat-icon"><i className="fas fa-credit-card"></i></div>
-        </div>
-        <div className="stat-card">
-          <h3>Total Saved</h3>
-          <div className="stat-value">{formatCurrency(totalSavings)}</div>
-          <div className="stat-icon"><i className="fas fa-piggy-bank"></i></div>
-        </div>
+        {stats.map(stat => (
+          <div className="stat-card" key={stat.title}>
+            <h3>{stat.title}</h3>
+            <div className="stat-icon">
+              <i className={`fas ${stat.icon}`}></i>
+            </div>
+            <div className="stat-value">
+              {stat.value}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Active Subscriptions */}
       <div className="content-card">
-        <h2>
-          Active Subscriptions
+        <div className="content-card-header">
+          <h2>Active Subscriptions</h2>
           <span className="badge">{activeOrders.length}</span>
-        </h2>
+        </div>
         {activeOrders.length > 0 ? (
-          activeOrders.map((order: any, index: number) => {
-            // Calculate expiry date if not present
-            const expiryDate = calculateExpiryDate(order);
-            
-            return (
-            <div className="credential-card" key={order.id}>
-              <h3>{order.description || 'Adobe CC Plan'}</h3>
-              <ul className="credential-details">
-                <li>
-                  <span className="detail-label">Order Number</span>
-                  <span className="detail-value">{order.paypal_order_id || order.id}</span>
-                </li>
-                <li>
-                  <span className="detail-label">Status</span>
-                  <span className="detail-value">
+          <div className="space-y-4">
+            {activeOrders.map((order: any) => {
+              const expiryDate = getExpiryDate(order);
+              const daysLeft = calculateDaysLeft(expiryDate);
+              const indicator = getDaysLeftIndicator(daysLeft);
+              return (
+                <div className="credential-card" key={order.id}>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3>{order.description || 'Adobe CC Plan'}</h3>
                     <span className="status-badge active">Active</span>
-                  </span>
-                </li>
-                <li>
-                  <span className="detail-label">Purchase Date</span>
-                  <span className="detail-value">{order.created_at ? new Date(order.created_at).toLocaleDateString() : '-'}</span>
-                </li>
-                <li>
-                  <span className="detail-label">Expires</span>
-                    <span className="detail-value">{expiryDate ? new Date(expiryDate).toLocaleDateString() : '-'}</span>
-                </li>
-              </ul>
-            </div>
-            );
-          })
+                  </div>
+                  <ul className="credential-details">
+                    <li><span className="detail-label">Order ID:</span> <span className="detail-value">{order.paypal_order_id || order.id}</span></li>
+                    <li><span className="detail-label">Purchased:</span> <span className="detail-value">{order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}</span></li>
+                    <li><span className="detail-label">Expires:</span> <span className="detail-value">{expiryDate ? new Date(expiryDate).toLocaleDateString() : 'N/A'}</span></li>
+                    <li>
+                      <span className="detail-label">Days Left:</span> 
+                      <span className="detail-value">
+                        {daysLeft > 0 ? (
+                          <span className={`days-left-indicator ${indicator.class}`}>
+                            <i className={`fas ${indicator.icon}`}></i>
+                            {daysLeft} {daysLeft === 1 ? 'day' : 'days'}
+                          </span>
+                        ) : (
+                          <span className="days-left-indicator critical">
+                            <i className="fas fa-exclamation-circle"></i>
+                            Expired
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
         ) : (
           <div className="empty-state">
             <i className="fas fa-box-open"></i>
-            <p>You don't have any active subscriptions.</p>
-            {recentOrders.length > 0 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-500">
-                  Have you recently made a purchase? You may need to refresh your dashboard data.
-                </p>
-              </div>
-            )}
-            <Link href="/#pricing" prefetch={false} className="btn btn-accent mt-3">View Available Plans</Link>
+            <h3>No active subscriptions</h3>
+            <p>Your active plans will appear here.</p>
+            <Link href="/#pricing" prefetch={false} className="btn btn-accent btn-sm">View Plans</Link>
           </div>
         )}
       </div>
 
       {/* Recent Orders */}
       <div className="content-card">
-        <h2>
-          Recent Orders
+        <div className="content-card-header">
+          <h2>Recent Order History</h2>
           <Link href="/dashboard/orders" prefetch={false} className="btn btn-sm btn-outline">View All</Link>
-        </h2>
+        </div>
         {recentOrders.length > 0 ? (
-          <div className="table-responsive">
+          <div className="data-table-wrapper">
             <table className="data-table">
               <thead>
-                <tr>
-                  <th>Order #</th>
-                  <th>Date</th>
-                  <th>Plan</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                </tr>
+                <tr><th>Order #</th><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th></tr>
               </thead>
               <tbody>
                 {recentOrders.map((order: any) => {
-                  // Determine if order is active
                   const isActive = isActiveSubscription(order);
+                  const statusText = isActive ? 'Active' : (order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase() : 'Expired');
+                  const statusClass = isActive ? 'active' : order.status?.toLowerCase() === 'completed' ? 'completed' : order.status?.toLowerCase() === 'pending' ? 'pending' : 'cancelled';
                   return (
                   <tr key={order.id}>
-                    <td>{order.paypal_order_id || order.id}</td>
-                    <td>{order.created_at ? new Date(order.created_at).toLocaleDateString() : '-'}</td>
-                    <td>{getPlanDuration(order)}</td>
-                    <td>{formatCurrency(parseFloat(order.amount) || 0)}</td>
-                    <td>
-                      <span className={`status-badge ${isActive ? 'active' : order.status?.toLowerCase()}`}>
-                        {isActive ? 'Active' : order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase() : '-'}
-                      </span>
-                    </td>
+                    <td className="font-mono text-xs">{order.paypal_order_id || order.id}</td>
+                    <td>{order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}</td>
+                    <td className="font-medium">{getPlanDuration(order)}</td>
+                    <td className="font-medium">{formatCurrency(parseFloat(order.amount) || 0)}</td>
+                    <td><span className={`status-badge ${statusClass}`}>{statusText}</span></td>
                   </tr>
                   );
                 })}
@@ -161,27 +164,12 @@ export default async function DashboardPageContent({
         ) : (
           <div className="empty-state">
             <i className="fas fa-shopping-cart"></i>
-            <p>You haven't placed any orders yet.</p>
-            <Link href="/#pricing" prefetch={false} className="btn btn-accent">Browse Plans</Link>
+            <h3>You haven't placed any orders yet.</h3>
+            <p>Start by browsing our affordable plans.</p>
+            <Link href="/#pricing" prefetch={false} className="btn btn-accent btn-sm">Browse Plans</Link>
           </div>
         )}
       </div>
-
-      {/* Account Help */}
-      <div className="content-card">
-        <h2>Need Help?</h2>
-        <div className="alert alert-info">
-          <i className="fas fa-info-circle"></i>
-          <div>
-            <strong>Having trouble with your account?</strong>
-            <p className="hidden md:block">Our support team is here to help. You can reach out via our support page or contact us directly at <a href="mailto:support@cheapcc.online">support@cheapcc.online</a></p>
-            <p className="block md:hidden">Contact us directly at <a href="mailto:support@cheapcc.online">support@cheapcc.online</a></p>
-          </div>
-        </div>
-        <div className="text-center mt-4">
-          <Link href="mailto:support@cheapcc.online" prefetch={false} className="btn btn-outline">Contact Support</Link>
-        </div>
-      </div>
-    </>
+    </div>
   );
-} 
+}

@@ -162,9 +162,11 @@ export function calculateExpiryDate(order: OrderLike): Date | null {
 export function isActiveSubscription(order: OrderLike): boolean {
   const status = order.status?.toUpperCase();
   if (status === 'ACTIVE' || status === 'COMPLETED') {
+    // First check if there's a stored expiry_date in the database
     if (order.expiry_date) {
       return new Date(order.expiry_date) > new Date();
     }
+    // Fall back to calculated expiry date if no stored date
     const calculatedExpiry = calculateExpiryDate(order);
     if (calculatedExpiry) {
       return calculatedExpiry > new Date();
