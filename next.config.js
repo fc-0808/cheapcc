@@ -9,6 +9,8 @@ const nextConfig = {
 		NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
 		NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
 		NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+		// Stripe Public Key
+		NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 	},
 	images: {
 		remotePatterns: [

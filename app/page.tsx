@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-client';
 import type { Session } from '@supabase/supabase-js';
 import UrlMessageDisplay from "@/components/UrlMessageDisplay";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
+import { v4 as uuidv4 } from 'uuid';
+import { PRICING_OPTIONS } from '@/utils/products';
 
 // Import section components
 import HeroSection from "@/components/home/HeroSection";
@@ -16,6 +20,9 @@ import CheckoutSection from "@/components/home/CheckoutSection";
 import HomeFAQSection from "@/components/home/HomeFAQSection";
 import LoginPopup from "@/components/home/LoginPopup";
 
+// Load Stripe
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
 export default function Home() {
   const router = useRouter();
   const [selectedPrice, setSelectedPrice] = useState<string>('14d');
@@ -25,6 +32,7 @@ export default function Home() {
   const [email, setEmail] = useState<string>('');
   const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
   const [canPay, setCanPay] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [hasPopupBeenShown, setHasPopupBeenShown] = useState(false);
@@ -48,6 +56,44 @@ export default function Home() {
   useEffect(() => { selectedPriceRef.current = selectedPrice; }, [selectedPrice]);
 
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
+  const isFormValid = name.trim() !== '' && isValidEmail(email);
+  
+  // Initialize Stripe payment intent when form is valid
+  useEffect(() => {
+    if (!isFormValid) {
+      setClientSecret(null);
+      return;
+    }
+
+    const fetchPaymentIntent = async () => {
+      setPaymentStatus('loading');
+      try {
+        const idempotencyKey = uuidv4();
+        const response = await fetch('/api/stripe/payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            priceId: selectedPrice,
+            name,
+            email,
+            idempotencyKey,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to initialize payment.');
+        }
+        setClientSecret(data.clientSecret);
+        setPaymentStatus('idle');
+      } catch (error: any) {
+        console.error('Error creating payment intent:', error);
+        setCheckoutFormError(error.message);
+        setPaymentStatus('error');
+      }
+    };
+    
+    fetchPaymentIntent();
+  }, [selectedPrice, name, email, isFormValid]);
   
   // Memoize renderPayPalButton with useCallback
   const renderPayPalButton = useCallback(() => {
@@ -148,7 +194,7 @@ export default function Home() {
               
               console.log('Order captured successfully:', data.orderID);
               setPaymentStatus('success');
-              router.push(`/success/${data.orderID}`);
+              router.push(`/success?paypal_order_id=${data.orderID}`);
             } catch (error: any) {
               console.error('PayPal payment capture error:', error);
               setCheckoutFormError(error.message || 'An error occurred while capturing the payment.');
@@ -294,6 +340,29 @@ export default function Home() {
     }
   };
 
+  const selectedPriceOption = PRICING_OPTIONS.find(p => p.id === selectedPrice) || PRICING_OPTIONS[0];
+  const amountInCents = Math.round(selectedPriceOption.price * 100);
+
+  const stripeOptions: StripeElementsOptions = clientSecret
+    ? {
+        // For when payment intent is created
+        clientSecret,
+        appearance: {
+          theme: 'stripe',
+          variables: { colorPrimary: '#ff3366' },
+        },
+      }
+    : {
+        // For initial render before payment intent exists
+        mode: 'payment',
+        amount: amountInCents,
+        currency: 'usd',
+        appearance: {
+          theme: 'stripe',
+          variables: { colorPrimary: '#ff3366' },
+        },
+      };
+
   return (
     <main className="bg-white">
       <LoginPopup 
@@ -321,24 +390,30 @@ export default function Home() {
       <HowItWorksSection />
 
       <div ref={checkoutRef}>
-        <CheckoutSection
-            selectedPrice={selectedPrice}
-            isUserSignedIn={isUserSignedIn}
-            name={name}
-            setName={setName}
-            email={email}
-            setEmail={setEmail}
-            canPay={canPay}
-            paymentStatus={paymentStatus}
-            setPaymentStatus={setPaymentStatus}
-            checkoutFormError={checkoutFormError}
-            setCheckoutFormError={setCheckoutFormError}
-            paypalButtonContainerRef={paypalButtonContainerRef}
-            sdkReady={sdkReady}
-            onPayPalLoad={handlePayPalLoad}
-            onPayPalError={handlePayPalError}
-            renderPayPalButton={renderPayPalButton}
-        />
+        <Elements
+          stripe={stripePromise}
+          options={stripeOptions}
+        >
+          <CheckoutSection
+              selectedPrice={selectedPrice}
+              isUserSignedIn={isUserSignedIn}
+              name={name}
+              setName={setName}
+              email={email}
+              setEmail={setEmail}
+              canPay={canPay}
+              paymentStatus={paymentStatus}
+              setPaymentStatus={setPaymentStatus}
+              checkoutFormError={checkoutFormError}
+              setCheckoutFormError={setCheckoutFormError}
+              paypalButtonContainerRef={paypalButtonContainerRef}
+              sdkReady={sdkReady}
+              onPayPalLoad={handlePayPalLoad}
+              onPayPalError={handlePayPalError}
+              renderPayPalButton={renderPayPalButton}
+              clientSecret={clientSecret}
+          />
+        </Elements>
       </div>
       
       <HomeFAQSection />

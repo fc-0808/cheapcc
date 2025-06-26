@@ -1,7 +1,21 @@
+// components/home/CheckoutSection.tsx
+
 "use client";
+
 import React, { useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
 import { PRICING_OPTIONS } from '@/utils/products';
+import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
+
+interface TimeInfo {
+  currentTime: Date;
+  expiryTime: Date | null;
+  timezone: string | null;
+  locationName: string | null;
+  isLoading: boolean;
+}
 
 interface CheckoutSectionProps {
   selectedPrice: string;
@@ -10,16 +24,17 @@ interface CheckoutSectionProps {
   setName: (name: string) => void;
   email: string;
   setEmail: (email: string) => void;
-  canPay: boolean;
+  canPay?: boolean;
   paymentStatus: 'idle' | 'loading' | 'success' | 'error' | 'cancel';
   setPaymentStatus: (status: 'idle' | 'loading' | 'success' | 'error' | 'cancel') => void;
   checkoutFormError: string | null;
   setCheckoutFormError: (error: string | null) => void;
   paypalButtonContainerRef: React.RefObject<HTMLDivElement | null>;
-  sdkReady: boolean;
-  onPayPalLoad: () => void;
-  onPayPalError: () => void;
+  sdkReady?: boolean;
+  onPayPalLoad?: () => void;
+  onPayPalError?: () => void;
   renderPayPalButton: () => void;
+  clientSecret: string | null;
 }
 
 const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
@@ -40,210 +55,484 @@ export default function CheckoutSection({
   sdkReady,
   onPayPalLoad,
   onPayPalError,
-  renderPayPalButton
+  renderPayPalButton,
+  clientSecret,
 }: CheckoutSectionProps) {
-  const sectionRef = useRef<HTMLDivElement>(null); // Ref for Intersection Observer for this section
+  const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [showRequiredFieldsMessage, setShowRequiredFieldsMessage] = useState(true);
+  const [activeTab, setActiveTab] = useState<'stripe' | 'paypal'>('stripe');
+  const [timeInfo, setTimeInfo] = useState<TimeInfo>({
+    currentTime: new Date(),
+    expiryTime: null,
+    timezone: 'UTC',
+    locationName: null,
+    isLoading: true
+  });
+  
+  const stripe = useStripe();
+  const elements = useElements();
+
+  const isFormValid = name.trim() !== '' && isValidEmail(email);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          observer.unobserve(entry.target); // Unobserve after becoming visible
+          observer.unobserve(entry.target);
         }
       },
       { threshold: 0.1 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+    if (sectionRef.current) observer.observe(sectionRef.current);
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
+      if (sectionRef.current) observer.unobserve(sectionRef.current);
     };
   }, []);
-  
-  // Effect to show/hide the form error message based on name and email validation
-  useEffect(() => {
-    if (!isUserSignedIn) {
-      const nameValid = name.trim() !== '';
-      const emailValid = isValidEmail(email);
-      
-      if (nameValid && emailValid) {
-        // Clear the form error when both fields are valid
-        setCheckoutFormError(null);
-        setShowRequiredFieldsMessage(false);
-      } else {
-        // Show the warning message when either field is invalid
-        setShowRequiredFieldsMessage(true);
-      }
-    } else {
-      // If user is signed in, we don't need to show the warning
-      setShowRequiredFieldsMessage(false);
-    }
-  }, [name, email, isUserSignedIn, setCheckoutFormError]);
-  
-  // Control PayPal button visibility and rendering
+
   useEffect(() => {
     const container = paypalButtonContainerRef.current;
-    if (container) {
+    if (container && activeTab === 'paypal') {
       if (sdkReady && canPay && isVisible) {
         renderPayPalButton();
-        container.style.display = 'block'; // Ensure container is visible
+        container.style.display = 'block';
       } else {
-        container.innerHTML = ''; // Clear buttons if conditions not met
-        container.style.display = 'none'; // Hide container
+        container.innerHTML = '';
+        container.style.display = 'none';
       }
+    } else if (container) {
+        container.style.display = 'none';
     }
-  }, [sdkReady, canPay, isVisible, renderPayPalButton, paypalButtonContainerRef]);
+  }, [sdkReady, canPay, isVisible, renderPayPalButton, paypalButtonContainerRef, activeTab]);
+  
+  const handleStripeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice && option.id !== 'test-live') || 
-    PRICING_OPTIONS.find(option => option.id !== 'test-live') || 
-    PRICING_OPTIONS[0];
+    if (!name || !email) {
+      setCheckoutFormError('Please fill out all required fields.');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setCheckoutFormError('Please enter a valid email address.');
+      return;
+    }
+
+    setCheckoutFormError(null);
+    setPaymentStatus('loading');
+
+    if (!stripe || !elements) {
+      setCheckoutFormError("Stripe is not ready yet. Please try again in a moment.");
+      setPaymentStatus('error');
+      return;
+    }
+    
+    if (!clientSecret) {
+      setCheckoutFormError("Payment session not initialized. Please refresh the page and try again.");
+      setPaymentStatus('error');
+      return;
+    }
+    
+    try {
+      const { error: submitError } = await elements.submit();
+      
+      if (submitError) {
+        setCheckoutFormError(submitError.message || "An error occurred while validating your payment information.");
+        setPaymentStatus('error');
+        return;
+      }
+
+      const result = await stripe.confirmPayment({
+        elements,
+        clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/success`,
+          receipt_email: email,
+          payment_method_data: {
+            billing_details: {
+              name: name,
+              email: email,
+            }
+          }
+        },
+        redirect: 'if_required'
+      });
+
+      if (result.error) {
+        const errorMessage = result.error.message || "Your payment could not be processed.";
+        console.error("Payment error:", result.error.type, result.error.message);
+        
+        if (result.error.type === "card_error" || result.error.type === "validation_error") {
+          setCheckoutFormError(errorMessage);
+        } else {
+          setCheckoutFormError("An unexpected error occurred. Please try again or use a different payment method.");
+        }
+        
+        setPaymentStatus('error');
+      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        // Payment succeeded - redirect to success page
+        setPaymentStatus('success');
+        window.location.href = `${window.location.origin}/success?payment_intent=${result.paymentIntent.id}`;
+      } else if (result.paymentIntent && result.paymentIntent.status === 'processing') {
+        // Payment is processing - redirect to success page with processing info
+        setPaymentStatus('success');
+        window.location.href = `${window.location.origin}/success?payment_intent=${result.paymentIntent.id}&status=processing`;
+      } else if (result.paymentIntent) {
+        // For any other payment intent status, redirect to success page and let it handle the state
+        window.location.href = `${window.location.origin}/success?payment_intent=${result.paymentIntent.id}`;
+      }
+    } catch (error: any) {
+      console.error("Exception during payment confirmation:", error);
+      setCheckoutFormError("A system error occurred. Please try again later.");
+      setPaymentStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    const getLocationAndTime = async () => {
+      try {
+        if ('geolocation' in navigator) {
+          setTimeInfo(prev => ({ ...prev, isLoading: true }));
+          navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+            
+            try {
+              const tzResponse = await fetch(
+                `/api/timezone?lat=${latitude}&lng=${longitude}`
+              );
+              
+              if (!tzResponse.ok) {
+                throw new Error(`API responded with status: ${tzResponse.status}`);
+              }
+              
+              const tzData = await tzResponse.json();
+              
+              if (tzData.status === 'OK') {
+                const now = new Date();
+                const timezone = tzData.zoneName;
+                const locationName = tzData.cityName || tzData.countryName || null;
+                
+                const currentPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[0];
+                let expiryDate = new Date();
+                
+                if (currentPriceOption.duration.includes('month')) {
+                  const months = parseInt(currentPriceOption.duration.split(' ')[0]);
+                  expiryDate.setMonth(expiryDate.getMonth() + months);
+                } else if (currentPriceOption.duration.includes('year')) {
+                  const years = parseInt(currentPriceOption.duration.split(' ')[0]);
+                  expiryDate.setFullYear(expiryDate.getFullYear() + years);
+                } else if (currentPriceOption.duration.includes('day')) {
+                  const days = parseInt(currentPriceOption.duration.split(' ')[0]);
+                  expiryDate.setDate(expiryDate.getDate() + days);
+                }
+                
+                setTimeInfo({
+                  currentTime: new Date(),
+                  expiryTime: expiryDate,
+                  timezone,
+                  locationName,
+                  isLoading: false
+                });
+              } else {
+                console.error('Timezone API returned an error:', tzData.error || 'Unknown error');
+                handleFallbackTime();
+              }
+            } catch (error) {
+              console.error('Error fetching timezone:', error instanceof Error ? error.message : 'Unknown error');
+              handleFallbackTime();
+            }
+          }, (error) => {
+            console.error('Geolocation error:', error.message);
+            handleFallbackTime();
+          });
+        } else {
+          handleFallbackTime();
+        }
+      } catch (error) {
+        console.error('Location detection error:', error instanceof Error ? error.message : 'Unknown error');
+        handleFallbackTime();
+      }
+    };
+    
+    const handleFallbackTime = () => {
+      const now = new Date();
+      const currentPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[0];
+      let expiryDate = new Date();
+      
+      if (currentPriceOption.duration.includes('month')) {
+        const months = parseInt(currentPriceOption.duration.split(' ')[0]);
+        expiryDate.setMonth(expiryDate.getMonth() + months);
+      } else if (currentPriceOption.duration.includes('year')) {
+        const years = parseInt(currentPriceOption.duration.split(' ')[0]);
+        expiryDate.setFullYear(expiryDate.getFullYear() + years);
+      } else if (currentPriceOption.duration.includes('day')) {
+        const days = parseInt(currentPriceOption.duration.split(' ')[0]);
+        expiryDate.setDate(expiryDate.getDate() + days);
+      }
+      
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      let locationName = null;
+      try {
+        const city = timezone.split('/').pop()?.replace(/_/g, ' ');
+        locationName = city || null;
+      } catch (e) {
+        console.warn("Could not parse location from timezone");
+      }
+      
+      setTimeInfo({
+        currentTime: now,
+        expiryTime: expiryDate,
+        timezone,
+        locationName,
+        isLoading: false
+      });
+      
+      console.info(`Using fallback time with timezone: ${timezone}`);
+    };
+    
+    getLocationAndTime();
+    
+    const timer = setInterval(() => {
+      setTimeInfo(prev => ({
+        ...prev,
+        currentTime: new Date()
+      }));
+    }, 60000);
+    
+    return () => clearInterval(timer);
+  }, [selectedPrice]);
+
+  const formatDateTime = (date: Date | null) => {
+    if (!date) return 'N/A';
+    return timeInfo.timezone ? 
+      formatInTimeZone(date, timeInfo.timezone, 'MMM d, Ubisoft \'at\' h:mm a') :
+      format(date, 'MMM d, Ubisoft \'at\' h:mm a');
+  };
+
+  const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[1];
 
   return (
-    <section className="checkout py-10 sm:py-16 md:py-20 bg-[#f3f4f6]" id="checkout">
+    <section className="checkout py-16 md:py-24 bg-[#f8f9fa]" id="checkout">
       <div className="container px-4 sm:px-6 lg:px-8" ref={sectionRef}>
-        <div className={`section-heading text-center mb-8 sm:mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2c2d5a] mb-2">Complete Your Order</h2>
-          <p className="text-base sm:text-lg text-gray-500">You're just moments away from accessing Adobe Creative Cloud</p>
+        <div className={`section-heading text-center mb-10 sm:mb-14 stagger-item ${isVisible ? 'visible' : ''}`}>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#2c2d5a] mb-3 relative inline-block">
+            Complete Your Order
+          </h2>
+          <p className="mt-4 text-base sm:text-lg text-gray-500 max-w-2xl mx-auto">You're just moments away from accessing Adobe Creative Cloud</p>
         </div>
-        <div className={`checkout-container flex flex-col md:flex-row flex-wrap gap-6 md:gap-8 justify-center items-center md:items-start stagger-item ${isVisible ? 'visible' : ''}`}>
-          <div className="checkout-form w-full max-w-md">
-            <form id="checkout-form" onSubmit={e => e.preventDefault()} className="space-y-6">
-              <div className="form-group">
-                <label htmlFor="email-checkout" className="block text-sm font-medium text-gray-700 mb-1">Email Address {isUserSignedIn && <span className="text-[#10b981] text-xs">(Autofilled)</span>}</label>
-                <input
-                  type="email"
-                  id="email-checkout"
-                  name="email"
-                  required
-                  placeholder="Where we'll send your account details"
-                  value={email}
-                  onChange={e => {
-                    if (!isUserSignedIn) setEmail(e.target.value);
-                  }}
-                  autoComplete="email"
-                  disabled={isUserSignedIn}
-                  className={`${isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""}  w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]`}
-                />
+        <div className={`checkout-container flex flex-col md:flex-row flex-wrap gap-8 justify-center items-start stagger-item ${isVisible ? 'visible' : ''}`}>
+          <div className="checkout-form w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200/80">
+            <div className="space-y-5">
+                <div>
+                  <label htmlFor="email-checkout" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Email Address {isUserSignedIn && <span className="text-emerald-500 text-xs ml-1">(Autofilled)</span>}
+                  </label>
+                  <div className="relative">
+                    <i className="far fa-envelope text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
+                    <input 
+                      type="email" 
+                      id="email-checkout" 
+                      name="email" 
+                      required 
+                      placeholder="Where we'll send your account details" 
+                      value={email} 
+                      onChange={e => { if (!isUserSignedIn) setEmail(e.target.value); }} 
+                      autoComplete="email" 
+                      disabled={isUserSignedIn} 
+                      className={`${isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : "bg-gray-50"} w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-gray-800 shadow-sm placeholder:text-gray-400`}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="name-checkout" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Name {isUserSignedIn && <span className="text-emerald-500 text-xs ml-1">(Autofilled)</span>}
+                  </label>
+                  <div className="relative">
+                    <i className="far fa-user text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
+                    <input 
+                      type="text" 
+                      id="name-checkout" 
+                      name="name" 
+                      required 
+                      placeholder="Your name" 
+                      value={name} 
+                      onChange={e => { if (!isUserSignedIn) setName(e.target.value); }} 
+                      autoComplete="name" 
+                      disabled={isUserSignedIn} 
+                      className={`${isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : "bg-gray-50"} w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-gray-800 shadow-sm placeholder:text-gray-400`}
+                    />
+                  </div>
+                </div>
+            </div>
+            
+            {!isFormValid && (
+              <div className="mt-5 p-3 bg-red-50 rounded-lg border border-red-200 text-xs text-red-600 flex items-center gap-2">
+                <i className="fas fa-exclamation-circle text-red-500"></i>
+                Please enter a name and valid email to continue.
               </div>
-              <div className="form-group">
-                <label htmlFor="name-checkout" className="block text-sm font-medium text-gray-700 mb-1">Name {isUserSignedIn && <span className="text-[#10b981] text-xs">(Autofilled)</span>}</label>
-                <input
-                  type="text"
-                  id="name-checkout"
-                  name="name"
-                  required
-                  placeholder="Your name"
-                  value={name}
-                  onChange={e => {
-                    if (!isUserSignedIn) setName(e.target.value);
-                  }}
-                  autoComplete="name"
-                  disabled={isUserSignedIn}
-                  className={`${isUserSignedIn ? "bg-gray-100 cursor-not-allowed" : ""} w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a]`}
-                />
-              </div>
-              
-              {/* Required fields message - Moved here to display right after the input fields */}
-              {showRequiredFieldsMessage && !isUserSignedIn && (
-                <div className="mt-2 p-4 bg-red-50 rounded-lg border border-red-100">
-                  <div className="flex items-center">
-                    <i className="fas fa-exclamation-circle text-red-400 mr-3"></i>
-                    <div className="text-xs text-red-600">
-                      Please enter a name and a valid email address to continue.
-                    </div>
+            )}
+
+            <div className="flex border-b border-gray-200 my-6">
+              <button 
+                onClick={() => setActiveTab('stripe')} 
+                className={`flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                  activeTab === 'stripe' 
+                    ? 'border-b-2 border-[#ff3366] text-[#ff3366]' 
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <i className="fas fa-credit-card"></i>Card / Google Pay
+              </button>
+              <button 
+                onClick={() => setActiveTab('paypal')} 
+                className={`flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                  activeTab === 'paypal' 
+                    ? 'border-b-2 border-[#ff3366] text-[#ff3366]' 
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <i className="fab fa-paypal"></i>PayPal
+              </button>
+            </div>
+            
+            <div style={{ display: activeTab === 'stripe' ? 'block' : 'none' }}>
+              <form id="stripe-payment-form" onSubmit={handleStripeSubmit} className="space-y-5">
+                {!clientSecret && isFormValid ? (
+                  <div className="p-5 border border-gray-200 rounded-lg bg-gray-50 text-gray-600 text-sm flex flex-col items-center justify-center">
+                    <div className="h-6 w-6 border-2 border-pink-200 border-t-[#ff3366] rounded-full animate-spin mb-3"></div>
+                    <p>Preparing secure payment...</p>
+                  </div>
+                ) : (
+                  <div style={{ opacity: isFormValid ? 1 : 0.5 }} className="transition-opacity duration-300">
+                    <PaymentElement 
+                      id="payment-element" 
+                      options={{ 
+                        layout: { type: 'tabs', defaultCollapsed: false },
+                        readOnly: !isFormValid
+                      }} 
+                    />
+                  </div>
+                )}
+                
+                <button 
+                  disabled={paymentStatus === 'loading' || !stripe || !elements || !isFormValid || !clientSecret} 
+                  id="stripe-submit" 
+                  className="w-full py-3 px-4 bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-[#ff2050] hover:to-[#ff4575] hover:translate-y-[-1px] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-md cursor-pointer"
+                >
+                  <span className="flex items-center justify-center">
+                    {paymentStatus === 'loading' ? 
+                      <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> : 
+                      <i className="fas fa-lock text-xs mr-2"></i>
+                    }
+                    {paymentStatus === 'loading' ? 'Processing...' : `Pay $${selectedPriceOption.price.toFixed(2)}`}
+                  </span>
+                </button>
+                <div className="text-center">
+                  <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" title="Secure payments by Stripe" className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition">
+                      <i className="fas fa-lock"></i>
+                      <span>Powered by</span>
+                      <span className="font-semibold text-gray-600">Stripe</span>
+                  </a>
+                </div>
+              </form>
+            </div>
+            
+            <div style={{ display: activeTab === 'paypal' ? 'block' : 'none' }}>
+              {isFormValid && (
+                <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100 mb-4">
+                  <div className="rounded-full bg-blue-100 p-2 mr-3">
+                    <i className="fab fa-paypal text-blue-600 text-sm"></i>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Pay with PayPal</p>
+                    <p className="text-xs text-gray-500">You will be redirected to PayPal to complete your payment securely.</p>
                   </div>
                 </div>
               )}
-              
-              <div className="form-group">
-                <Script
-                  src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture&components=buttons${process.env.NEXT_PUBLIC_PAYPAL_API_MODE === 'live' ? '' : '&debug=true'}`}
-                  strategy="afterInteractive"
-                  onLoad={() => {
-                    console.log('PayPal SDK script loaded in CheckoutSection with components=buttons');
-                    onPayPalLoad();
-                  }}
-                  onError={(e) => {
-                    console.error('PayPal SDK script failed to load in CheckoutSection:', e);
-                    onPayPalError();
-                  }}
-                />
-                
-                {/* PayPal Button Container - Always in DOM but with opacity based on field validation */}
-                <div 
-                  ref={paypalButtonContainerRef} 
-                  id="paypal-button-container" 
-                  className="w-full mt-4"
-                  style={{ opacity: (!isUserSignedIn && showRequiredFieldsMessage) ? '0.5' : '1' }}
-                />
+              <div style={{ opacity: isFormValid ? 1 : 0.5, pointerEvents: isFormValid ? 'auto' : 'none' }} className="transition-opacity duration-300">
+                <Script src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture&components=buttons&disable-funding=card`} strategy="afterInteractive" onLoad={onPayPalLoad} onError={onPayPalError} />
+                {!sdkReady && isFormValid && (
+                  <div className="text-center py-8">
+                    <div className="inline-block h-6 w-6 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin mb-3"></div>
+                    <p className="text-sm text-gray-600">Loading PayPal...</p>
+                  </div>
+                )}
+                <div ref={paypalButtonContainerRef} id="paypal-button-container" className="w-full mt-2" />
               </div>
-              
-              {/* Payment Status & General Error Messages */}
-              {paymentStatus === 'loading' && (
-                <div className="form-note flex items-center gap-2 text-gray-600">
-                  <span className="inline-block w-5 h-5 sm:w-6 sm:h-6 border-2 border-[#b9a7d1] border-b-transparent rounded-full animate-spin"></span>
-                  <span className="text-sm sm:text-base">Processing payment...</span>
-                </div>
-              )}
-              
-              {paymentStatus === 'success' && (
-                <div className="form-note bg-[#d1fae5] text-[#065f46] p-3 sm:p-4 rounded-md text-sm sm:text-base">
-                  Payment successful! Redirecting...
-                </div>
-              )}
-              
-              {/* Specific error from PayPal onClick/onApprove etc. */}
-              {checkoutFormError && (
-                <div className="form-note bg-red-100 text-red-700 p-3 rounded-md text-xs sm:text-sm my-2">
-                  {checkoutFormError}
-                </div>
-              )}
-              
-              <p className="form-disclaimer text-xs text-gray-500 mb-4">
-                By completing your purchase, you agree to our
-                <a href="/terms" className="text-[#2c2d5a] hover:text-[#ff3366] underline mx-1">Terms of Service</a> and
-                <a href="/privacy" className="text-[#2c2d5a] hover:text-[#ff3366] underline mx-1">Privacy Policy</a>.
-              </p>
-            </form>
-            <div className="flex flex-col items-center gap-3 mt-6 mb-6">
-              <div className="flex items-center pt-4 sm:pt-5 gap-2 text-[#10b981] text-sm sm:text-base font-semibold">
-                <i className="fas fa-lock" /> Secure Payment with PayPal
+            </div>
+
+            {checkoutFormError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center text-sm text-red-600 gap-2">
+                <i className="fas fa-exclamation-circle text-red-500"></i>
+                {checkoutFormError}
               </div>
-              <div className="flex gap-3 mt-1 text-xl sm:text-2xl text-gray-400">
-                <i className="fab fa-cc-paypal" title="PayPal" style={{color:'#003087'}}></i>
-                <i className="fab fa-cc-visa" title="Visa" style={{color:'#1a1f71'}}></i>
-                <i className="fab fa-cc-mastercard" title="Mastercard" style={{color:'#eb001b'}}></i>
-                <i className="fab fa-cc-amex" title="Amex" style={{color:'#2e77bb'}}></i>
+            )}
+          </div>
+          
+          {/* =========== UPDATED PLAN SUMMARY SECTION =========== */}
+          <div className="selected-plan-summary w-full max-w-sm bg-white rounded-xl p-6 shadow-lg border border-gray-200/80">
+            <h3 className="text-lg font-semibold text-[#2c2d5a] mb-5">Your Plan</h3>
+            
+            {/* --- Plan Details Group --- */}
+            <div className="space-y-3.5 pb-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Duration</span>
+                <span className="font-medium text-gray-800">{selectedPriceOption.duration}</span>
               </div>
+
+              {timeInfo.isLoading ? (
+                <div className="flex items-center py-2 justify-center">
+                  <div className="h-4 w-4 border-2 border-gray-200 border-t-[#ff3366] rounded-full animate-spin mr-2"></div>
+                  <span className="text-xs text-gray-500">Getting plan details...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <i className="far fa-calendar text-[#ff3366] text-xs mr-2 w-4 text-center"></i>
+                        <span className="text-xs text-gray-500">Starts</span>
+                      </div>
+                      <span className="text-xs font-medium text-gray-500">{format(timeInfo.currentTime, 'MMM d, yyyy')}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <i className="far fa-calendar-check text-[#ff3366] text-xs mr-2 w-4 text-center"></i>
+                        <span className="text-xs text-gray-500">Expires</span>
+                      </div>
+                      <span className="text-xs font-medium text-gray-500">{timeInfo.expiryTime ? format(timeInfo.expiryTime, 'MMM d, yyyy') : 'N/A'}</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* --- Cost Breakdown Group --- */}
+            <div className="space-y-3 text-sm py-4 border-t border-dashed border-gray-200">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Regular Price</span>
+                <span className="line-through text-gray-400">${(selectedPriceOption.price * 4).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Savings</span>
+                <span className="font-medium text-green-500">{Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}%</span>
+              </div>
+            </div>
+            
+            {/* --- Final Total --- */}
+            <div className="pt-4 border-t border-gray-200 flex justify-between items-baseline">
+              <span className="text-base font-semibold text-gray-800">Total</span>
+              <span className="text-2xl font-bold text-[#ff3366]">${selectedPriceOption.price.toFixed(2)}
+                <span className="text-sm font-medium text-gray-500 ml-1">USD</span>
+              </span>
             </div>
           </div>
-          <div className="selected-plan-summary w-full max-w-sm bg-white rounded-lg p-4 sm:p-6 shadow-lg">
-            <h3 className="text-base sm:text-lg font-semibold text-[#2c2d5a] mb-4 flex justify-between items-center">
-              Your Selected Plan 
-              <span className="text-xs bg-[#2c2d5a] text-white px-2 py-1 rounded-full font-bold">{selectedPriceOption.name}</span>
-            </h3>
-            <div className="space-y-2 text-xs sm:text-sm">
-              <p className="flex justify-between text-gray-600">Subscription Duration <span className="font-medium text-gray-700">{selectedPriceOption.duration}</span></p>
-              <p className="flex justify-between text-gray-600">Regular Price <span className="line-through text-gray-400">${(selectedPriceOption.price * 4).toFixed(2)}</span></p>
-              <p className="flex justify-between text-gray-600">Your Savings <span className="font-medium text-[#10b981]">{Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}%</span></p>
-            </div>
-            <hr className="my-3 sm:my-4 border-gray-200"/>
-            <p className="flex justify-between text-base sm:text-lg font-bold text-[#2c2d5a]">Total <span className="text-[#ff3366]">${selectedPriceOption.price.toFixed(2)} <span className="text-xs">USD</span></span></p>
-            <div className="trust-guarantee mt-3 sm:mt-4 text-xs text-gray-600 space-y-1">
-              <div className="guarantee-badge"><i className="fas fa-check-circle text-[#10b981] mr-1" /> 100% Satisfaction Guarantee</div>
-              <div className="guarantee-badge"><i className="fas fa-check-circle text-[#10b981] mr-1" /> 24/7 Customer Support</div>
-              <div className="guarantee-badge"><i className="fas fa-check-circle text-[#10b981] mr-1" /> Email Delivery</div>
-            </div>
-          </div>
+          {/* =========== END OF UPDATED SECTION =========== */}
+
         </div>
       </div>
     </section>
-  );
-} 
+  );  
+}

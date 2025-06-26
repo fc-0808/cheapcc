@@ -68,7 +68,7 @@ RESEND_API_KEY=your_resend_api_key
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
 # Google reCAPTCHA
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key_here
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
 RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key_here
 ```
 
@@ -143,3 +143,123 @@ Visit http://localhost:3000 to see the application.
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [Resend Documentation](https://resend.com/docs)
+
+# CheapCC - Next.js Application
+
+This is a Next.js application for CheapCC, a service offering Adobe Creative Cloud subscriptions at discounted rates.
+
+## Getting Started
+
+First, install the dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+Then, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# PayPal
+PAYPAL_CLIENT_ID=your_paypal_client_id
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_paypal_client_id
+NEXT_PUBLIC_PAYPAL_API_MODE=sandbox
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+
+# Email (Resend)
+RESEND_API_KEY=your_resend_api_key
+FROM_EMAIL=your_from_email@example.com
+
+# reCAPTCHA
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
+RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
+
+# Base URL
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+## Payment Integrations
+
+### PayPal Integration
+
+The application uses PayPal for payment processing. To set up PayPal:
+
+1. Create a PayPal Developer account at [developer.paypal.com](https://developer.paypal.com)
+2. Create a new app to get your client ID and secret
+3. Add these to your environment variables
+
+### Stripe Integration
+
+The application also supports Stripe for payment processing (including Google Pay). To set up Stripe:
+
+1. Create a Stripe account at [stripe.com](https://stripe.com)
+2. Get your publishable key and secret key from the Stripe Dashboard
+3. Set up a webhook endpoint at `/api/webhooks/stripe` in your Stripe Dashboard
+4. Get your webhook signing secret
+5. Add all these keys to your environment variables
+
+#### Testing Stripe Payments
+
+For testing Stripe payments, you can use the following test card numbers:
+
+- **Success**: 4242 4242 4242 4242
+- **Requires Authentication**: 4000 0025 0000 3155
+- **Declined**: 4000 0000 0000 0002
+
+For Google Pay testing, you'll need to:
+
+1. Use Chrome browser
+2. Have a test card added to your Google Pay account
+3. Be on a device with Google Pay enabled
+
+## Webhook Setup
+
+For local development with webhooks:
+
+1. Install [ngrok](https://ngrok.com/) or a similar tool
+2. Run your Next.js app locally
+3. Create a tunnel to your local server: `ngrok http 3000`
+4. Use the ngrok URL for your webhook endpoints in PayPal and Stripe dashboards
+
+## Database Schema
+
+The application uses Supabase as the database. The main tables are:
+
+- `profiles`: User profiles
+- `orders`: Order information including payment details
+
+## Learn More
+
+To learn more about the technologies used in this project:
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.io/docs)
+- [PayPal API Documentation](https://developer.paypal.com/docs/api/overview/)
+- [Stripe API Documentation](https://stripe.com/docs/api)

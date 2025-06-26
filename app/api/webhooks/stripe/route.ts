@@ -1,0 +1,151 @@
+// app/api/webhooks/stripe/route.ts
+
+import { NextRequest, NextResponse } from 'next/server';
+import { Stripe } from 'stripe';
+import { createServiceClient } from '@/utils/supabase/supabase-server';
+import { sendConfirmationEmail } from '@/utils/send-email';
+import {
+  calculateSavings,
+  getStandardPlanDescription,
+  calculateExpiryDate,
+  OrderLike
+} from '@/utils/products';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-05-28.basil',
+});
+
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+export async function POST(request: NextRequest) {
+  const webhookStartTime = Date.now();
+  const signature = request.headers.get('stripe-signature');
+  const logContext: any = { source: "app/api/webhooks/stripe/route.ts" };
+
+  if (!signature) {
+    console.warn(JSON.stringify({ ...logContext, event: "missing_stripe_signature" }, null, 2));
+    return NextResponse.json({ error: 'Missing Stripe signature' }, { status: 400 });
+  }
+
+  if (!webhookSecret) {
+    console.error(JSON.stringify({ ...logContext, event: "missing_webhook_secret" }, null, 2));
+    return NextResponse.json({ error: 'Webhook secret is not configured' }, { status: 500 });
+  }
+
+  let event: Stripe.Event;
+  const rawBody = await request.text();
+
+  try {
+    event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+    
+    logContext.eventType = event.type;
+    logContext.eventId = event.id;
+    
+    if (!event.id || !event.type) {
+      console.warn(JSON.stringify({ ...logContext, event: "invalid_event_data" }, null, 2));
+      return NextResponse.json({ error: 'Invalid event data' }, { status: 400 });
+    }
+  } catch (err: any) {
+    console.error(JSON.stringify({
+      ...logContext,
+      event: "webhook_signature_error",
+      errorMessage: err.message,
+      signatureHeader: signature?.substring(0, 20) + '...'
+    }, null, 2));
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+  }
+
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      logContext.paymentIntentId = paymentIntent.id;
+      console.info(JSON.stringify({ ...logContext, event: "processing_payment_intent" }, null, 2));
+      
+      try {
+        const supabase = await createServiceClient();
+        
+        // --- Prevent duplicate processing ---
+        const { data: existingOrder } = await supabase
+          .from('orders')
+          .select('id')
+          .eq('stripe_payment_intent_id', paymentIntent.id)
+          .maybeSingle();
+
+        if (existingOrder) {
+          console.warn(JSON.stringify({ ...logContext, event: "duplicate_webhook_received" }, null, 2));
+          return NextResponse.json({ status: 'success', message: 'Already processed' });
+        }
+        
+        // --- Extract metadata ---
+        const { priceId, userName, userEmail, productDescription } = paymentIntent.metadata;
+
+        if (!userEmail || !userName || !priceId) {
+            console.error(JSON.stringify({ ...logContext, event: "metadata_missing", metadata: paymentIntent.metadata }, null, 2));
+            return NextResponse.json({ error: 'Missing metadata from payment intent' }, { status: 200 });
+        }
+
+        const now = new Date();
+        const amount = paymentIntent.amount / 100; // convert from cents
+        
+        const orderDataForUtils: OrderLike = {
+          description: productDescription,
+          amount,
+          created_at: now,
+          priceId
+        };
+        
+        const standardDescription = getStandardPlanDescription(orderDataForUtils);
+        const savings = calculateSavings(orderDataForUtils);
+        const expiryDate = calculateExpiryDate(orderDataForUtils);
+
+        // --- Insert order into database ---
+        const { error: insertError } = await supabase
+          .from('orders')
+          .insert([{
+            name: userName,
+            email: userEmail,
+            status: 'ACTIVE',
+            amount: amount,
+            currency: paymentIntent.currency.toUpperCase(),
+            description: standardDescription,
+            savings: savings,
+            expiry_date: expiryDate ? expiryDate.toISOString() : null,
+            
+            // --- UPDATED COLUMNS ---
+            stripe_payment_intent_id: paymentIntent.id, // Use the new Stripe column
+            payment_processor: 'stripe',                 // Set the processor type
+            payment_data: paymentIntent,                 // Use the generic data column
+            // --- END OF UPDATES ---
+
+            original_status: paymentIntent.status,
+            created_at: now.toISOString(),
+            updated_at: now.toISOString(),
+          }]);
+
+        if (insertError) {
+          console.error(JSON.stringify({ ...logContext, event: "db_insert_error", dbError: insertError.message, dbErrorCode: insertError.code }, null, 2));
+          return NextResponse.json({ error: 'Database insert failed' }, { status: 500 });
+        }
+
+        console.info(JSON.stringify({ ...logContext, event: "order_created_in_db" }, null, 2));
+
+        // --- Send confirmation email ---
+        const { data: userProfile } = await supabase.from('profiles').select('id').eq('email', userEmail).maybeSingle();
+        const isGuestCheckout = !userProfile;
+        
+        await sendConfirmationEmail(userEmail, userName, paymentIntent.id, isGuestCheckout);
+        console.info(JSON.stringify({ ...logContext, event: "confirmation_email_sent" }, null, 2));
+
+      } catch (dbError: any) {
+        console.error(JSON.stringify({ ...logContext, event: "webhook_handler_error", errorMessage: dbError.message }, null, 2));
+        return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
+      }
+      break;
+      
+    default:
+      console.warn(JSON.stringify({ ...logContext, event: "unhandled_stripe_event" }, null, 2));
+  }
+
+  return NextResponse.json({ status: 'success' });
+} 

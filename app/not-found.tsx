@@ -4,25 +4,6 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 
 export default function NotFound() {
-  // Send a pageview to the pixel endpoint on client-side only
-  useEffect(() => {
-    try {
-      // Create a simple image beacon for tracking
-      const trackingPixel = new Image();
-      
-      // Create a URL with query parameters
-      const trackingUrl = new URL('/api/pixel', window.location.origin);
-      trackingUrl.searchParams.set('path', '/404');
-      trackingUrl.searchParams.set('ref', encodeURIComponent(document.referrer || ''));
-      trackingUrl.searchParams.set('t', Date.now().toString());
-      
-      // Set the source to trigger the request
-      trackingPixel.src = trackingUrl.toString();
-    } catch (error) {
-      console.error('[NotFound] Error tracking 404 page:', error);
-    }
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 bg-gray-50">
       <div className="text-center max-w-md">
@@ -59,4 +40,4 @@ export default function NotFound() {
       </div>
     </div>
   );
-} 
+}

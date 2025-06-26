@@ -13,24 +13,6 @@ export default function Error({
   // Log the error to console
   useEffect(() => {
     console.error('Application error:', error);
-    
-    // Track error page view
-    try {
-      // Create a simple image beacon for tracking
-      const trackingPixel = new Image();
-      
-      // Create a URL with query parameters
-      const trackingUrl = new URL('/api/pixel', window.location.origin);
-      trackingUrl.searchParams.set('path', '/error');
-      trackingUrl.searchParams.set('ref', encodeURIComponent(document.referrer || ''));
-      trackingUrl.searchParams.set('t', Date.now().toString());
-      trackingUrl.searchParams.set('err', error.digest || 'unknown');
-      
-      // Set the source to trigger the request
-      trackingPixel.src = trackingUrl.toString();
-    } catch (trackingError) {
-      console.error('[Error] Error tracking error page:', trackingError);
-    }
   }, [error]);
 
   return (
@@ -75,4 +57,4 @@ export default function Error({
       </div>
     </div>
   );
-} 
+}

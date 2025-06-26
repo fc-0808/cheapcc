@@ -74,6 +74,15 @@ export const CaptureOrderSchema = z.object({
 });
 export type CaptureOrderPayload = z.infer<typeof CaptureOrderSchema>;
 
+// --- Stripe Payment Intent Creation Schema ---
+export const CreatePaymentIntentSchema = z.object({
+  priceId: z.string().refine(val => VALID_PRICE_IDS.includes(val), { message: "Invalid pricing option selected." }),
+  name: z.string().min(1, { message: "Name is required for the order." }).max(100),
+  email: z.string().email({ message: "A valid email is required for the order." }),
+  idempotencyKey: z.string().min(1, { message: "Idempotency key is required." })
+});
+export type CreatePaymentIntentPayload = z.infer<typeof CreatePaymentIntentSchema>;
+
 // --- Profile Preferences Schema ---
 export const UpdatePreferencesSchema = z.object({
     marketingConsent: z.boolean().default(false),
