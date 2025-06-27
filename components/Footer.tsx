@@ -14,8 +14,8 @@ const Footer: React.FC = () => (
               Cheap <span className="text-[#ff3366]">CC</span>
             </Link>
           </h3>
-          <p className="text-sm sm:text-base text-gray-300 mb-4">
-            CheapCC provides affordable Adobe Creative Cloud subscriptions for everyone. Access top-tier software without breaking the bank with CheapCC's exclusive pricing.
+          <p className="text-xs sm:text-base text-gray-300 mb-4">
+            CheapCC provides affordable Adobe Creative Cloud subscriptions for everyone. <br></br>Access top-tier software without breaking the bank with CheapCC's exclusive pricing.
           </p>
           <div className="footer-social-icons flex gap-4">
             <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">

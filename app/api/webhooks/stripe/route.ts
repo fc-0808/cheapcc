@@ -11,16 +11,46 @@ import {
   OrderLike
 } from '@/utils/products';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-05-28.basil',
-});
+// Check if required environment variables are available
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// Log any missing configuration
+if (!stripeSecretKey) {
+  console.error(JSON.stringify({
+    message: "STRIPE_SECRET_KEY is not configured in environment variables",
+    source: "app/api/webhooks/stripe/route.ts static initialization"
+  }, null, 2));
+}
+
+if (!webhookSecret) {
+  console.error(JSON.stringify({
+    message: "STRIPE_WEBHOOK_SECRET is not configured in environment variables",
+    source: "app/api/webhooks/stripe/route.ts static initialization"
+  }, null, 2));
+}
+
+// Initialize Stripe only if the secret key is available
+const stripe = stripeSecretKey 
+  ? new Stripe(stripeSecretKey, { apiVersion: '2025-05-28.basil' })
+  : null;
 
 export async function POST(request: NextRequest) {
   const webhookStartTime = Date.now();
   const signature = request.headers.get('stripe-signature');
   const logContext: any = { source: "app/api/webhooks/stripe/route.ts" };
+
+  // Check if Stripe is properly initialized
+  if (!stripe) {
+    console.error(JSON.stringify({
+      ...logContext,
+      event: "stripe_not_initialized",
+      error: "STRIPE_SECRET_KEY environment variable is missing"
+    }, null, 2));
+    return NextResponse.json({ 
+      error: "Payment service is not properly configured. Please contact support." 
+    }, { status: 500 });
+  }
 
   if (!signature) {
     console.warn(JSON.stringify({ ...logContext, event: "missing_stripe_signature" }, null, 2));

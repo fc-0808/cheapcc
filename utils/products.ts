@@ -54,7 +54,7 @@ export const PRICING_OPTIONS: PricingOption[] = [
     id: 'admin-test',
     name: '1 Day',
     duration: '1 day',
-    price: 0.01,
+    price: 0.5,
     description: 'Admin Testing - 1 Day',
     adminOnly: true
   },

@@ -6,14 +6,37 @@ import { PRICING_OPTIONS } from '@/utils/products';
 import { CreatePaymentIntentSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-05-28.basil',
-});
+// Check if Stripe secret key is available
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!stripeSecretKey) {
+  console.error(JSON.stringify({
+    message: "STRIPE_SECRET_KEY is not configured in environment variables",
+    source: "app/api/stripe/payment-intent/route.ts static initialization"
+  }, null, 2));
+}
+
+// Initialize Stripe only if the secret key is available
+const stripe = stripeSecretKey 
+  ? new Stripe(stripeSecretKey, { apiVersion: '2025-05-28.basil' })
+  : null;
 
 export async function POST(request: NextRequest) {
   const requestStartTime = Date.now();
   const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1';
   let logContext: any = { ip: clientIp, source: "app/api/stripe/payment-intent/route.ts" };
+
+  // Check if Stripe is properly initialized
+  if (!stripe) {
+    console.error(JSON.stringify({
+      ...logContext,
+      event: "stripe_not_initialized",
+      error: "STRIPE_SECRET_KEY environment variable is missing"
+    }, null, 2));
+    return NextResponse.json({ 
+      error: "Payment service is not properly configured. Please contact support." 
+    }, { status: 500 });
+  }
 
   try {
     // Rate Limiting
