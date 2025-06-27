@@ -109,6 +109,12 @@ export default function CheckoutSection({
   const handleStripeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!stripe || !elements) {
+      setCheckoutFormError("Stripe is not ready yet. Please try again in a moment.");
+      setPaymentStatus('error');
+      return;
+    }
+
     if (!name || !email) {
       setCheckoutFormError('Please fill out all required fields.');
       return;
@@ -118,15 +124,6 @@ export default function CheckoutSection({
       setCheckoutFormError('Please enter a valid email address.');
       return;
     }
-
-    setCheckoutFormError(null);
-    setPaymentStatus('loading');
-
-    if (!stripe || !elements) {
-      setCheckoutFormError("Stripe is not ready yet. Please try again in a moment.");
-      setPaymentStatus('error');
-      return;
-    }
     
     if (!clientSecret) {
       setCheckoutFormError("Payment session not initialized. Please refresh the page and try again.");
@@ -134,59 +131,50 @@ export default function CheckoutSection({
       return;
     }
     
-    try {
-      const { error: submitError } = await elements.submit();
-      
-      if (submitError) {
-        setCheckoutFormError(submitError.message || "An error occurred while validating your payment information.");
-        setPaymentStatus('error');
-        return;
-      }
+    setCheckoutFormError(null);
+    setPaymentStatus('loading');
 
-      const result = await stripe.confirmPayment({
-        elements,
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/success`,
-          receipt_email: email,
-          payment_method_data: {
-            billing_details: {
-              name: name,
-              email: email,
-            }
-          }
-        },
-        redirect: 'if_required'
-      });
-
-      if (result.error) {
-        const errorMessage = result.error.message || "Your payment could not be processed.";
-        console.error("Payment error:", result.error.type, result.error.message);
-        
-        if (result.error.type === "card_error" || result.error.type === "validation_error") {
-          setCheckoutFormError(errorMessage);
-        } else {
-          setCheckoutFormError("An unexpected error occurred. Please try again or use a different payment method.");
-        }
-        
-        setPaymentStatus('error');
-      } else if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
-        // Payment succeeded - redirect to success page
-        setPaymentStatus('success');
-        window.location.href = `${window.location.origin}/success?payment_intent=${result.paymentIntent.id}`;
-      } else if (result.paymentIntent && result.paymentIntent.status === 'processing') {
-        // Payment is processing - redirect to success page with processing info
-        setPaymentStatus('success');
-        window.location.href = `${window.location.origin}/success?payment_intent=${result.paymentIntent.id}&status=processing`;
-      } else if (result.paymentIntent) {
-        // For any other payment intent status, redirect to success page and let it handle the state
-        window.location.href = `${window.location.origin}/success?payment_intent=${result.paymentIntent.id}`;
-      }
-    } catch (error: any) {
-      console.error("Exception during payment confirmation:", error);
-      setCheckoutFormError("A system error occurred. Please try again later.");
+    // Submit the form data to Stripe.js
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setCheckoutFormError(submitError.message || "An error occurred while validating your information.");
       setPaymentStatus('error');
+      return;
     }
+    
+    // Now, confirm the payment and let Stripe handle the redirect.
+    const { error } = await stripe.confirmPayment({
+      elements,
+      clientSecret,
+      confirmParams: {
+        return_url: `${window.location.origin}/success`, // Stripe redirects here on success/failure
+        receipt_email: email,
+        payment_method_data: {
+          billing_details: {
+            name: name,
+            email: email,
+          }
+        }
+      },
+      redirect: 'always', // Use 'always' to simplify the flow
+    });
+
+    // This point will only be reached if there is an immediate error during confirmation,
+    // or if the user closes the payment modal before completion.
+    if (error) {
+      const errorMessage = error.message || "Your payment could not be processed.";
+      console.error("Stripe Payment Confirmation Error:", error.type, error.message);
+      
+      if (error.type === "card_error" || error.type === "validation_error") {
+        setCheckoutFormError(errorMessage);
+      } else {
+        setCheckoutFormError("An unexpected error occurred. Please try again.");
+      }
+      
+      setPaymentStatus('error');
+    } 
+    // No need for a success block here. Stripe handles the successful redirection.
+    // The loading state will remain until the user is navigated away from the page.
   };
 
   useEffect(() => {
