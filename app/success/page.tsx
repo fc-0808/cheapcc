@@ -1,31 +1,26 @@
+// app/success/page.tsx
+
 'use client';
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/supabase-client';
 import Link from 'next/link';
 import { getPlanDuration } from '@/utils/products';
 
-/**
- * The main content of the success page.
- * This component reads URL parameters and fetches order details.
- * It's wrapped in a Suspense boundary because useSearchParams can suspend rendering.
- */
+// This is the inner component that does the work
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
-
-  // Intelligently get the order ID from either Stripe or PayPal redirect parameters
-  const orderId = searchParams.get('payment_intent') || searchParams.get('paypal_order_id');
+  const paymentIntentId = searchParams.get('payment_intent');
+  const paypalOrderId = searchParams.get('paypal_order_id');
+  const orderId = paymentIntentId || paypalOrderId;
 
   const [loading, setLoading] = useState(true);
   const [orderDetails, setOrderDetails] = useState<any>(null);
-  const [isGuest, setIsGuest] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Abort if no order ID is found in the URL
     if (!orderId) {
-      setError("Could not verify payment: No order identifier found in the URL.");
+      setError("Could not verify payment: No order identifier found.");
       setLoading(false);
       return;
     }
@@ -35,49 +30,53 @@ function OrderSuccessContent() {
     const maxAttempts = 15; // Poll for 30 seconds (15 attempts * 2s)
 
     const pollOrder = async () => {
-      // Check if the ID is from Stripe (starts with 'pi_') or PayPal
-      const isStripeId = orderId.startsWith('pi_');
-      console.log(`Polling for order... ID: ${orderId}, Type: ${isStripeId ? 'Stripe' : 'PayPal'}, Attempt: ${attempts + 1}`);
-
-      const supabase = createClient();
-      const { data: order, error: queryError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq(isStripeId ? 'stripe_payment_intent_id' : 'paypal_order_id', orderId)
-        .maybeSingle();
-      
       if (!isMounted) return;
-
-      if (queryError) {
-        console.error("Supabase query error:", queryError);
-        setError("Error fetching your order details. Please contact support.");
-        setLoading(false);
-        return;
-      }
       
-      // If the order is found in the database, success!
-      if (order) {
+      console.log(`Polling for order... ID: ${orderId}, Attempt: ${attempts + 1}`);
+
+      try {
+        const response = await fetch('/api/orders/get-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId }),
+        });
+
+        if (response.status === 404) {
+          // Order not found yet, continue polling
+          if (attempts < maxAttempts) {
+            attempts++;
+            setTimeout(pollOrder, 2000);
+          } else {
+            setError('We could not confirm your order. If you just paid, please wait a moment and then check your email for a confirmation. If you need assistance, please contact support with your order ID.');
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (!response.ok) {
+          // Handle other server errors
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch order status');
+        }
+
+        // Order found!
+        const order = await response.json();
         setOrderDetails(order);
-        const { data: userData } = await supabase.auth.getUser();
-        const userEmail = userData?.user?.email;
-        setIsGuest(!userEmail || (order.email && order.email !== userEmail));
-        setLoading(false);
         setError(null);
-      } else if (attempts < maxAttempts) {
-        // If not found, increment attempts and poll again after a delay
-        attempts++;
-        setTimeout(pollOrder, 2000);
-      } else {
-        // If max attempts are reached, show an error
         setLoading(false);
-        setError('We could not confirm your order. If you just paid, please wait a moment and then check your email for a confirmation. If you need assistance, please contact support with your order ID.');
+
+      } catch (err: any) {
+        console.error("Polling error:", err);
+        setError("An error occurred while fetching your order details. Please contact support.");
+        setLoading(false);
       }
     };
 
     pollOrder();
 
-    // Cleanup function to prevent state updates on unmounted component
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [orderId]);
 
   if (loading) {
@@ -104,7 +103,7 @@ function OrderSuccessContent() {
     );
   }
 
-  // This is your existing, well-designed success UI
+  // --- Success UI ---
   return (
     <>
       <div className="text-center mb-6">
@@ -121,18 +120,16 @@ function OrderSuccessContent() {
           </div>
           <div className="flex justify-between"><span className="text-gray-600">Name:</span><span className="font-medium">{orderDetails.name}</span></div>
           <div className="flex justify-between"><span className="text-gray-600">Email:</span><span className="font-medium">{orderDetails.email}</span></div>
-          <div className="flex justify-between"><span className="text-gray-600">Amount:</span><span className="font-medium">${orderDetails.amount} {orderDetails.currency.toUpperCase()}</span></div>
+          <div className="flex justify-between"><span className="text-gray-600">Amount:</span><span className="font-medium">${orderDetails.amount} {orderDetails.currency?.toUpperCase()}</span></div>
           <div className="flex justify-between"><span className="text-gray-600">Plan:</span><span className="font-medium">{orderDetails.description}</span></div>
           <div className="flex justify-between"><span className="text-gray-600">Duration:</span><span className="font-medium">{getPlanDuration(orderDetails)}</span></div>
         </div>
       </div>
-      {isGuest && orderDetails?.email && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6">
-            <h3 className="font-medium text-yellow-800">Track your order</h3>
-            <p className="text-yellow-700 text-sm mt-1">Register for a free account using <b>{orderDetails.email}</b> to view your order history and manage your subscription.</p>
-            <Link href="/register" className="text-[#ff3366] underline font-semibold mt-2 inline-block">Register now</Link>
-        </div>
-      )}
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6">
+          <h3 className="font-medium text-yellow-800">Track your order</h3>
+          <p className="text-yellow-700 text-sm mt-1">Register for a free account using <b>{orderDetails.email}</b> to view your order history and manage your subscription.</p>
+          <Link href="/register" className="text-[#ff3366] underline font-semibold mt-2 inline-block">Register now</Link>
+      </div>
       <div className="bg-blue-50 p-4 rounded-lg mb-6">
         <div className="flex items-start">
             <i className="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
@@ -151,10 +148,8 @@ function OrderSuccessContent() {
   );
 }
 
-/**
- * The main page component, wrapping the content in a Suspense boundary
- * as a best practice for components that use `useSearchParams`.
- */
+
+// The main page component, wrapping the content in Suspense
 export default function OrderSuccessPage() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex justify-center items-center p-4">
