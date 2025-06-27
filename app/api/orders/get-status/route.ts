@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Query using the service role client to bypass RLS for this specific check
     const { data: order, error } = await supabase
       .from('orders')
-      .select('id, name, email, amount, currency, description, status, created_at, expiry_date, priceId, stripe_payment_intent_id, paypal_order_id')
+      .select('id, name, email, amount, currency, description, status, created_at, expiry_date, stripe_payment_intent_id, paypal_order_id')
       .eq(queryColumn, orderId)
       .maybeSingle();
 
