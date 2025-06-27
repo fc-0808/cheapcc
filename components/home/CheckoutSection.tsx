@@ -13,7 +13,7 @@ interface TimeInfo {
   currentTime: Date;
   expiryTime: Date | null;
   timezone: string | null;
-  locationName: string | null;
+  // locationName is no longer needed or available with this method
   isLoading: boolean;
 }
 
@@ -64,8 +64,7 @@ export default function CheckoutSection({
   const [timeInfo, setTimeInfo] = useState<TimeInfo>({
     currentTime: new Date(),
     expiryTime: null,
-    timezone: 'UTC',
-    locationName: null,
+    timezone: 'UTC', // Default value
     isLoading: true
   });
   
@@ -178,73 +177,12 @@ export default function CheckoutSection({
   };
 
   useEffect(() => {
-    const getLocationAndTime = async () => {
-      try {
-        if ('geolocation' in navigator) {
-          setTimeInfo(prev => ({ ...prev, isLoading: true }));
-          navigator.geolocation.getCurrentPosition(async (position) => {
-            const { latitude, longitude } = position.coords;
-            
-            try {
-              const tzResponse = await fetch(
-                `/api/timezone?lat=${latitude}&lng=${longitude}`
-              );
-              
-              if (!tzResponse.ok) {
-                throw new Error(`API responded with status: ${tzResponse.status}`);
-              }
-              
-              const tzData = await tzResponse.json();
-              
-              if (tzData.status === 'OK') {
-                const now = new Date();
-                const timezone = tzData.zoneName;
-                const locationName = tzData.cityName || tzData.countryName || null;
-                
-                const currentPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[0];
-                let expiryDate = new Date();
-                
-                if (currentPriceOption.duration.includes('month')) {
-                  const months = parseInt(currentPriceOption.duration.split(' ')[0]);
-                  expiryDate.setMonth(expiryDate.getMonth() + months);
-                } else if (currentPriceOption.duration.includes('year')) {
-                  const years = parseInt(currentPriceOption.duration.split(' ')[0]);
-                  expiryDate.setFullYear(expiryDate.getFullYear() + years);
-                } else if (currentPriceOption.duration.includes('day')) {
-                  const days = parseInt(currentPriceOption.duration.split(' ')[0]);
-                  expiryDate.setDate(expiryDate.getDate() + days);
-                }
-                
-                setTimeInfo({
-                  currentTime: new Date(),
-                  expiryTime: expiryDate,
-                  timezone,
-                  locationName,
-                  isLoading: false
-                });
-              } else {
-                console.error('Timezone API returned an error:', tzData.error || 'Unknown error');
-                handleFallbackTime();
-              }
-            } catch (error) {
-              console.error('Error fetching timezone:', error instanceof Error ? error.message : 'Unknown error');
-              handleFallbackTime();
-            }
-          }, (error) => {
-            console.error('Geolocation error:', error.message);
-            handleFallbackTime();
-          });
-        } else {
-          handleFallbackTime();
-        }
-      } catch (error) {
-        console.error('Location detection error:', error instanceof Error ? error.message : 'Unknown error');
-        handleFallbackTime();
-      }
-    };
-    
-    const handleFallbackTime = () => {
+    // This effect now runs synchronously and doesn't need to be async.
+    // It gets the timezone from the browser without asking for permission.
+    const setTimeData = () => {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
       const now = new Date();
+      
       const currentPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[0];
       let expiryDate = new Date();
       
@@ -259,29 +197,19 @@ export default function CheckoutSection({
         expiryDate.setDate(expiryDate.getDate() + days);
       }
       
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      
-      let locationName = null;
-      try {
-        const city = timezone.split('/').pop()?.replace(/_/g, ' ');
-        locationName = city || null;
-      } catch (e) {
-        console.warn("Could not parse location from timezone");
-      }
-      
       setTimeInfo({
         currentTime: now,
         expiryTime: expiryDate,
         timezone,
-        locationName,
-        isLoading: false
+        isLoading: false, // Data is loaded instantly.
       });
-      
-      console.info(`Using fallback time with timezone: ${timezone}`);
+
+      console.info(`Using browser timezone for display: ${timezone}`);
     };
     
-    getLocationAndTime();
+    setTimeData();
     
+    // This timer just updates the current time display every minute, which is fine to keep.
     const timer = setInterval(() => {
       setTimeInfo(prev => ({
         ...prev,
@@ -292,11 +220,12 @@ export default function CheckoutSection({
     return () => clearInterval(timer);
   }, [selectedPrice]);
 
+  // FIX: Corrected "Ubisoft" typo to "yyyy" for the year.
   const formatDateTime = (date: Date | null) => {
     if (!date) return 'N/A';
     return timeInfo.timezone ? 
-      formatInTimeZone(date, timeInfo.timezone, 'MMM d, Ubisoft \'at\' h:mm a') :
-      format(date, 'MMM d, Ubisoft \'at\' h:mm a');
+      formatInTimeZone(date, timeInfo.timezone, 'MMM d, yyyy \'at\' h:mm a') :
+      format(date, 'MMM d, yyyy \'at\' h:mm a');
   };
 
   const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[1];
