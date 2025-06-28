@@ -469,7 +469,6 @@ input:focus, select:focus, textarea:focus {
    background-clip: text;
    color: transparent;
    position: relative;
-   padding-bottom: 0.3rem;
    display: inline-block;
    /* margin-top is handled by Tailwind in the component */
  }
@@ -483,7 +482,6 @@ input:focus, select:focus, textarea:focus {
   position: absolute;
   left: 20%;
   bottom: -3px;
-  width: 60%;
   height: 2px;
   background: linear-gradient(90deg, #FF6B8B 0%, #FF8E53 25%, #FFCF4B 50%, #66E6F4 75%, #6B6EFF 100%);
   border-radius: 50px;
@@ -492,6 +490,18 @@ input:focus, select:focus, textarea:focus {
   animation: underlineExpand 1.2s ease forwards 0.7s;
   box-shadow: 0 1px 2px rgba(255, 107, 139, 0.1);
   opacity: 0.6;
+}
+
+@media (min-width: 640px) {
+  .hero-title-accent {
+    padding-bottom: 0.3rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .hero-title-accent::after {
+    width: 60%;
+  }
 }
 
 @keyframes underlineExpand {

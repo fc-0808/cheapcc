@@ -1,3 +1,4 @@
+// fc-0808/cheapcc/cheapcc-master/components/home/HeroSection.tsx
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
@@ -95,27 +96,38 @@ export default function HeroSection() {
         <div className="container mx-auto px-4 p-8 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center justify-center text-center">
           <div className={`hero-content ${isVisible ? 'visible' : ''} relative max-w-4xl mx-auto`}>
             
-            {/* Mobile and Tablet View */}
+            {/* =========== UPDATED Mobile and Tablet View =========== */}
             <div className="md:hidden">
-                <div className="hero-title-container mb-4">
-                    <h1 id="hero-heading-mobile" className="text-4xl font-extrabold text-white hero-3d-text">
-                        Your Adobe Creative Cloud, For Less.
+                
+
+                <div className="hero-title-container mb-5">
+                    <h1 id="hero-heading-mobile" className="text-4xl sm:text-5xl font-extrabold text-white leading-tight hero-3d-text">
+                        Your&nbsp;
+                        <span className="hero-title-accent block">
+                          Adobe Creative
+                        </span>
+                        <span className="hero-title-accent">Cloud</span>, For Less.
                     </h1>
                 </div>
-                <p className="text-white/70 max-w-xl mx-auto mb-8 text-lg font-light tracking-wide backdrop-blur-sm py-1">
-                    Genuine Adobe CC. Up to 75% Off.
+
+                <p className="text-white/80 max-w-md mx-auto mb-8 text-base sm:text-xl font-light tracking-wide">
+                  Genuine Adobe CC. Up to 75% Off.
                 </p>
-                <div className="hero-cta w-full">
+                
+                <div className="hero-cta w-full mb-8">
                     <a 
                         href="#pricing" 
                         onClick={handleScrollToPricing} 
-                        className="primary-btn glow-effect w-full inline-block px-8 py-4 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold text-lg shadow-lg hover:shadow-[#ff336670] hover:translate-y-[-2px] transition-all duration-300"
+                        className="primary-btn glow-effect w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold text-lg shadow-lg hover:shadow-[#ff336670] hover:translate-y-[-2px] transition-all duration-300"
                         aria-label="View Adobe Creative Cloud pricing and plans"
                     >
+                        <i className="fas fa-arrow-down"></i>
                         View Pricing & Plans
                     </a>
                 </div>
             </div>
+            {/* =========== END OF UPDATED SECTION =========== */}
+
 
             {/* Desktop View */}
             <div className="hidden md:block">
