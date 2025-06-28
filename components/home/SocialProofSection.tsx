@@ -25,12 +25,13 @@ export default function SocialProofSection() {
       { threshold: 0.1 }
     );
 
-    if (counterRef.current) {
-      observer.observe(counterRef.current);
+    const currentRef = counterRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
     return () => {
-      if (counterRef.current) {
-        observer.unobserve(counterRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
@@ -65,7 +66,7 @@ export default function SocialProofSection() {
             setCounters(prev => {
               const updated = [...prev];
               updated[idx] = { ...updated[idx], value: end };
-              return updated;
+              return updated.slice(); // Ensure re-render
             });
           }
         }
@@ -75,17 +76,12 @@ export default function SocialProofSection() {
   }, [isVisible, animated, counters]);
 
   return (
-    <section className="bg-[#1a1a3a] lg:py-20 md:py-16 py-10  relative overflow-hidden border-t border-white/10">
-      {/* Premium background gradient */}
+    <section className="bg-[#1a1a3a] lg:py-20 md:py-16 py-10 relative overflow-hidden border-t border-white/10">
       <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a3a] to-[#232355] z-0"></div>
-      
-      {/* Subtle spotlight animations */}
       <div className="absolute inset-0 z-0">
         <div className="spotlight-mini spotlight-mini-1"></div>
         <div className="spotlight-mini spotlight-mini-2"></div>
       </div>
-      
-      {/* Very subtle grid pattern for depth */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzAgMzBoMzB2MzBIMzB6IiBzdHJva2Utb3BhY2l0eT0iLjAyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iLjUiLz48cGF0aCBkPSJNMCAzMGgzMHYzMEgweiIgc3Ryb2tlLW9wYWNpdHk9Ii4wMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9Ii41Ii8+PHBhdGggZD0iTTMwIDBIMHYzMGgzMHoiIHN0cm9rZS1vcGFjaXR5PSIuMDIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxwYXRoIGQ9Ik0zMCAwaDMwdjMwSDMweiIgc3Ryb2tlLW9wYWNpdHk9Ii4wMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9Ii41Ii8+PC9nPjwvc3ZnPg==')] opacity-5 z-0"></div>
 
       <div className="container relative z-10 mx-auto px-4">
@@ -93,51 +89,23 @@ export default function SocialProofSection() {
           className="max-w-5xl mx-auto"
           ref={counterRef}
         >
-          {/* Mobile and Tablet View: Modern horizontal layout with separators */}
-          <div className="block md:hidden">
-            <div className="flex justify-around items-center py-5">
-              {counters.map((counter, index) => (
-                <div
-                  key={counter.id}
-                  className={`flex flex-col items-center text-center transition-all duration-700 ${
-                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                  } ${
-                    index < counters.length - 1 ? 'border-r border-white/20' : ''
-                  } px-3 ${index === 0 ? 'pl-0' : ''} ${index === counters.length - 1 ? 'pr-0' : ''}`}
-                  style={{ transitionDelay: `${index * 150}ms` }}
-                >
-                  <i className={`${counter.icon} text-[#ff3366] text-xl mb-1.5`}></i>
-                  <div className="text-white text-base sm:text-lg font-semibold mb-0.5 leading-tight">
-                    {counter.value}{counter.suffix}
-                  </div>
-                  <div className="text-[#a0a0c0] text-[10px] sm:text-xs font-normal uppercase text-center leading-snug tracking-wider">
-                    {counter.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Desktop View: Existing Flex Layout */}
-          <div className="hidden md:flex md:flex-row md:justify-around items-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {counters.map((counter, index) => (
-              <React.Fragment key={counter.id}>
-                <div
-                  className={`flex flex-col items-center text-center my-6 md:my-0 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                  style={{ transitionDelay: `${index * 150}ms` }}
-                >
-                  <i className={`${counter.icon} text-[#ff3366] text-3xl mb-4`}></i>
-                  <div className="text-white text-4xl font-bold mb-1">
-                    {counter.value}{counter.suffix}
-                  </div>
-                  <div className="text-[#a0a0c0] text-xs tracking-wider font-medium uppercase">
-                    {counter.label}
-                  </div>
+              <div
+                key={counter.id}
+                className={`flex flex-col items-center text-center transition-all duration-700 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
+                style={{ transitionDelay: `${index * 150}ms` }}
+              >
+                <i className={`${counter.icon} text-[#ff3366] text-3xl mb-4`}></i>
+                <div className="text-white text-4xl font-bold mb-1">
+                  {counter.value}{counter.suffix}
                 </div>
-                {index < counters.length - 1 && (
-                  <div className="hidden md:block h-14 w-px bg-[#ffffff1a] mx-6 lg:mx-10"></div> 
-                )}
-              </React.Fragment>
+                <div className="text-[#a0a0c0] text-xs tracking-wider font-medium uppercase">
+                  {counter.label}
+                </div>
+              </div>
             ))}
           </div>
         </div>
