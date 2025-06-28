@@ -496,9 +496,6 @@ input:focus, select:focus, textarea:focus {
   .hero-title-accent {
     padding-bottom: 0.3rem;
   }
-}
-
-@media (min-width: 640px) {
   .hero-title-accent::after {
     width: 60%;
   }

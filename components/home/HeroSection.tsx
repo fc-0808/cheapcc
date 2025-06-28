@@ -118,7 +118,7 @@ export default function HeroSection() {
                     <a 
                         href="#pricing" 
                         onClick={handleScrollToPricing} 
-                        className="primary-btn glow-effect w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold text-lg shadow-lg hover:shadow-[#ff336670] hover:translate-y-[-2px] transition-all duration-300"
+                        className="primary-btn glow-effect inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-[#ff3366] to-[#ff6b8b] text-white font-semibold text-base shadow-lg hover:shadow-[#ff336670] hover:translate-y-[-2px] transition-all duration-300"
                         aria-label="View Adobe Creative Cloud pricing and plans"
                     >
                         <i className="fas fa-arrow-down"></i>
