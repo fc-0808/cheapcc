@@ -18,14 +18,11 @@ const Footer: React.FC = () => (
             CheapCC provides affordable Adobe Creative Cloud subscriptions for everyone. <br></br>Access top-tier software without breaking the bank with CheapCC's exclusive pricing.
           </p>
           <div className="footer-social-icons flex gap-4">
-            <a href="#" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
-              <i className="fab fa-facebook-f text-lg"></i>
+            <a href="https://www.instagram.com/cheapcc_online/" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
+              <i className="fab fa-instagram text-lg"></i>
             </a>
             <a href="https://x.com/cheapcc137024" aria-label="X (Twitter)" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
               <i className="fab fa-x-twitter text-lg"></i>
-            </a>
-            <a href="#" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
-              <i className="fab fa-instagram text-lg"></i>
             </a>
             <a href="https://www.youtube.com/@cheapcc-online" aria-label="YouTube" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#ff3366] transition-colors duration-150">
               <i className="fab fa-youtube text-lg"></i>

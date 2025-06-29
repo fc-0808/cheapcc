@@ -34,7 +34,7 @@ export default function HowItWorksSection() {
     },
     {
       title: "Complete Purchase",
-      description: "Enter your email and pay securely with PayPal.",
+      description: "Enter your email and pay securely with PayPal or credit card with Stripe.",
       delay: "delay-100",
     },
     {
