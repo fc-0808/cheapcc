@@ -2986,3 +2986,123 @@ input:focus, select:focus, textarea:focus {
   background-clip: text;
   color: transparent;
 }
+
+/* === Final, High-Fidelity & Sophisticated Icon Animations === */
+
+/* A shared wrapper for all new SVG icons */
+.benefit-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+
+.benefit-icon-wrapper svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible; /* Allows parts of the animation to appear outside the box */
+}
+
+/*
+ * Animation 1: "Save Money" - A sophisticated piggy bank with a coin drop.
+ * Sophistication: The pig has a clean, modern design. A golden coin,
+ * representing value, drops in smoothly. The pig gives a slight, satisfying bounce.
+*/
+@keyframes coin-fall-and-glint {
+  0% { transform: translateY(-70px) rotateX(80deg); opacity: 0; }
+  30% { transform: translateY(0) rotateX(0deg); opacity: 1; }
+  40% { filter: drop-shadow(0 0 6px #fde047); } /* Glint effect */
+  60% { transform: translateY(10px) rotateX(90deg) scale(0.7); opacity: 1; }
+  80%, 100% { transform: translateY(10px) rotateX(90deg) scale(0.7); opacity: 0; }
+}
+
+@keyframes pig-bounce {
+  0%, 100% { transform: translateY(0); }
+  65% { transform: translateY(0); } /* Wait for coin to drop */
+  75% { transform: translateY(-4px); } /* Bounce up */
+  85% { transform: translateY(0); }
+}
+
+.animate-saving-pig .piggy-bank-body {
+  transform-origin: bottom center;
+  animation: pig-bounce 3.5s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-saving-pig .coin-path {
+  transform-origin: center;
+  animation: coin-fall-and-glint 3.5s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+/*
+ * Animation 2: "Email Delivery" - An envelope opening to reveal a message.
+ * Sophistication: A smooth animation signifying a quick and direct delivery process.
+*/
+@keyframes envelope-open {
+  0%, 40% { transform: translateY(0) rotateX(0); }
+  60% { transform: translateY(-5px) rotateX(-100deg); }
+  80%, 100% { transform: translateY(0) rotateX(0); }
+}
+
+@keyframes document-emerge {
+  0%, 50% { transform: translateY(20px); opacity: 0; }
+  70% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-email-delivery .envelope-flap {
+  transform-origin: bottom center;
+  animation: envelope-open 3s ease-in-out infinite;
+}
+
+.animate-email-delivery .document {
+  animation: document-emerge 3s ease-in-out infinite;
+}
+
+/*
+ * Animation 3: "100% Genuine" - A certified medal with a shimmering effect.
+ * Sophistication: The medal gently sways and a light sweep effect highlights its
+ * authenticity, like a mark of quality.
+*/
+@keyframes medal-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes light-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-genuine-seal .medal-group {
+  transform-origin: top center;
+  animation: medal-sway 4s ease-in-out infinite;
+}
+
+.animate-genuine-seal .shine {
+  animation: light-sweep 4s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/*
+ * Animation 4: "Alternative" - Two "CC" characters swapping prominence.
+ * Sophistication: Represents the switch from one "CC" to our "CC". One fades out
+ * while the other fades in and brightens, symbolizing a better alternative.
+*/
+@keyframes fade-and-swap-c1 {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; } /* Fade out the first C */
+}
+
+@keyframes fade-and-swap-c2 {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; fill: #ff3366; } /* Fade in the second C and highlight it */
+}
+
+.animate-cc-swap .cc-1 {
+  animation: fade-and-swap-c1 4s ease-in-out infinite;
+}
+
+.animate-cc-swap .cc-2 {
+  animation: fade-and-swap-c2 4s ease-in-out infinite;
+}

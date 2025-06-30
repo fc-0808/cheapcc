@@ -1,114 +1,120 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
+// Import necessary hooks and components
+import { motion, useInView, animate, Variants } from 'framer-motion';
+import { useEffect } from 'react';
 
-const INITIAL_COUNTERS = [
-  { id: 'customers', value: 0, target: 500, label: 'HAPPY CUSTOMERS', icon: 'fas fa-users', suffix: '+' },
-  { id: 'activations', value: 0, target: 1500, label: 'SUCCESSFUL ACTIVATIONS', icon: 'fas fa-check-circle', suffix: '+' },
-  { id: 'satisfaction', value: 0, target: 99, label: 'CUSTOMER SATISFACTION', icon: 'fas fa-star', suffix: '%' },
-  { id: 'support', value: 0, target: 24, label: 'SUPPORT AVAILABILITY', icon: 'fas fa-headset', suffix: '/7' },
+const COUNTERS_DATA = [
+  { id: 'customers', target: 500, label: 'Happy Customers', icon: 'fas fa-users', suffix: '+' },
+  { id: 'activations', target: 1500, label: 'Successful Activations', icon: 'fas fa-check-circle', suffix: '+' },
+  { id: 'satisfaction', target: 99, label: 'Customer Satisfaction', icon: 'fas fa-star', suffix: '%' },
+  { id: 'support', target: 24, label: 'Support Availability', icon: 'fas fa-headset', suffix: '/7' },
 ];
 
-export default function SocialProofSection() {
-  const [counters, setCounters] = useState(INITIAL_COUNTERS);
-  const [animated, setAnimated] = useState(false);
-  const counterRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+// Define proper types for Counter props
+interface CounterProps {
+  from: number;
+  to: number;
+  suffix: string;
+  icon: string;
+  label: string;
+  index: number;
+}
+
+// A dedicated, reusable Counter component for cleaner code
+function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
+  const nodeRef = useRef<HTMLSpanElement>(null);
+  const inView = useInView(nodeRef, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentRef = counterRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isVisible && !animated) {
-      setAnimated(true);
-      const durations = [1500, 1500, 1500, 1500];
-      counters.forEach((counter, idx) => {
-        let start = 0;
-        const end = counter.target;
-        const duration = durations[idx];
-        const startTime = performance.now();
-
-        function animate(now: number) {
-          const elapsed = now - startTime;
-          const progress = elapsed / duration;
-          const easedProgress = progress < 1
-            ? 1 - Math.pow(2, -10 * progress)
-            : 1;
-          const current = Math.round(easedProgress * end);
-          
-          setCounters(prev => {
-            const updated = [...prev];
-            updated[idx] = { ...updated[idx], value: current };
-            return updated;
-          });
-          
-          if (progress < 1) {
-            requestAnimationFrame(animate);
-          } else {
-            setCounters(prev => {
-              const updated = [...prev];
-              updated[idx] = { ...updated[idx], value: end };
-              return updated.slice(); // Ensure re-render
-            });
-          }
-        }
-        requestAnimationFrame(animate);
+    if (inView && nodeRef.current) {
+      const node = nodeRef.current;
+      // Use framer motion's animate function
+      // This is more declarative and robust than requestAnimationFrame
+      const controls = animate(from, to, {
+        duration: 2,
+        delay: index * 0.1,
+        ease: "easeOut",
+        onUpdate(value) {
+          node.textContent = Math.round(value).toString();
+        },
       });
+      return () => controls.stop();
     }
-  }, [isVisible, animated, counters]);
+  }, [inView, from, to, index]);
 
   return (
-    <section className="bg-[#1a1a3a] lg:py-20 md:py-16 py-10 relative overflow-hidden border-t border-white/10">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a3a] to-[#303072] z-0"></div>
-      <div className="absolute inset-0 z-0">
-        <div className="spotlight-mini spotlight-mini-1"></div>
-        <div className="spotlight-mini spotlight-mini-2"></div>
-      </div>
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNjB2NjBIMHoiLz48cGF0aCBkPSJNMzAgMzBoMzB2MzBIMzB6IiBzdHJva2Utb3BhY2l0eT0iLjAyIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iLjUiLz48cGF0aCBkPSJNMCAzMGgzMHYzMEgweiIgc3Ryb2tlLW9wYWNpdHk9Ii4wMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9Ii41Ii8+PHBhdGggZD0iTTMwIDBIMHYzMGgzMHoiIHN0cm9rZS1vcGFjaXR5PSIuMDIiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxwYXRoIGQ9Ik0zMCAwaDMwdjMwSDMweiIgc3Ryb2tlLW9wYWNpdHk9Ii4wMiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9Ii41Ii8+PC9nPjwvc3ZnPg==')] opacity-5 z-0"></div>
+    <div className="rounded-[22px] p-4 sm:p-6 bg-slate-900 relative overflow-hidden group">
+      {/* Animated border/gradient effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl"></div>
+      <div className="absolute inset-[1px] bg-slate-900 rounded-[21px] z-10"></div>
 
-      <div className="container relative z-10 mx-auto px-4">
-        <div
-          className="max-w-5xl mx-auto"
-          ref={counterRef}
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {counters.map((counter, index) => (
-              <div
-                key={counter.id}
-                className={`flex flex-col items-center text-center transition-all duration-700 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}
-                style={{ transitionDelay: `${index * 150}ms` }}
-              >
-                <i className={`${counter.icon} text-[#ff3366] text-3xl mb-4`}></i>
-                <div className="text-white text-4xl font-bold mb-1">
-                  {counter.value}{counter.suffix}
-                </div>
-                <div className="text-[#a0a0c0] text-xs tracking-wider font-medium uppercase">
-                  {counter.label}
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="flex flex-col items-center text-center relative z-20">
+        <i className={`${icon} text-cyan-400 text-4xl mb-4`}></i>
+        <div className="text-5xl md:text-6xl font-extrabold text-white mb-2 [text-shadow:0_0_10px_var(--tw-shadow-color)] shadow-cyan-500/50">
+          <span ref={nodeRef}>0</span>{suffix}
         </div>
+        <div className="text-slate-400 text-sm tracking-wider font-medium uppercase">
+          {label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SocialProofSection() {
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true, amount: 0.2 });
+
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2, // Stagger the animation of children
+      },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  return (
+    // Refined styling for a professional & modern aesthetic
+    <section className="bg-slate-950 py-20 md:py-24 relative overflow-hidden border-t border-slate-800">
+      {/* Sophisticated background using a radial gradient for a spotlight effect */}
+      <div className="absolute inset-0 top-0 h-1/2 w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(56,189,248,0.2),rgba(255,255,255,0))]" />
+      
+      <div className="container relative z-10 mx-auto px-4">
+        <motion.div
+          ref={containerRef}
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 max-w-6xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? 'visible' : 'hidden'}
+        >
+          {COUNTERS_DATA.map((counter, index) => (
+            <motion.div key={counter.id} variants={itemVariants}>
+              <Counter
+                from={0}
+                to={counter.target}
+                suffix={counter.suffix}
+                icon={counter.icon}
+                label={counter.label}
+                index={index}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
