@@ -234,7 +234,7 @@ export default function CheckoutSection({
     <section className="checkout py-16 md:py-24 bg-[#f8f9fa]" id="checkout">
       <div className="container px-4 sm:px-6 lg:px-8" ref={sectionRef}>
         <div className={`section-heading text-center mb-10 sm:mb-14 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#2c2d5a] mb-3 relative inline-block">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#2c2d5a] mb-3 relative inline-block hero-3d-text">
             Complete Your Order
           </h2>
           <p className="mt-4 text-base sm:text-lg text-gray-500 max-w-2xl mx-auto">You're just moments away from accessing Adobe Creative Cloud</p>
@@ -301,7 +301,7 @@ export default function CheckoutSection({
                     : 'text-gray-500 hover:text-gray-800'
                 }`}
               >
-                <i className="fas fa-credit-card"></i>Card / Google Pay
+                <i className="fas fa-credit-card"></i>Card
               </button>
               <button 
                 onClick={() => setActiveTab('paypal')} 

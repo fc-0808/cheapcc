@@ -54,7 +54,7 @@ export default function BenefitsSection() {
     <section className="benefits py-10 sm:py-16 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={benefitsRef}>
         <div className={`section-heading text-center mb-6 sm:mb-10 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#2c2d5a] to-[#484a9e] bg-clip-text text-transparent inline-block mb-2">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-[#2c2d5a] to-[#484a9e] bg-clip-text text-transparent inline-block mb-2 hero-3d-text">
             Why Choose CheapCC?
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-gray-500 max-w-xl mx-auto">

@@ -77,7 +77,7 @@ export default function SocialProofSection() {
 
   return (
     <section className="bg-[#1a1a3a] lg:py-20 md:py-16 py-10 relative overflow-hidden border-t border-white/10">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a3a] to-[#232355] z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a3a] to-[#303072] z-0"></div>
       <div className="absolute inset-0 z-0">
         <div className="spotlight-mini spotlight-mini-1"></div>
         <div className="spotlight-mini spotlight-mini-2"></div>

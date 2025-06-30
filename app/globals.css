@@ -7,7 +7,7 @@ html {
 
 :root {
   /* Color Variables */
-  --primary: #2c2d5a;
+  --primary: #33347b;
   --primary-rgb: 44, 45, 90;
   --primary-light: #484a9e;
   --primary-light-rgb: 72, 74, 158;
@@ -455,9 +455,9 @@ input:focus, select:focus, textarea:focus {
     0 1px 0 rgba(255, 255, 255, 0.2),
     0 2px 0 rgba(255, 255, 255, 0.15),
     0 3px 0 rgba(255, 255, 255, 0.1),
-    0 4px 0 rgba(0, 0, 0, 0.1),
-    0 5px 10px rgba(0, 0, 0, 0.25),
-    0 6px 3px rgba(0, 0, 0, 0.3);
+    0 4px 0 rgba(255, 255, 255, 0.1),
+    0 5px 10px rgba(255, 255, 255, 0.25),
+    0 6px 3px rgba(104, 81, 255, 0.3);
   transform: perspective(500px) translateZ(0);
   transition: all 0.3s;
 }

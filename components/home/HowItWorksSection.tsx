@@ -48,7 +48,7 @@ export default function HowItWorksSection() {
     <section className="how-it-works py-16 sm:py-20 md:py-24 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`section-heading text-center mb-10 sm:mb-16 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2c2d5a] mb-2">How It Works</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2c2d5a] mb-2 hero-3d-text">How It Works</h2>
           <p className="text-base sm:text-lg text-gray-500">Getting your Adobe Creative Cloud subscription is simple and fast</p>
         </div>
         

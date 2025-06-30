@@ -172,7 +172,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
       <section className="pricing" id="pricing">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={pricingRef}>
           <div className={`section-heading text-center mb-10 stagger-item ${isVisible ? 'visible' : ''}`}>
-            <h2>Choose Your Plan</h2>
+            <h2 className="hero-3d-text">Choose Your Plan</h2>
             <p>Select the best Adobe Creative Cloud subscription for your needs</p>
             {adminError && (
               <div className="mt-2 text-sm text-red-600 bg-red-100 p-2 rounded-md">

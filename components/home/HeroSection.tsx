@@ -84,7 +84,7 @@ export default function HeroSection() {
       >  
         {/* Background elements */}
         <div 
-          className="absolute inset-0 bg-gradient-to-b from-[#070714] via-[#0c0c2b] to-[#151533] z-0"
+          className="absolute inset-0 bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] z-0"
           aria-hidden="true"
         ></div>
         <div className="absolute inset-0 opacity-30 z-0" aria-hidden="true">

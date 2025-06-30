@@ -55,7 +55,7 @@ export default function HomeFAQSection() {
     <section className="faq py-10 sm:py-16 md:py-20 bg-white" id="faq">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={faqRef}>
         <div className={`section-heading text-center mb-8 sm:mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2c2d5a] mb-2">Frequently Asked Questions</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2c2d5a] mb-2 hero-3d-text">Frequently Asked Questions</h2>
           <p className="text-base sm:text-lg text-gray-500">Quick answers to common questions about our Adobe Creative Cloud subscriptions</p>
         </div>
         <div className={`faq-accordion max-w-3xl mx-auto stagger-item ${isVisible ? 'visible' : ''}`}>

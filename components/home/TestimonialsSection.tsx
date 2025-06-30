@@ -90,7 +90,7 @@ export default function TestimonialsSection() {
     <section className="testimonials py-16 sm:py-20 bg-gray-50" id="testimonials">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={testimonialsRef}>
         <div className={`section-heading text-center mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">What Our Customers Say</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 hero-3d-text">What Our Customers Say</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Real feedback from designers, photographers, and students who saved with us.
           </p>
