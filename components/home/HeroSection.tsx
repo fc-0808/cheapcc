@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Script from 'next/script';
 import { motion, Variants } from 'framer-motion';
 
@@ -29,6 +29,22 @@ const Star = ({ size, left, top, duration, delay }: { size: number, left: string
 );
 
 export default function HeroSection() {
+  const [stars, setStars] = useState<Array<{id: number, size: number, left: string, top: string, duration: number, delay: number}>>([]);
+  
+  // Generate stars on client-side only
+  useEffect(() => {
+    setStars(
+      Array.from({ length: 40 }).map((_, i) => ({
+        id: i,
+        size: Math.random() * 2 + 1,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        duration: Math.random() * 5 + 3,
+        delay: Math.random() * 2,
+      }))
+    );
+  }, []);
+
   const handleScrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -50,15 +66,6 @@ export default function HeroSection() {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } }
   };
-
-  const stars = Array.from({ length: 40 }).map((_, i) => ({
-    id: i,
-    size: Math.random() * 2 + 1,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    duration: Math.random() * 5 + 3,
-    delay: Math.random() * 2,
-  }));
 
   return (
     <>

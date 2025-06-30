@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 const HOME_FAQS = [
   {
@@ -52,17 +53,29 @@ export default function HomeFAQSection() {
   }, []);
 
   return (
-    <section className="faq py-10 sm:py-16 md:py-20 bg-white" id="faq">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={faqRef}>
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] py-20 md:py-32" id="faq">
+      {/* Animated Nebula and Stars - matching Hero section */}
+      <motion.div
+        className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+        transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_rgba(255,_51,_102,_0.1),_transparent_70%)]"
+        animate={{ scale: [1, 1.05, 1], rotate: [0, -5, 0] }}
+        transition={{ duration: 50, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10" ref={faqRef}>
         <div className={`section-heading text-center mb-8 sm:mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#2c2d5a] mb-2 hero-3d-text">Frequently Asked Questions</h2>
-          <p className="text-base sm:text-lg text-gray-500">Quick answers to common questions about our Adobe Creative Cloud subscriptions</p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 hero-3d-text">Frequently Asked Questions</h2>
+          <p className="text-base sm:text-lg text-gray-300">Quick answers to common questions about our Adobe Creative Cloud subscriptions</p>
         </div>
         <div className={`faq-accordion max-w-3xl mx-auto stagger-item ${isVisible ? 'visible' : ''}`}>
           {HOME_FAQS.map((item, idx) => (
             <div
               key={idx}
-              className={`faq-item border border-gray-200 rounded-lg mb-4 shadow-sm overflow-hidden ${openFaq === idx ? 'active bg-white' : 'bg-gray-50'}`} // Added overflow-hidden to parent
+              className={`faq-item border border-gray-200 rounded-lg mb-4 shadow-sm overflow-hidden ${openFaq === idx ? 'active bg-white' : 'bg-gray-50/90'}`} // Slightly transparent background
             >
               <div
                 className="faq-question p-4 sm:p-5 flex justify-between items-center cursor-pointer"

@@ -721,13 +721,12 @@ input:focus, select:focus, textarea:focus {
 /* END Modern Hero Section Styles */
 
 
+/* This is an override/refinement of the initial .social-proof styles if they existed earlier */
 .social-proof {
   background: var(--primary-dark);
-  color: var(--gray-200);
-  position: relative;
-  padding: 3rem 0;
-  border-top: 1px solid var(--gray-700);
-  border-bottom: 1px solid var(--gray-700);
+  color: var(--gray-200); /* Lighter text on dark background */
+  padding: 4rem 0; /* Increased padding */
+  /* Removed border-top and border-bottom */
 }
 
 @media (min-width: 768px) {
@@ -898,11 +897,7 @@ input:focus, select:focus, textarea:focus {
 /* --- Pricing Section --- */
 .pricing {
   padding: 5rem 0;
-  background-color: var(--white);
-  border-top: 1px solid var(--gray-100);
-  border-bottom: 1px solid var(--gray-100);
-  position: relative;
-  overflow: visible;
+  /* Remove background-color and borders to allow for custom gradients */
 }
 
 .pricing .section-heading h2 {
@@ -1727,8 +1722,7 @@ input:focus, select:focus, textarea:focus {
   background: var(--primary-dark);
   color: var(--gray-200); /* Lighter text on dark background */
   padding: 4rem 0; /* Increased padding */
-  border-top: 1px solid var(--gray-700); /* Darker borders for dark theme */
-  border-bottom: 1px solid var(--gray-700);
+  /* Removed border-top and border-bottom */
 }
 /* Refinements for children of .social-proof if needed */
 .social-proof .counter-item i { color: var(--accent); }
@@ -1767,9 +1761,7 @@ input:focus, select:focus, textarea:focus {
 /* Similar structure: main .pricing, then refinements for .section-heading and .plan-card */
 .pricing {
   padding: 5rem 0;
-  background-color: var(--white);
-  border-top: 1px solid var(--gray-100);
-  border-bottom: 1px solid var(--gray-100);
+  /* Remove background-color and borders to allow for custom gradients */
 }
 .pricing .section-heading h2 {
   color: var(--primary);
@@ -1780,7 +1772,7 @@ input:focus, select:focus, textarea:focus {
 /* --- How It Works Section (Refinement) --- */
 .how-it-works {
   padding: 5rem 0;
-  background-color: var(--white);
+  /* Remove background-color to allow for custom gradients */
 }
 .how-it-works .section-heading h2 {
   color: var(--primary);
@@ -1792,21 +1784,9 @@ input:focus, select:focus, textarea:focus {
   position: relative;
 }
 
-/* Create the horizontal line connecting all steps */
+/* Create the horizontal line connecting all steps - now handled in component directly */
 .steps-container-with-line::before {
-  content: "";
-  position: absolute;
-  background-color: #e5e7eb; /* Tailwind gray-200 */
-  z-index: 0;
-  border-radius: 2px;
-  
-  left: 50%;
-  transform: translateX(-50%);
-  width: 2px;
-  
-  /* Adjusted for better spacing with the wrapped text */
-  top: 4rem;   /* Start the line just below the first circle */
-  bottom: 4rem; /* End the line just above the last circle */
+  display: none; /* Hide the default line since we use a custom one */
 }
 
 /* Adjust for medium screens */
@@ -1865,7 +1845,7 @@ input:focus, select:focus, textarea:focus {
 /* --- Checkout Section (Refinement) --- */
 .checkout {
   padding: 5rem 0;
-  background-color: var(--white);
+  /* Remove background-color to allow for custom gradients */
 }
 .checkout .section-heading h2 {
   color: var(--primary);
@@ -1877,7 +1857,7 @@ input:focus, select:focus, textarea:focus {
 /* If .faq on home page is different from .faq-page styles */
 .faq { /* General FAQ section on home page */
   padding: 5rem 0;
-  background-color: var(--gray-50);
+  /* Remove background-color to allow for custom gradients */
 }
 .faq .section-heading h2 {
   color: var(--primary);
@@ -1888,11 +1868,9 @@ input:focus, select:focus, textarea:focus {
 /* --- Testimonials Section (Refinement) --- */
 .testimonials {
   padding: 6rem 0; /* More padding */
-  background-color: var(--gray-50); /* Ensure correct background */
+  /* Remove background-color and borders to allow for custom gradients */
   position: relative;
   overflow: hidden;
-  border-top: 1px solid var(--gray-200);
-  border-bottom: 1px solid var(--gray-200);
 }
 .testimonials .section-heading h2 {
   font-size: 2.5rem; /* Consistent with other section headings */

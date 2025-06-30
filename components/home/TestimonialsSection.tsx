@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 const TESTIMONIALS_DATA = [
   {
@@ -87,11 +88,23 @@ export default function TestimonialsSection() {
   const currentData = TESTIMONIALS_DATA[activeTestimonial];
 
   return (
-    <section className="testimonials py-16 sm:py-20 bg-gray-50" id="testimonials">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8" ref={testimonialsRef}>
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] py-20 md:py-32" id="testimonials">
+      {/* Animated Nebula and Stars - matching Hero section */}
+      <motion.div
+        className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+        transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_rgba(255,_51,_102,_0.1),_transparent_70%)]"
+        animate={{ scale: [1, 1.05, 1], rotate: [0, -5, 0] }}
+        transition={{ duration: 50, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10" ref={testimonialsRef}>
         <div className={`section-heading text-center mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3 hero-3d-text">What Our Customers Say</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 hero-3d-text">What Our Customers Say</h2>
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
             Real feedback from designers, photographers, and students who saved with us.
           </p>
         </div>

@@ -8,6 +8,7 @@ import { PRICING_OPTIONS } from '@/utils/products';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { format } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
+import { motion } from 'framer-motion';
 
 interface TimeInfo {
   currentTime: Date;
@@ -231,13 +232,25 @@ export default function CheckoutSection({
   const selectedPriceOption = PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[1];
 
   return (
-    <section className="checkout py-16 md:py-24 bg-[#f8f9fa]" id="checkout">
-      <div className="container px-4 sm:px-6 lg:px-8" ref={sectionRef}>
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] py-20 md:py-32" id="checkout">
+      {/* Animated Nebula and Stars - matching Hero section */}
+      <motion.div
+        className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+        transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_rgba(255,_51,_102,_0.1),_transparent_70%)]"
+        animate={{ scale: [1, 1.05, 1], rotate: [0, -5, 0] }}
+        transition={{ duration: 50, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      
+      <div className="container px-4 sm:px-6 lg:px-8 relative z-10" ref={sectionRef}>
         <div className={`section-heading text-center mb-10 sm:mb-14 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#2c2d5a] mb-3 relative inline-block hero-3d-text">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3 relative inline-block hero-3d-text">
             Complete Your Order
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-gray-500 max-w-2xl mx-auto">You're just moments away from accessing Adobe Creative Cloud</p>
+          <p className="mt-4 text-base sm:text-lg text-gray-300 max-w-2xl mx-auto">You're just moments away from accessing Adobe Creative Cloud</p>
         </div>
         <div className={`checkout-container flex flex-col md:flex-row flex-wrap gap-8 justify-center items-start stagger-item ${isVisible ? 'visible' : ''}`}>
           <div className="checkout-form w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200/80">
