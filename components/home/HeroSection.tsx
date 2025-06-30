@@ -98,7 +98,7 @@ export default function HeroSection() {
           <div className="relative max-w-4xl mx-auto">
             {/* Mobile & Tablet View */}
             <div className="md:hidden">
-              <motion.h1 id="hero-heading-mobile" variants={itemVariants} className="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-4" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+              <motion.h1 id="hero-heading-mobile" variants={itemVariants} className="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-4" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.3)' }} >
                 Your&nbsp;
                 <span className="block bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">
                   Adobe Creative Cloud
@@ -134,8 +134,8 @@ export default function HeroSection() {
                 </motion.div>
               </motion.div>
 
-              <motion.h1 id="hero-heading-desktop" variants={itemVariants} className="text-6xl font-extrabold text-white leading-tight mb-6" style={{ textShadow: '0 5px 25px rgba(0,0,0,0.4)' }}>
-                Unleash Your Creativity with <br />
+              <motion.h1 id="hero-heading-desktop" variants={itemVariants} className="text-center text-6xl font-extrabold text-white leading-tight mb-6" style={{ textShadow: '0 5px 25px rgba(0,0,0,0.4)' }}>
+                Unlock major savings on <br />
                 <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">
                   Adobe Creative Cloud
                 </span>
