@@ -358,8 +358,8 @@ export default function Home() {
         amount: amountInCents,
         currency: 'usd',
         appearance: {
-          theme: 'stripe',
-          variables: { colorPrimary: '#ff3366' },
+          theme: 'night' as const,
+          variables: { colorPrimary: '#e5e7eb' },
         },
       };
 

@@ -53,7 +53,8 @@ export default function UnifiedBackground() {
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533]" aria-hidden="true" />
+      {/* REFINED: The background gradient now uses a darker, more sophisticated palette. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a] via-[#020617] to-[#1e1b4b]" aria-hidden="true" />
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
           className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
