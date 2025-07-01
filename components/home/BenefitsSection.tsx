@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useInView, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring, Variants } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
+import { motion, useInView, AnimatePresence, useMotionValue, useSpring, Variants } from 'framer-motion';
 
 // Define a type for our benefits for better type-safety
 interface Benefit {
@@ -11,52 +11,26 @@ interface Benefit {
   color: string;
 }
 
+// Define a type for particles
+interface Particle {
+  id: number;
+  top: string;
+  left: string;
+}
+
 export default function BenefitsSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleInView = useInView(titleRef, { once: false, margin: "-100px 0px" });
   
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-  
-  // Create more advanced parallax effects
-  const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.9, 1], [0.3, 1, 1, 0.3]);
-  const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.9, 1, 1, 0.9]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [-1, 1]);
+  // State to track client-side rendering
+  const [isClient, setIsClient] = useState(false);
+  // State to store particles data
+  const [benefitParticles, setBenefitParticles] = useState<{[benefitId: string]: Particle[]}>({});
   
   // Floating animation for cards
   const floatY = useMotionValue(0);
   const smoothFloatY = useSpring(floatY, { stiffness: 100, damping: 30 });
-  
-  // Use state to store random stars that will be generated client-side only
-  const [stars, setStars] = useState<Array<{width: string, height: string, top: string, left: string, boxShadow: string}>>([]);
-
-  // Generate stars on client-side only
-  useEffect(() => {
-    setStars(
-      Array(15).fill(0).map(() => {
-        const size = Math.random() * 2 + 1;
-        return {
-          width: `${size}px`,
-          height: `${size}px`,
-          top: `${Math.random() * 100}%`,
-          left: `${Math.random() * 100}%`,
-          boxShadow: `0 0 ${Math.random() * 4 + 2}px rgba(255, 255, 255, 0.7)`,
-        };
-      })
-    );
-  }, []);
-
-  // Create scroll-triggered animation for floating
-  useEffect(() => {
-    const unsubscribe = scrollYProgress.onChange(value => {
-      floatY.set(Math.sin(value * Math.PI * 2) * 10);
-    });
-    return () => unsubscribe();
-  }, [scrollYProgress, floatY]);
 
   const benefits: Benefit[] = [
     {
@@ -88,6 +62,25 @@ export default function BenefitsSection() {
       color: "#10b981"
     },
   ];
+
+  // Generate particles only on the client side
+  useEffect(() => {
+    setIsClient(true);
+    
+    if (isClient) {
+      const particles: {[benefitId: string]: Particle[]} = {};
+      
+      benefits.forEach(benefit => {
+        particles[benefit.id] = Array.from({ length: 5 }).map((_, i) => ({
+          id: i,
+          top: `${50 + Math.random() * 50}%`,
+          left: `${Math.random() * 100}%`,
+        }));
+      });
+      
+      setBenefitParticles(particles);
+    }
+  }, [isClient]);
 
   // Animation variants for staggered card animations
   const containerVariants: Variants = {
@@ -150,112 +143,8 @@ export default function BenefitsSection() {
   return (
     <section 
       ref={sectionRef}
-      className="relative overflow-hidden bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] py-20 md:py-32"
+      className="relative overflow-hidden py-20 md:py-32"
     >
-      {/* Animated background elements with parallax */}
-      <motion.div 
-        className="absolute inset-0 top-0 h-full w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,80,255,0.15),rgba(255,255,255,0))]" 
-        style={{ y, opacity, scale }}
-        transition={{ ease: "easeOut" }}
-      />
-      
-      {/* Subtle star field background with 3D parallax */}
-      <div className="absolute inset-0 overflow-hidden">
-        {stars.map((star, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white"
-            style={{
-              ...star,
-              z: Math.floor(Math.random() * 50) - 25
-            }}
-            animate={{ 
-              opacity: [0, 0.7, 0],
-              scale: [0, 1, 0],
-              x: [0, (i % 2 === 0 ? 5 : -5) * Math.random()],
-              y: [0, (i % 2 === 0 ? -5 : 5) * Math.random()]
-            }}
-            transition={{
-              duration: 2 + Math.random() * 3,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: [0.43, 0.13, 0.23, 0.96] // Custom easing for more natural motion
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Animated Nebula and Stars - matching Hero section */}
-      <motion.div
-        className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
-        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-        transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_rgba(255,_51,_102,_0.1),_transparent_70%)]"
-        animate={{ scale: [1, 1.05, 1], rotate: [0, -5, 0] }}
-        transition={{ duration: 50, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      
-      {/* Enhanced animated glow effects with parallax */}
-      <motion.div 
-        className="absolute -top-[30%] -left-[10%] w-[40%] h-[70%] bg-[radial-gradient(ellipse_at_center,rgba(120,80,255,0.15),transparent_70%)]"
-        style={{ rotate, scale: useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1.2, 0.9]) }}
-        animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
-          rotate: [0, 5, 0]
-        }}
-        transition={{ 
-          duration: 15,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut"
-        }}
-      />
-      
-      <motion.div 
-        className="absolute -bottom-[30%] -right-[10%] w-[40%] h-[70%] bg-[radial-gradient(ellipse_at_center,rgba(44,45,90,0.25),transparent_70%)]"
-        style={{ rotate: useTransform(rotate, value => -value), scale: useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1.1, 0.9]) }}
-        animate={{ 
-          scale: [1, 1.1, 1],
-          opacity: [0.2, 0.4, 0.2],
-          rotate: [0, -3, 0]
-        }}
-        transition={{ 
-          duration: 20,
-          repeat: Infinity,
-          repeatType: "mirror",
-          ease: "easeInOut"
-        }}
-      />
-      
-      {/* Add floating particles */}
-      {Array.from({ length: 10 }).map((_, i) => (
-        <motion.div
-          key={`particle-${i}`}
-          className="absolute w-1 h-1 rounded-full bg-white opacity-20"
-          style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            filter: 'blur(1px)',
-            willChange: 'transform, opacity'
-          }}
-          animate={{
-            y: [0, -100, 0],
-            x: [0, Math.sin(i) * 50, 0],
-            opacity: [0, 0.8, 0],
-            scale: [0, 1, 0]
-          }}
-          transition={{
-            duration: 10 + Math.random() * 20,
-            repeat: Infinity,
-            delay: i * 2,
-            ease: "linear"
-          }}
-        />
-      ))}
-      
       <div className="container relative z-10 mx-auto px-4">
         <motion.div 
           className="text-center mb-12 md:mb-16"
@@ -482,36 +371,38 @@ export default function BenefitsSection() {
                 </motion.p>
                 
                 {/* Animated particles on hover with improved 3D effect */}
-                <AnimatePresence>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1 h-1 rounded-full bg-white opacity-0 group-hover:opacity-100"
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{
-                        y: [0, -30 - Math.random() * 50],
-                        x: [0, (Math.random() - 0.5) * 60],
-                        opacity: [0, 0.7, 0],
-                        scale: [0.5, 1, 0.5],
-                        z: [0, 50, 0]
-                      }}
-                      transition={{
-                        duration: 2 + Math.random() * 2,
-                        repeat: Infinity,
-                        delay: i * 0.3,
-                        ease: [0.23, 0.94, 0.41, 1.2] // Custom spring-like easing
-                      }}
-                      style={{ 
-                        top: `${50 + Math.random() * 50}%`,
-                        left: `${Math.random() * 100}%`,
-                        filter: 'blur(0.5px)',
-                        boxShadow: `0 0 5px ${benefit.color}`,
-                        transformStyle: "preserve-3d",
-                        willChange: 'transform, opacity'
-                      }}
-                    />
-                  ))}
-                </AnimatePresence>
+                {isClient && benefitParticles[benefit.id] && (
+                  <AnimatePresence>
+                    {benefitParticles[benefit.id].map((particle) => (
+                      <motion.div
+                        key={`particle-${benefit.id}-${particle.id}`}
+                        className="absolute w-1 h-1 rounded-full bg-white opacity-0 group-hover:opacity-100"
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{
+                          y: [0, -30 - Math.random() * 50],
+                          x: [0, (Math.random() - 0.5) * 60],
+                          opacity: [0, 0.7, 0],
+                          scale: [0.5, 1, 0.5],
+                          z: [0, 50, 0]
+                        }}
+                        transition={{
+                          duration: 2 + Math.random() * 2,
+                          repeat: Infinity,
+                          delay: particle.id * 0.3,
+                          ease: [0.23, 0.94, 0.41, 1.2] // Custom spring-like easing
+                        }}
+                        style={{ 
+                          top: particle.top,
+                          left: particle.left,
+                          filter: 'blur(0.5px)',
+                          boxShadow: `0 0 5px ${benefit.color}`,
+                          transformStyle: "preserve-3d",
+                          willChange: 'transform, opacity'
+                        }}
+                      />
+                    ))}
+                  </AnimatePresence>
+                )}
               </motion.div>
             </motion.div>
           ))}

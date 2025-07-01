@@ -88,13 +88,6 @@ html {
   }
 }
 
-body {
-  background: var(--light-gray);
-  color: var(--gray-dark);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  padding-top: var(--header-height);
-}
-
 /* PayPal Button Styles */
 .pp-7NZBCCB8LA938 {
   text-align: center;
@@ -322,14 +315,12 @@ input:focus, select:focus, textarea:focus {
 
 /* === Modern Hero Section Styles === */
 .hero {
-  background-color: #0b0b20;
   color: var(--white);
   position: relative;
   overflow: hidden;
   min-height: 95vh;
   display: flex;
   align-items: center;
-  isolation: isolate;
 }
 
 @media (min-width: 640px) { /* sm breakpoint */
@@ -723,7 +714,6 @@ input:focus, select:focus, textarea:focus {
 
 /* This is an override/refinement of the initial .social-proof styles if they existed earlier */
 .social-proof {
-  background: var(--primary-dark);
   color: var(--gray-200); /* Lighter text on dark background */
   padding: 4rem 0; /* Increased padding */
   /* Removed border-top and border-bottom */
@@ -1552,7 +1542,6 @@ input:focus, select:focus, textarea:focus {
 /* How It Works Section */
 .how-it-works {
 	padding: var(--section-spacing) 0; /* Tailwind: py-10 sm:py-16 md:py-20 */
-	background-color: var(--white);
 }
 /* steps-container is styled with Tailwind grid in component, CSS version is for non-Tailwind context */
 .steps-container {

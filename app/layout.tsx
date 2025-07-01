@@ -3,17 +3,9 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Script from "next/script";
-import Link from 'next/link';
 import { Suspense } from 'react';
 import Loading from './loading';
-
-export const metadata: Metadata = {
-  title: {
-    template: '%s | CheapCC - Affordable Adobe CC Subscriptions',
-    default: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
-  },
-  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 75% off. Instant delivery for all Adobe apps.",
-};
+import UnifiedBackground from "@/components/UnifiedBackground";
 
 export default function RootLayout({
   children,
@@ -44,7 +36,8 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans antialiased bg-white text-[#171717]">
+      <body className="font-sans antialiased bg-white text-[#171717] relative">
+        <UnifiedBackground />
         <noscript>
           <iframe 
             src="https://www.googletagmanager.com/ns.html?id=GTM-M6P65BTX"

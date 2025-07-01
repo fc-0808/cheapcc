@@ -3,48 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Script from 'next/script';
 import { motion, Variants } from 'framer-motion';
 
-// A component for the animated stars for better performance and control
-const Star = ({ size, left, top, duration, delay }: { size: number, left: string, top: string, duration: number, delay: number }) => (
-  <motion.div
-    className="absolute rounded-full bg-white"
-    style={{
-      width: `${size}px`,
-      height: `${size}px`,
-      left,
-      top,
-      boxShadow: `0 0 ${size * 2}px rgba(255, 255, 255, 0.5)`,
-    }}
-    initial={{ opacity: 0, scale: 0.5 }}
-    animate={{ opacity: [0, 1, 0.5, 0], scale: 1 }}
-    transition={{
-      duration,
-      repeat: Infinity,
-      repeatType: "loop",
-      delay,
-      ease: "linear"
-    }}
-    aria-hidden="true"
-    role="presentation"
-  />
-);
-
 export default function HeroSection() {
-  const [stars, setStars] = useState<Array<{id: number, size: number, left: string, top: string, duration: number, delay: number}>>([]);
-  
-  // Generate stars on client-side only
-  useEffect(() => {
-    setStars(
-      Array.from({ length: 40 }).map((_, i) => ({
-        id: i,
-        size: Math.random() * 2 + 1,
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        duration: Math.random() * 5 + 3,
-        delay: Math.random() * 2,
-      }))
-    );
-  }, []);
-
   const handleScrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -70,25 +29,7 @@ export default function HeroSection() {
   return (
     <>
       <Script id="hero-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(heroSchemaData) }} />
-      <section className="hero relative overflow-hidden min-h-screen flex items-center justify-center -mt-16" aria-labelledby="hero-heading">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] z-0" aria-hidden="true" />
-        
-        {/* Animated Nebula and Stars */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          <motion.div
-            className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
-            animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-            transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_rgba(255,_51,_102,_0.1),_transparent_70%)]"
-            animate={{ scale: [1, 1.05, 1], rotate: [0, -5, 0] }}
-            transition={{ duration: 50, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          {stars.map(star => <Star key={star.id} {...star} />)}
-        </div>
-
+      <section className="hero relative overflow-hidden min-h-screen flex items-center justify-center -mt-16 bg-transparent" aria-labelledby="hero-heading">
         <motion.div
           className="container mx-auto px-4 py-8 relative z-10 flex flex-col items-center justify-center text-center"
           variants={containerVariants}

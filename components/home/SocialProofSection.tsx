@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState, useEffect } from 'react';
 // Import necessary hooks and components
-import { motion, useInView, animate, useMotionValue, useTransform, useScroll } from 'framer-motion';
+import { motion, useInView, animate, useMotionValue, useTransform } from 'framer-motion';
 
 const COUNTERS_DATA = [
   { id: 'customers', target: 500, label: 'Happy Customers', icon: 'fas fa-users', suffix: '+' },
@@ -34,10 +34,10 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
   useEffect(() => {
     setParticles(
       Array(3).fill(0).map(() => ({
-        top: `${Math.random() * 80 - 40}px`,
-        left: `${Math.random() * 80 - 40}px`,
-        opacity: 0.3 + Math.random() * 0.5,
-        scale: 0.5 + Math.random() * 0.5
+        top: `${Math.random() * 60 - 30}px`, // Reduced range
+        left: `${Math.random() * 60 - 30}px`, // Reduced range
+        opacity: 0.3 + Math.random() * 0.4,
+        scale: 0.4 + Math.random() * 0.4
       }))
     );
   }, []);
@@ -75,7 +75,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
     >
       {/* Subtle background glow */}
       <motion.div
-        className="absolute w-full h-full blur-[80px] opacity-30 bg-[radial-gradient(circle_at_center,rgba(255,51,102,0.4),transparent_70%)]"
+        className="absolute w-full h-full blur-[70px] opacity-30 bg-[radial-gradient(circle_at_center,rgba(255,51,102,0.4),transparent_70%)]" // Reduced blur
         animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.2, 0.4, 0.2] }}
         transition={{ 
           duration: 8, 
@@ -89,7 +89,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
       <motion.div
         className="flex flex-col items-center relative z-10"
         animate={{ 
-          y: [0, -10, 0], 
+          y: [0, -8, 0], // Reduced float height
           rotate: [0, rotateZ.get(), 0]
         }}
         transition={{ 
@@ -100,10 +100,10 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
         }}
       >
         {/* Icon with glowing orbital ring */}
-        <div className="relative mb-5">
+        <div className="relative mb-4">
           {/* Orbital ring animation */}
           <motion.div 
-            className="absolute -inset-3 opacity-0"
+            className="absolute -inset-2.5 opacity-0" // Shrunk inset
             animate={{ 
               opacity: [0, 0.8, 0],
               rotate: [0, 360],
@@ -116,7 +116,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
               ease: "linear"
             }}
           >
-            <svg width="100" height="100" viewBox="0 0 100 100" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <svg width="80" height="80" viewBox="0 0 100 100" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <defs>
                 <linearGradient id={`orbital-gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#ff3366" stopOpacity="0.6" />
@@ -130,7 +130,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
           
           {/* Icon with background shimmer */}
           <motion.div
-            className="w-16 h-16 flex items-center justify-center relative z-10"
+            className="w-14 h-14 flex items-center justify-center relative z-10" // Shrunk size
             whileHover={{ scale: 1.1 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
@@ -144,7 +144,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
                 delay: floatDelay
               }}
             />
-            <i className={`${icon} text-[#ff3366] text-3xl`}></i>
+            <i className={`${icon} text-[#ff3366] text-2xl`}></i> {/* Shrunk icon font size */}
           </motion.div>
         </div>
         
@@ -154,7 +154,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
           {particles.map((particle, particleIndex) => (
             <motion.div
               key={particleIndex}
-              className="absolute w-1.5 h-1.5 rounded-full bg-[#ff3366]"
+              className="absolute w-1 h-1 rounded-full bg-[#ff3366]" // Shrunk particle size
               style={{
                 top: particle.top,
                 left: particle.left,
@@ -162,8 +162,8 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
                 scale: particle.scale
               }}
               animate={{
-                y: [0, -15, 0],
-                x: [0, Math.random() * 10 - 5, 0],
+                y: [0, -12, 0], // Reduced float height
+                x: [0, Math.random() * 8 - 4, 0],
                 opacity: [0, 0.8, 0]
               }}
               transition={{
@@ -177,9 +177,9 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
           
           {/* Counter number */}
           <motion.div 
-            className="text-6xl md:text-7xl font-bold text-white mb-2"
+            className="text-5xl md:text-6xl font-bold text-white mb-1.5" // Shrunk font sizes and margin
             style={{ 
-              textShadow: "0 0 20px rgba(255, 51, 102, 0.5), 0 0 40px rgba(255, 51, 102, 0.2)" 
+              textShadow: "0 0 15px rgba(255, 51, 102, 0.5), 0 0 30px rgba(255, 51, 102, 0.2)" // Reduced shadow
             }}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -205,7 +205,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
           {/* Label with gradient underline */}
           <div className="relative">
             <motion.div 
-              className="text-[#d1d5db] text-sm tracking-wider font-medium uppercase"
+              className="text-gray-300 text-xs tracking-wider font-medium uppercase" // Shrunk font size
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ 
@@ -218,7 +218,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
             
             {/* Animated gradient underline */}
             <motion.div 
-              className="h-0.5 bg-gradient-to-r from-transparent via-[#ff3366] to-transparent mt-2 w-0"
+              className="h-px bg-gradient-to-r from-transparent via-[#ff3366] to-transparent mt-1.5 w-0" // Shrunk height and margin
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
               transition={{ 
@@ -236,81 +236,17 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
 
 export default function SocialProofSection() {
   const sectionRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-  
-  // Transform scrollYProgress into a parallax effect
-  const y = useTransform(scrollYProgress, [0, 1], [50, -50]);
-  
-  // Use state to store random stars that will be generated client-side only
-  const [stars, setStars] = useState<Array<{width: string, height: string, top: string, left: string, boxShadow: string}>>([]);
 
-  // Generate stars on client-side only
-  useEffect(() => {
-    setStars(
-      Array(20).fill(0).map(() => {
-        const size = Math.random() * 2 + 1;
-        return {
-          width: `${size}px`,
-          height: `${size}px`,
-          top: `${Math.random() * 100}%`,
-          left: `${Math.random() * 100}%`,
-          boxShadow: `0 0 ${Math.random() * 4 + 2}px rgba(255, 255, 255, 0.7)`,
-        };
-      })
-    );
-  }, []);
-  
   return (
     <section 
       ref={sectionRef}
-      className="bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] py-20 md:py-32 relative overflow-hidden"
+      className="py-16 md:py-28 relative overflow-hidden" // Shrunk padding
     >
-      {/* Animated background elements for depth */}
-      <motion.div 
-        className="absolute inset-0 -top-20 h-full w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,51,102,0.15),rgba(255,255,255,0))]" 
-        style={{ y }}
-      />
-      
-      {/* Subtle star field background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {stars.map((star, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white"
-            style={star}
-            animate={{ 
-              opacity: [0, 0.7, 0],
-              scale: [0, 1, 0]
-            }}
-            transition={{
-              duration: 2 + Math.random() * 3,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "easeInOut"
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Animated Nebula and Stars - matching Hero section */}
-      <motion.div
-        className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
-        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-        transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_rgba(255,_51,_102,_0.1),_transparent_70%)]"
-        animate={{ scale: [1, 1.05, 1], rotate: [0, -5, 0] }}
-        transition={{ duration: 50, repeat: Infinity, ease: 'easeInOut' }}
-      />
       
       <div className="container relative z-10 mx-auto px-4">
         
         {/* Counter grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-6xl mx-auto">
           {COUNTERS_DATA.map((counter, index) => (
             <Counter
               key={counter.id}
