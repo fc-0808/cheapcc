@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useInView, AnimatePresence, Variants } from 'framer-motion';
 
 const HOME_FAQS = [
   {
@@ -25,92 +25,233 @@ const HOME_FAQS = [
   },
 ];
 
-
 export default function HomeFAQSection() {
-  const faqRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const titleInView = useInView(titleRef, { once: false, margin: "-100px 0px" });
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [particles, setParticles] = useState<Array<{x: number, y: number, size: number, color: string}>>([]);
 
+  // Generate particles for background effect
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (faqRef.current) {
-      observer.observe(faqRef.current);
-    }
-    return () => {
-      if (faqRef.current) {
-        observer.unobserve(faqRef.current);
-      }
-    };
+    const newParticles = Array.from({ length: 20 }).map(() => ({
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 1 + Math.random() * 3,
+      color: `rgba(${Math.floor(200 + Math.random() * 55)}, ${Math.floor(40 + Math.random() * 40)}, ${Math.floor(80 + Math.random() * 40)}, ${0.1 + Math.random() * 0.3})`
+    }));
+    setParticles(newParticles);
   }, []);
 
-  return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#171746] via-[#131347] to-[#151533] py-20 md:py-32" id="faq">
-      {/* Animated Nebula and Stars - matching Hero section */}
-      <motion.div
-        className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_rgba(120,_80,_255,_0.15),_transparent_70%)]"
-        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-        transition={{ duration: 40, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_rgba(255,_51,_102,_0.1),_transparent_70%)]"
-        animate={{ scale: [1, 1.05, 1], rotate: [0, -5, 0] }}
-        transition={{ duration: 50, repeat: Infinity, ease: 'easeInOut' }}
-      />
+  // Animation variants
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.3 }
+    }
+  };
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10" ref={faqRef}>
-        <div className={`section-heading text-center mb-8 sm:mb-12 stagger-item ${isVisible ? 'visible' : ''}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 hero-3d-text">Frequently Asked Questions</h2>
-          <p className="text-base sm:text-lg text-gray-300">Quick answers to common questions about our Adobe Creative Cloud subscriptions</p>
-        </div>
-        <div className={`faq-accordion max-w-3xl mx-auto stagger-item ${isVisible ? 'visible' : ''}`}>
-          {HOME_FAQS.map((item, idx) => (
-            <div
-              key={idx}
-              className={`faq-item border border-gray-200 rounded-lg mb-4 shadow-sm overflow-hidden ${openFaq === idx ? 'active bg-white' : 'bg-gray-50/90'}`} // Slightly transparent background
+  const itemVariants: Variants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100, damping: 15 }
+    }
+  };
+
+  const faqVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({ 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        delay: 0.1 * i,
+        duration: 0.6,
+        ease: [0.215, 0.61, 0.355, 1]
+      }
+    })
+  };
+
+  return (
+    <section className="relative py-20 pb-28 md:py-32 md:pb-40 overflow-hidden" id="faq" ref={sectionRef}>
+      {/* Floating particles */}
+      {particles.map((particle, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            backgroundColor: particle.color,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            x: [0, Math.random() * 20 - 10, 0],
+            opacity: [0.1, 0.8, 0.1]
+          }}
+          transition={{
+            duration: 5 + Math.random() * 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: Math.random() * 5
+          }}
+        />
+      ))}
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.div 
+          className="text-center mb-12 sm:mb-16"
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={containerVariants}
+        >
+          <motion.h2 
+            ref={titleRef}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6"
+            variants={itemVariants}
+            style={{ 
+              textShadow: '0 0 20px rgba(255, 51, 102, 0.3)',
+              transform: titleInView ? "perspective(1000px) rotateX(0deg)" : "perspective(1000px) rotateX(10deg)",
+              willChange: 'transform'
+            }}
+          >
+            <motion.span 
+              className="inline-block"
+              animate={{ 
+                y: [0, -5, 0],
+                x: [0, 2, 0]
+              }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div
-                className="faq-question p-4 sm:p-5 flex justify-between items-center cursor-pointer"
+              Frequently
+            </motion.span>
+            <motion.span 
+              className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent inline-block"
+              animate={{ 
+                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
+              }}
+              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+              style={{ 
+                backgroundSize: "200% 100%",
+                willChange: 'background-position'
+              }}
+            >
+              &nbsp;Asked Questions
+            </motion.span>
+          </motion.h2>
+          <motion.p 
+            variants={itemVariants}
+            className="text-white/80 mx-auto mb-8 text-base sm:text-lg font-light tracking-wide max-w-2xl"
+          >
+            Quick answers to common questions about our Adobe Creative Cloud subscriptions
+          </motion.p>
+        </motion.div>
+
+        <motion.div 
+          className="max-w-3xl mx-auto"
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={containerVariants}
+        >
+          {HOME_FAQS.map((item, idx) => (
+            <motion.div
+              key={idx}
+              custom={idx}
+              variants={faqVariants}
+              className={`mb-6 relative z-10 backdrop-blur-sm border transform transition-all duration-500 ${
+                openFaq === idx 
+                  ? 'border-pink-500/30 shadow-[0_0_25px_rgba(219,39,119,0.15)]' 
+                  : 'border-white/10 hover:border-white/20'
+              } rounded-xl overflow-hidden`}
+            >
+              <motion.div
+                className={`p-5 sm:p-6 flex justify-between items-center cursor-pointer ${
+                  openFaq === idx ? 'bg-white/10' : 'bg-white/5'
+                }`}
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                 tabIndex={0}
                 role="button"
                 aria-expanded={openFaq === idx}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setOpenFaq(openFaq === idx ? null : idx)}
+                whileHover={{ 
+                  backgroundColor: openFaq === idx ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.1)'
+                }}
+                transition={{ duration: 0.2 }}
               >
-                <h3 className="text-base sm:text-lg font-medium text-[#2c2d5a] pr-8">{item.q}</h3>
-                <span className={`faq-icon flex-shrink-0 text-[#ff3366] transition-transform duration-300 ease-in-out ${openFaq === idx ? 'transform rotate-180' : ''}`}>
-                  <i className="fas fa-chevron-down" />
-                </span>
-              </div>
-              {/* Updated faq-answer div */}
-              <div
-                className={`faq-answer overflow-hidden transition-all duration-300 ease-in-out ${
-                  openFaq === idx 
-                    ? 'max-h-96 opacity-100 pt-0 pb-4 sm:pb-5 px-4 sm:px-5' // Added pt-0, padding applied when open
-                    : 'max-h-0 opacity-0 px-4 sm:px-5' // Keep horizontal padding for smoother height transition
-                }`}
-              >
-                {/* Inner p tag for the text content, no specific padding here */}
-                <p className={`text-xs sm:text-sm md:text-base text-gray-600 ${openFaq === idx ? 'pt-2 border-t border-gray-100' : ''}`}>
-                  {item.a}
-                </p>
-              </div>
-            </div>
+                <h3 className="text-lg sm:text-xl font-medium text-white pr-10">{item.q}</h3>
+                <motion.div 
+                  className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white"
+                  animate={{ rotate: openFaq === idx ? 45 : 0 }}
+                  transition={{ duration: 0.4, ease: [0.215, 0.61, 0.355, 1] }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </motion.div>
+              </motion.div>
+
+              <AnimatePresence>
+                {openFaq === idx && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.215, 0.61, 0.355, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-white/10">
+                      <motion.p 
+                        className="text-gray-300 pt-4"
+                        initial={{ y: -10, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.3, delay: 0.1 }}
+                      >
+                        {item.a}
+                      </motion.p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ))}
-        </div>
-        <div className="view-all-faqs text-center mt-8 sm:mt-10">
-          <a href="/faq" className="btn btn-outline inline-flex items-center gap-2 px-4 sm:px-6 py-2 rounded-full border border-[#b9a7d1] text-[#2c2d5a] text-sm sm:text-base font-semibold hover:bg-[#f3f4f6] transition">
-            <span>View All FAQs</span> <i className="fas fa-arrow-right" />
-          </a>
-        </div>
+        </motion.div>
+
+        <motion.div 
+          className="text-center mt-10 sm:mt-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <motion.a 
+            href="/faq" 
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm sm:text-base font-medium hover:bg-white/15 transition-all duration-300"
+            whileHover={{ 
+              scale: 1.05, 
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)",
+              borderColor: "rgba(255, 255, 255, 0.3)"
+            }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span>View All FAQs</span> 
+            <motion.span
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </motion.span>
+          </motion.a>
+        </motion.div>
       </div>
     </section>
   );

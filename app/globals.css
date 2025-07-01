@@ -152,6 +152,16 @@ html {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
+/* Hide scrollbar for clean UI */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 /* === Modern Footer Styles === */
 footer {
   background-color: #111827;

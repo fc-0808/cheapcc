@@ -2,7 +2,7 @@
 module.exports = {
 	content: ['./app/**/*.{js,ts,jsx,tsx,mdx}', './components/**/*.{js,ts,jsx,tsx,mdx}'],
 	theme: {
-			extend: {
+		extend: {
 			animation: {
 				'nebula-drift': 'drift 60s linear infinite',
 				'nebula-pulse': 'pulse 15s ease-in-out infinite',

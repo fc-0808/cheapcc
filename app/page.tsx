@@ -311,18 +311,21 @@ export default function Home() {
     function onScroll() {
       if (checkoutRef.current && !checkoutVisible) {
         const rect = checkoutRef.current.getBoundingClientRect();
-        if (rect.top < window.innerHeight - 100) setCheckoutVisible(true);
+        // Only consider the checkout section visible when it's well into the viewport
+        // Instead of just barely visible (window.innerHeight - 100)
+        if (rect.top < window.innerHeight * 0.3) setCheckoutVisible(true);
       }
     }
     window.addEventListener('scroll', onScroll);
-    onScroll(); // Check on mount
+    // Don't check on mount to prevent popup from showing immediately
     return () => window.removeEventListener('scroll', onScroll);
   }, [checkoutVisible]);
 
   // Show login popup
   useEffect(() => {
     if (checkoutVisible && !isUserSignedIn && !hasPopupBeenShown) {
-      setTimeout(() => setShowLoginPopup(true), 500);
+      // Increase delay to give user time to interact with checkout section first
+      setTimeout(() => setShowLoginPopup(true), 1500);
       setHasPopupBeenShown(true);
     }
   }, [checkoutVisible, isUserSignedIn, hasPopupBeenShown]);
