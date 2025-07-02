@@ -25,39 +25,6 @@ function OrderSuccessContent() {
       return;
     }
 
-    const pollOrder = async () => {
-      if (!orderId) return;
-
-      // Add retry mechanism
-      let attempts = 0;
-      const maxAttempts = 5;
-      const initialDelay = 1000;
-      let delay = initialDelay;
-
-      const poll = async (): Promise<void> => {
-        try {
-          setLoading(true);
-          const response = await fetch('/api/orders/get-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId })
-          });
-
-          if (!response.ok) {
-            if (response.status === 404) {
-              // 404 means order not found yet, which is expected initially
-              // so we continue polling
-              console.log(`Order ${orderId} not found yet, continuing to poll...`);
-              return;
-            }
-
-            // For other errors like network issues, we'll retry with backoff
-            const errData = await response.json().catch(() => ({ error: 'Unknown error' }));
-            console.warn(`Error fetching order status (attempt ${attempts+1}/${maxAttempts}):`, errData.error);
-            
-            // If we've reached max attempts, show error state
-            if (attempts >= maxAttempts) {
-              console.error(`Max polling attempts (${maxAttempts}) reached for order ${orderId}`);
     let isMounted = true;
     let attempts = 0;
     const maxAttempts = 5;
