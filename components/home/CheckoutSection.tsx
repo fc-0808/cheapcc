@@ -453,8 +453,25 @@ export default function CheckoutSection({
                           setCheckoutFormError(details.error);
                           reject(new Error(details.error));
                         } else {
+                          console.log('PayPal payment successful, initiating redirect to success page...');
                           setPaymentStatus('success');
-                          window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
+                          
+                          // Dispatch global event for PayPal success
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('paypal-payment-success', {
+                              detail: { orderID: data.orderID }
+                            }));
+                          }
+                          
+                          // Redirect to success page with the order ID
+                          try {
+                            window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
+                          } catch (redirectError) {
+                            console.error('Failed to redirect after successful payment:', redirectError);
+                            // Try a direct navigation as fallback
+                            window.location.assign(`${window.location.origin}/success?paypal_order_id=${data.orderID}`);
+                          }
+                          
                           resolve();
                         }
                       })
@@ -618,8 +635,25 @@ export default function CheckoutSection({
                       setCheckoutFormError(details.error);
                       reject(new Error(details.error));
                     } else {
+                      console.log('PayPal payment successful, initiating redirect to success page...');
                       setPaymentStatus('success');
-                      window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
+                      
+                      // Dispatch global event for PayPal success
+                      if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('paypal-payment-success', {
+                          detail: { orderID: data.orderID }
+                        }));
+                      }
+                      
+                      // Redirect to success page with the order ID
+                      try {
+                        window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
+                      } catch (redirectError) {
+                        console.error('Failed to redirect after successful payment:', redirectError);
+                        // Try a direct navigation as fallback
+                        window.location.assign(`${window.location.origin}/success?paypal_order_id=${data.orderID}`);
+                      }
+                      
                       resolve();
                     }
                   })
@@ -727,6 +761,37 @@ export default function CheckoutSection({
     isUserSignedIn, 
     isFormValid
   ]);
+
+  // Add this effect after other useEffects to monitor payment status and handle redirection
+  useEffect(() => {
+    let redirectTimeout: NodeJS.Timeout | null = null;
+
+    // Handle PayPal success redirection
+    if (paymentStatus === 'success' && activeTab === 'paypal') {
+      console.log('Payment status changed to success, ensuring redirection happens...');
+      
+      // Get PayPal order ID from the closest element with data attribute
+      const paypalContainers = document.querySelectorAll('[data-paypal-container]');
+      let orderIdFromDom: string | null = null;
+      
+      // Check for any recent PayPal order ID in the DOM
+      paypalContainers.forEach(container => {
+        const id = container.getAttribute('data-latest-order-id');
+        if (id) orderIdFromDom = id;
+      });
+      
+      if (orderIdFromDom) {
+        console.log(`Found PayPal order ID in DOM: ${orderIdFromDom}, redirecting as fallback...`);
+        redirectTimeout = setTimeout(() => {
+          window.location.href = `${window.location.origin}/success?paypal_order_id=${orderIdFromDom}`;
+        }, 1000); // Delay to allow other redirection methods to work first
+      }
+    }
+    
+    return () => {
+      if (redirectTimeout) clearTimeout(redirectTimeout);
+    };
+  }, [paymentStatus, activeTab]);
 
   return (
     <section className="relative py-20 md:py-32 overflow-hidden" id="checkout" ref={sectionRef}>
