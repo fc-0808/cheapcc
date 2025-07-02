@@ -36,6 +36,14 @@ const nextConfig = {
 	compress: true,
 	// Avoid adding X-Powered-By header
 	poweredByHeader: false,
+	// Disable CSS processing to bypass the error
+	webpack: (config) => {
+		// Find and disable the CSS minimizer
+		if (config.optimization && config.optimization.minimizer) {
+			config.optimization.minimizer = config.optimization.minimizer.filter((minimizer) => !minimizer.constructor.name.includes('CssMinimizerPlugin'))
+		}
+		return config
+	},
 }
 
 module.exports = withBundleAnalyzer(nextConfig)

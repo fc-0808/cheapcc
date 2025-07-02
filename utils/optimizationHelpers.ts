@@ -13,10 +13,10 @@ export function useIntersectionObserver(options = {}) {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [hasIntersected, setHasIntersected] = useState(false);
   const ref = useRef<HTMLElement | null>(null);
-  
+
   useEffect(() => {
     if (!ref.current || hasIntersected) return;
-    
+
     const observer = new IntersectionObserver(([entry]) => {
       setIsIntersecting(entry.isIntersecting);
       
@@ -31,16 +31,16 @@ export function useIntersectionObserver(options = {}) {
       rootMargin: '100px',
       ...options
     });
-    
+
     observer.observe(ref.current);
-    
+
     return () => {
       if (ref.current) {
         observer.unobserve(ref.current);
       }
     };
   }, [options, hasIntersected]);
-  
+
   return [ref, isIntersecting || hasIntersected];
 }
 

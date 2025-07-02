@@ -1,6 +1,8 @@
 "use client";
 
-export default function Loading() {
+import React from 'react';
+
+export default function ProfileLoading() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#0f111a] relative">
       {/* Background glow effect */}
@@ -10,10 +12,10 @@ export default function Loading() {
           animation: 'pulse 3s ease-in-out infinite',
         }}
       />
-      
-      {/* Particles for added sophistication */}
+
+      {/* Particles effect */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <div
             key={i}
             className="absolute rounded-full bg-white opacity-30 pointer-events-none"
@@ -29,39 +31,32 @@ export default function Loading() {
           />
         ))}
       </div>
-      
-      <div className="text-center relative z-10">
-        {/* Logo Animation */}
-        <div className="mb-6 flex items-center justify-center">
-          <div className="text-4xl font-extrabold text-white tracking-tight">
-            Cheap
-            <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent relative inline-flex">
-              CC
-            </span>
+
+      <div className="w-full max-w-md rounded-xl p-6 relative z-10 bg-white/5 backdrop-blur-sm border border-white/10 shadow-lg">
+        {/* Profile skeleton loader */}
+        <div className="flex flex-col items-center">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-fuchsia-500/30 via-pink-500/30 to-red-500/30 mb-4 animate-pulse"></div>
+          <div className="h-6 w-40 bg-white/10 rounded-md mb-8 animate-pulse"></div>
+          
+          <div className="w-full space-y-6">
+            <div className="space-y-2 w-full">
+              <div className="h-4 w-20 bg-white/10 rounded-md"></div>
+              <div className="h-10 w-full bg-white/10 rounded-md animate-pulse"></div>
+            </div>
+            
+            <div className="space-y-2 w-full">
+              <div className="h-4 w-24 bg-white/10 rounded-md"></div>
+              <div className="h-10 w-full bg-white/10 rounded-md animate-pulse"></div>
+            </div>
+            
+            <div className="h-10 w-full bg-gradient-to-r from-fuchsia-500/50 via-pink-500/50 to-red-500/50 rounded-md animate-pulse"></div>
           </div>
         </div>
-        
-        {/* Savings Tag */}
-        <div className="absolute -top-2 -right-16 transform rotate-12 bg-[#ff3366] text-white text-xs px-3 py-1 rounded-full font-bold shadow-md animate-bounce" style={{ animationDuration: '2s' }}>
-          75% OFF
-        </div>
-
-        {/* Loading Progress Animation */}
-        <div className="relative h-1.5 w-48 mx-auto bg-white/10 backdrop-blur-sm rounded-full overflow-hidden mb-4 border border-white/20">
-          <div className="absolute top-0 left-0 h-full w-1/2 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 rounded-full animate-[loading_2s_ease-in-out_infinite]"></div>
-        </div>
-        
-        <h2 className="text-xs font-medium text-gray-300 mb-1">Loading your dashboard...</h2>
       </div>
       
-      {/* Custom keyframes for animations and scrollbar styling */}
+      {/* Custom keyframes and scrollbar styling */}
       <style jsx global>{`
         /* Animation keyframes */
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          50% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
-        }
         @keyframes pulse {
           0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.95); }
           50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.05); }

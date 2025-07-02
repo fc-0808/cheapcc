@@ -193,12 +193,22 @@ export default function Header() {
   }, [pathname]);
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    setIsDropdownOpen(false);
-    setIsMobileMenuOpen(false);
-    router.push('/');
-    router.refresh();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      
+      // Update local state
+      setUser(null);
+      setUserName('');
+      setAuthChecked(true);
+      setIsDropdownOpen(false);
+      setIsMobileMenuOpen(false);
+      
+      // Force a hard navigation to refresh the auth state completely
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const toggleDropdown = () => {

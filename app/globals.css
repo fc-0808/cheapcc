@@ -1,11 +1,11 @@
 /* app/globals.css */
+@import "tailwindcss";
+
 html {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: #ec4899 rgba(15, 15, 30, 0.1);
+  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(15, 17, 26, 0.95);
 }
-
-@import "tailwindcss";
 
 :root {
   /* Color Variables */
@@ -503,19 +503,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  background: rgba(15, 15, 30, 0.1);
+  width: 8px;
+  background: rgba(15, 17, 26, 0.95);
   transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 15, 30, 0.1);
+  background: rgba(15, 17, 26, 0.95);
   border-radius: 10px;
   margin: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #d946ef, #ec4899, #ef4444);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -523,7 +523,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #c026d3, #db2777, #dc2626);
+  background: rgba(255, 51, 102, 0.4);
   cursor: pointer;
 }
 
@@ -1142,14 +1142,15 @@ input:focus, select:focus, textarea:focus {
   display: none; /* For Chrome, Safari, and Opera */
 }
 
+/* These styles will apply if we decide to show scrollbars */
 .pricing .overflow-x-auto::-webkit-scrollbar-thumb {
-  background-color: var(--primary-light);
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
 }
 
 .pricing .overflow-x-auto::-webkit-scrollbar-track {
-  background-color: var(--gray-100);
-  border-radius: 6px;
+  background: rgba(15, 17, 26, 0.95);
+  border-radius: 10px;
 }
 
 .plan-card {
@@ -3301,12 +3302,12 @@ input:focus, select:focus, textarea:focus {
 /* Add these styles at the end of the file */
 
 /* Font Awesome icon fixes */
-.fa-loaded [class^="fas "],
-.fa-loaded [class^="far "],
-.fa-loaded [class^="fab "],
-.fa-loaded [class*=" fas "],
-.fa-loaded [class*=" far "],
-.fa-loaded [class*=" fab "] {
+.fa-loaded [class^="fas"],
+.fa-loaded [class^="far"],
+.fa-loaded [class^="fab"],
+.fa-loaded [class*=" fas"],
+.fa-loaded [class*=" far"],
+.fa-loaded [class*=" fab"] {
   display: inline-block;
   font-style: normal;
   font-variant: normal;
@@ -3315,33 +3316,33 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Fallback for icons */
-i[class^="fas "],
-i[class^="far "],
-i[class^="fab "],
-i[class*=" fas "],
-i[class*=" far "],
-i[class*=" fab "] {
+i[class^="fas"],
+i[class^="far"],
+i[class^="fab"],
+i[class*=" fas"],
+i[class*=" far"],
+i[class*=" fab"] {
   min-width: 1em;
   min-height: 1em;
   display: inline-block;
 }
 
 /* Ensure icons are visible while Font Awesome is loading */
-html:not(.fa-loaded) i[class^="fas "],
-html:not(.fa-loaded) i[class^="far "],
-html:not(.fa-loaded) i[class^="fab "],
-html:not(.fa-loaded) i[class*=" fas "],
-html:not(.fa-loaded) i[class*=" far "],
-html:not(.fa-loaded) i[class*=" fab "] {
+html:not(.fa-loaded) i[class^="fas"],
+html:not(.fa-loaded) i[class^="far"],
+html:not(.fa-loaded) i[class^="fab"],
+html:not(.fa-loaded) i[class*=" fas"],
+html:not(.fa-loaded) i[class*=" far"],
+html:not(.fa-loaded) i[class*=" fab"] {
   position: relative;
 }
 
-html:not(.fa-loaded) i[class^="fas "]::before,
-html:not(.fa-loaded) i[class^="far "]::before,
-html:not(.fa-loaded) i[class^="fab "]::before,
-html:not(.fa-loaded) i[class*=" fas "]::before,
-html:not(.fa-loaded) i[class*=" far "]::before,
-html:not(.fa-loaded) i[class*=" fab "]::before {
+html:not(.fa-loaded) i[class^="fas"]::before,
+html:not(.fa-loaded) i[class^="far"]::before,
+html:not(.fa-loaded) i[class^="fab"]::before,
+html:not(.fa-loaded) i[class*=" fas"]::before,
+html:not(.fa-loaded) i[class*=" far"]::before,
+html:not(.fa-loaded) i[class*=" fab"]::before {
   content: "";
   display: inline-block;
   width: 1em;
