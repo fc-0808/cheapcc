@@ -42,7 +42,7 @@ export default function BenefitsSection() {
     },
     {
       id: "email-delivery",
-      title: "Instant Email Delivery",
+      title: "Email Delivery",
       description: "Receive your Adobe account details via email immediately after purchase with all apps ready to download.",
       icon: "fa-envelope-open-text",
       color: "#7e22ce"

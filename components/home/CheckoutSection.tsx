@@ -132,10 +132,6 @@ export default function CheckoutSection({
   
   const [nameError, setNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
-
-  // Card swiper for mobile/tablet view
-  const [[activeCardIndex, direction], setActiveCard] = useState([0, 0]);
-  const [isDragging, setIsDragging] = useState(false);
   
   // Track screen size to determine which view to render
   const [isMobile, setIsMobile] = useState(false);
@@ -275,20 +271,6 @@ export default function CheckoutSection({
     isFormValid
   ]);
   
-  // Card swipe handlers for mobile/tablet
-  const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false);
-    const threshold = 100;
-    
-    if (info.offset.x < -threshold && activeCardIndex === 0) {
-      setActiveCard([1, 1]); // Move right to summary
-    } else if (info.offset.x > threshold && activeCardIndex === 1) {
-      setActiveCard([0, -1]); // Move left to billing
-    } else {
-      setActiveCard([activeCardIndex, 0]); // Reset to current position
-    }
-  }, [activeCardIndex, setActiveCard, setIsDragging]);
-
   // --- Constants and Framer Motion Variants ---
   const selectedPriceOption = useMemo(() => 
     PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[1],
@@ -311,44 +293,280 @@ export default function CheckoutSection({
   ], []);
 
   // Mobile card variants
-  const cardVariants: Variants = useMemo(() => ({
-    center: {
-      x: 0,
-      scale: 1,
-      zIndex: 10,
-      opacity: 1,
-      rotateY: 0,
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-      transition: { duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }
-    },
-    left: {
-      x: -10,
-      scale: 0.9,
-      zIndex: 5,
-      opacity: 0.7,
-      rotateY: 10,
-      boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.3)',
-      transition: { duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }
-    },
-    right: {
-      x: 10,
-      scale: 0.9,
-      zIndex: 5,
-      opacity: 0.7,
-      rotateY: -10,
-      boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.3)',
-      transition: { duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }
-    }
+  // Mobile specific variants
+  const mobileCardVariants: Variants = useMemo(() => ({
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   }), []);
-
-  const getCardVariant = useCallback((index: number) => {
-    if (index === activeCardIndex) return 'center';
-    if (index < activeCardIndex) return 'left';
-    return 'right';
-  }, [activeCardIndex]);
   
-  // Render checkout cards - without payment form for mobile version
-  const renderBillingCard = useCallback((includePaymentForm: boolean = true) => (
+  // Render mobile/tablet card switcher with swipe functionality
+  const renderMobileCardSwitcher = useCallback(() => {
+    return (
+      <div className="relative w-full max-w-md mx-auto md:hidden">
+        <motion.div 
+          variants={itemVariants}
+          className="w-full bg-white/5 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl shadow-black/20 border border-white/10"
+        >
+          {/* Unified Checkout Form - Mobile/Tablet */}
+          
+          {/* Section 1: Billing Information */}
+          <h3 className="text-xl font-semibold text-white mb-6">Billing Information</h3>
+          <div className="space-y-6 mb-8">
+            <div>
+              <div className="relative group">
+                <div className={`absolute -inset-0.5 rounded-lg blur transition duration-300 ${nameError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
+                <i className="far fa-user text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
+                <input type="text" id="name-checkout-mobile" required value={name} disabled={isUserSignedIn}
+                  onChange={e => !isUserSignedIn && setName(e.target.value)}
+                  className={`relative w-full px-4 py-3 pl-10 border-b-2 bg-black/20 focus:outline-none transition text-white ${nameError ? 'border-red-500' : 'border-white/20 focus:border-fuchsia-400/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-black/30' : ''}`}
+                />
+                <label htmlFor="name-checkout-mobile" className={`absolute left-10 transition-all duration-300 pointer-events-none ${name || isUserSignedIn ? '-top-5 left-0' : 'top-3'} text-${name || isUserSignedIn ? 'xs' : 'base'} ${nameError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-5 group-focus-within:text-xs group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Full Name</label>
+                {isUserSignedIn && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <span className="bg-gradient-to-r from-green-500 to-cyan-500 text-xs text-black font-medium py-0.5 px-2 rounded-full flex items-center gap-1">
+                      <i className="fas fa-check text-[10px]"></i> Auto-filled
+                    </span>
+                  </div>
+                )}
+              </div>
+              <AnimatePresence>
+                {nameError && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><i className="fas fa-exclamation-circle"></i>{nameError}</motion.p>}
+              </AnimatePresence>
+            </div>
+            <div>
+              <div className="relative group">
+                <div className={`absolute -inset-0.5 rounded-lg blur transition duration-300 ${emailError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
+                <i className="far fa-envelope text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
+                <input type="email" id="email-checkout-mobile" required value={email} disabled={isUserSignedIn}
+                  onChange={e => !isUserSignedIn && setEmail(e.target.value)}
+                  className={`relative w-full px-4 py-3 pl-10 border-b-2 bg-black/20 focus:outline-none transition text-white ${emailError ? 'border-red-500' : 'border-white/20 focus:border-fuchsia-400/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-black/30' : ''}`}
+                />
+                <label htmlFor="email-checkout-mobile" className={`absolute left-10 transition-all duration-300 pointer-events-none ${email || isUserSignedIn ? '-top-5 left-0' : 'top-3'} text-${email || isUserSignedIn ? 'xs' : 'base'} ${emailError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-5 group-focus-within:text-xs group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Email Address</label>
+                {isUserSignedIn && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                    <span className="bg-gradient-to-r from-green-400 to-cyan-400 text-xs text-black font-medium py-0.5 px-2 rounded-full flex items-center gap-1">
+                      <i className="fas fa-check text-[10px]"></i> Auto-filled
+                    </span>
+                  </div>
+                )}
+              </div>
+              <AnimatePresence>
+                {emailError && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><i className="fas fa-exclamation-circle"></i>{emailError}</motion.p>}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/10 my-6"></div>
+
+          {/* Section 2: Payment - Conditionally show locked state or payment form */}
+          <AnimatePresence>
+            {!isFormValid ? (
+              <motion.div
+                initial={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-black/30 border border-white/10 rounded-lg p-4 mb-6 relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-pink-500/10 animate-pulse"></div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-white/5 rounded-full flex items-center justify-center">
+                    <motion.i 
+                      className="fas fa-lock text-fuchsia-400 text-lg"
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    ></motion.i>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Payment Options</p>
+                    <p className="text-gray-400 text-sm">
+                      {!name.trim() && !isValidEmail(email) ? 'Enter your name and email to unlock payment' : 
+                       !name.trim() ? 'Enter your name to unlock payment' : 
+                       !isValidEmail(email) ? 'Enter a valid email to unlock payment' : 
+                       'Validating your information...'}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <h3 className="text-xl font-semibold text-white mb-4">Payment Method</h3>
+                <div className="flex border-b border-white/10 mb-6">
+                  {TABS.map(tab => (
+                    <button key={tab.id} onClick={() => setActiveTab(tab.id as 'stripe' | 'paypal')} className="flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors relative text-gray-400 hover:text-white">
+                      {activeTab === tab.id && <motion.div layoutId="active-payment-tab-mobile" className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-gradient-to-r from-fuchsia-500 to-pink-500" />}
+                      <i className={`${tab.icon} ${activeTab === tab.id ? 'text-fuchsia-400' : ''}`}></i>
+                      <span className={`${activeTab === tab.id ? 'text-white' : ''}`}>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  <motion.div key={activeTab} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.2 }}>                 
+                    {activeTab === 'stripe' ? (
+                      <StripePaymentForm 
+                        containerId="mobile-stripe-container"
+                        handleSubmit={handleStripeSubmit}
+                        paymentStatus={paymentStatus}
+                        stripe={stripe}
+                        elements={elements}
+                        isFormValid={isFormValid}
+                        clientSecret={clientSecret}
+                      />
+                    ) : (
+                      <PayPalPaymentForm 
+                        paypalButtonContainerRef={paypalButtonContainerRef}
+                        onPayPalLoad={onPayPalLoad}
+                        onPayPalError={onPayPalError}
+                        paymentStatus={paymentStatus}
+                        containerId="mobile-paypal-container"
+                        createOrder={() => {
+                          // If we have the retry function, use it
+                          if (createPayPalOrderWithRetry) {
+                            return createPayPalOrderWithRetry(selectedPrice, name, email);
+                          }
+                          
+                          // Otherwise use the original implementation as fallback
+                          return new Promise((resolve, reject) => {
+                            try {
+                              setPaymentStatus('loading');
+                              fetch('/api/orders', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ priceId: selectedPrice, name, email })
+                              })
+                              .then(res => res.json())
+                              .then(data => {
+                                if (data.error) {
+                                  setPaymentStatus('error');
+                                  setCheckoutFormError(data.error);
+                                  reject(new Error(data.error));
+                                } else {
+                                  resolve(data.id);
+                                }
+                              })
+                              .catch((error: unknown) => {
+                                console.error('Error creating PayPal order:', error);
+                                setPaymentStatus('error');
+                                setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
+                                reject(error);
+                              });
+                            } catch (error: unknown) {
+                              console.error('Exception in createOrder:', error);
+                              setPaymentStatus('error');
+                              setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
+                              reject(error);
+                            }
+                          });
+                        }}
+                        onApprove={(data) => {
+                          return new Promise((resolve, reject) => {
+                            fetch('/api/orders/capture', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ orderID: data.orderID })
+                            })
+                            .then(res => res.json())
+                            .then(details => {
+                              if (details.error) {
+                                console.error('Error capturing PayPal order:', details);
+                                setPaymentStatus('error');
+                                setCheckoutFormError(details.error);
+                                reject(new Error(details.error));
+                              } else {
+                                setPaymentStatus('success');
+                                resolve();
+                              }
+                            })
+                            .catch((error: unknown) => {
+                              console.error('Error capturing PayPal payment:', error);
+                              setPaymentStatus('error');
+                              setCheckoutFormError(error instanceof Error ? error.message : 'Failed to capture payment');
+                              reject(error);
+                            });
+                          });
+                        }}
+                        onCancel={() => {
+                          console.log('PayPal payment cancelled');
+                          setPaymentStatus('cancel');
+                        }}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+                {checkoutFormError && <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center text-sm text-red-300 gap-2"><i className="fas fa-exclamation-circle text-red-400"></i>{checkoutFormError}</div>}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Divider */}
+          <div className="border-t border-white/10 my-6"></div>
+
+          {/* Section 3: Order Summary */}
+          <h3 className="text-xl font-semibold text-white mb-4">Order Summary</h3>
+          <div className="space-y-3 pb-4 border-b border-dashed border-white/10">
+            <div className="flex justify-between items-center text-sm"><span className="text-gray-400">Subscription</span><span className="font-medium text-gray-200">{selectedPriceOption.duration}</span></div>
+          </div>
+          <div className="space-y-3 py-4 border-b border-dashed border-white/10">
+            <h4 className="text-sm font-semibold text-gray-200">Billing Details</h4>
+            {timeInfo.isLoading ? (
+              <div className="flex items-center justify-center"><div className="h-4 w-4 border-2 border-gray-600 border-t-fuchsia-500 rounded-full animate-spin"></div></div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Billed on</span><span className="font-medium text-gray-300">{format(timeInfo.currentTime, 'MMMM d, yyyy')}</span></div>
+                <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Expires on</span><span className="font-medium text-gray-300">{timeInfo.expiryTime ? format(timeInfo.expiryTime, 'MMMM d, yyyy') : 'N/A'}</span></div>
+              </>
+            )}
+          </div>
+          <div className="space-y-3 text-sm py-4 border-b border-white/10">
+            <div className="flex justify-between items-center"><span className="text-gray-400">Regular Price</span><span className="line-through text-gray-500">${(selectedPriceOption.price * 4).toFixed(2)}</span></div>
+            <div className="flex justify-between items-center"><span className="text-gray-400">Discount</span><span className="font-medium text-green-400">{Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}% OFF</span></div>
+          </div>
+          <div className="pt-5 flex justify-between items-baseline">
+            <span className="text-base font-semibold text-gray-200">Amount Due Today</span>
+            <div className="flex items-baseline">
+              <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500">${selectedPriceOption.price.toFixed(2)}</span>
+              <span className="ml-1 text-xs text-gray-400">USD</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }, [
+    itemVariants, 
+    name, 
+    setName,
+    email, 
+    setEmail,
+    nameError, 
+    emailError, 
+    isUserSignedIn, 
+    isFormValid, 
+    activeTab,
+    setActiveTab,
+    handleStripeSubmit,
+    paymentStatus,
+    setPaymentStatus,
+    stripe,
+    elements,
+    clientSecret,
+    checkoutFormError,
+    setCheckoutFormError,
+    TABS,
+    timeInfo,
+    selectedPriceOption,
+    paypalButtonContainerRef,
+    onPayPalLoad,
+    onPayPalError,
+    selectedPrice,
+    createPayPalOrderWithRetry
+  ]);
+
+  // Desktop view components
+  const renderDesktopBillingCard = useCallback(() => (
     <motion.div 
       variants={itemVariants}
       className="w-full max-w-md bg-white/5 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl shadow-black/20 border border-white/10"
@@ -418,7 +636,7 @@ export default function CheckoutSection({
         <div className="flex border-b border-white/10 mb-6">
           {TABS.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id as 'stripe' | 'paypal')} className="flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors relative text-gray-400 hover:text-white">
-                  {activeTab === tab.id && <motion.div layoutId="active-payment-tab" className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-gradient-to-r from-fuchsia-500 to-pink-500" />}
+                  {activeTab === tab.id && <motion.div layoutId="active-payment-tab-desktop" className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-gradient-to-r from-fuchsia-500 to-pink-500" />}
                   <i className={`${tab.icon} ${activeTab === tab.id ? 'text-fuchsia-400' : ''}`}></i>
                   <span className={`${activeTab === tab.id ? 'text-white' : ''}`}>{tab.label}</span>
               </button>
@@ -427,113 +645,92 @@ export default function CheckoutSection({
 
         <AnimatePresence mode="wait">
           <motion.div key={activeTab} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.2 }}>
-            {/* Conditionally include payment form only when requested */}
-            {includePaymentForm && (
-              activeTab === 'stripe' ? (
-                <StripePaymentForm 
-                  containerId="billing-card-stripe"
-                  handleSubmit={handleStripeSubmit}
-                  paymentStatus={paymentStatus}
-                  stripe={stripe}
-                  elements={elements}
-                  isFormValid={isFormValid}
-                  clientSecret={clientSecret}
-                />
-              ) : (
-                <PayPalPaymentForm 
-                  paypalButtonContainerRef={paypalButtonContainerRef}
-                  onPayPalLoad={onPayPalLoad}
-                  onPayPalError={onPayPalError}
-                  paymentStatus={paymentStatus}
-                  containerId={`billing-card-paypal-${activeTab === 'paypal' ? '1' : '0'}`}
-                  createOrder={() => {
-                    // If we have the retry function, use it
-                    if (createPayPalOrderWithRetry) {
-                      return createPayPalOrderWithRetry(selectedPrice, name, email);
-                    }
-                    
-                    // Otherwise use the original implementation as fallback
-                    // This will be passed to our context's renderPayPalButton
-                    return new Promise((resolve, reject) => {
-                      try {
-                        setPaymentStatus('loading');
-                        fetch('/api/orders', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ priceId: selectedPrice, name, email })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                          if (data.error) {
-                            setPaymentStatus('error');
-                            setCheckoutFormError(data.error);
-                            reject(new Error(data.error));
-                          } else {
-                            resolve(data.id);
-                          }
-                        })
-                        .catch((error: unknown) => {
-                          console.error('Error creating PayPal order:', error);
-                          setPaymentStatus('error');
-                          setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                          reject(error);
-                        });
-                      } catch (error: unknown) {
-                        console.error('Exception in createOrder:', error);
-                        setPaymentStatus('error');
-                        setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                        reject(error);
-                      }
-                    });
-                  }}
-                  onApprove={(data) => {
-                    return new Promise((resolve, reject) => {
-                      fetch('/api/orders/capture', {
+            {activeTab === 'stripe' ? (
+              <StripePaymentForm 
+                containerId="desktop-stripe-container"
+                handleSubmit={handleStripeSubmit}
+                paymentStatus={paymentStatus}
+                stripe={stripe}
+                elements={elements}
+                isFormValid={isFormValid}
+                clientSecret={clientSecret}
+              />
+            ) : (
+              <PayPalPaymentForm 
+                paypalButtonContainerRef={paypalButtonContainerRef}
+                onPayPalLoad={onPayPalLoad}
+                onPayPalError={onPayPalError}
+                paymentStatus={paymentStatus}
+                containerId="desktop-paypal-container"
+                createOrder={() => {
+                  if (createPayPalOrderWithRetry) {
+                    return createPayPalOrderWithRetry(selectedPrice, name, email);
+                  }
+                  
+                  return new Promise((resolve, reject) => {
+                    try {
+                      setPaymentStatus('loading');
+                      fetch('/api/orders', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderID: data.orderID })
+                        body: JSON.stringify({ priceId: selectedPrice, name, email })
                       })
                       .then(res => res.json())
-                      .then(details => {
-                        if (details.error) {
-                          console.error('Error capturing PayPal order:', details);
+                      .then(data => {
+                        if (data.error) {
                           setPaymentStatus('error');
-                          setCheckoutFormError(details.error);
-                          reject(new Error(details.error));
+                          setCheckoutFormError(data.error);
+                          reject(new Error(data.error));
                         } else {
-                          setPaymentStatus('success');
-                          resolve();
+                          resolve(data.id);
                         }
                       })
                       .catch((error: unknown) => {
-                        console.error('Error capturing PayPal payment:', error);
+                        console.error('Error creating PayPal order:', error);
                         setPaymentStatus('error');
-                        setCheckoutFormError(error instanceof Error ? error.message : 'Failed to capture payment');
+                        setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
                         reject(error);
                       });
+                    } catch (error: unknown) {
+                      console.error('Exception in createOrder:', error);
+                      setPaymentStatus('error');
+                      setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
+                      reject(error);
+                    }
+                  });
+                }}
+                onApprove={(data) => {
+                  return new Promise((resolve, reject) => {
+                    fetch('/api/orders/capture', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ orderID: data.orderID })
+                    })
+                    .then(res => res.json())
+                    .then(details => {
+                      if (details.error) {
+                        console.error('Error capturing PayPal order:', details);
+                        setPaymentStatus('error');
+                        setCheckoutFormError(details.error);
+                        reject(new Error(details.error));
+                      } else {
+                        setPaymentStatus('success');
+                        resolve();
+                      }
+                    })
+                    .catch((error: unknown) => {
+                      console.error('Error capturing PayPal payment:', error);
+                      setPaymentStatus('error');
+                      setCheckoutFormError(error instanceof Error ? error.message : 'Failed to capture payment');
+                      reject(error);
                     });
-                  }}
-                  onCancel={() => {
-                    console.log('PayPal payment cancelled');
-                    setPaymentStatus('cancel');
-                  }}
-                />
-              )
-            )}
-            {!includePaymentForm && (
-              <div className="p-5 border border-white/20 rounded-lg bg-black/20 text-gray-400 text-sm flex flex-col items-center justify-center">
-                <p className="text-center">Continue to next step to complete payment</p>
-                {activeCardIndex === 0 && (
-                  <motion.div 
-                    className="flex items-center gap-2 mt-4 text-fuchsia-400"
-                    animate={{ x: [0, 10, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                  >
-                    <span>Swipe to continue</span>
-                    <i className="fas fa-arrow-right"></i>
-                  </motion.div>
-                )}
-              </div>
+                  });
+                }}
+                onCancel={() => {
+                  console.log('PayPal payment cancelled');
+                  setPaymentStatus('cancel');
+                }}
+              />
             )}
           </motion.div>
         </AnimatePresence>
@@ -549,17 +746,24 @@ export default function CheckoutSection({
     isUserSignedIn, 
     isFormValid, 
     activeTab, 
-    activeCardIndex, 
     handleStripeSubmit, 
     paymentStatus, 
     stripe, 
     elements, 
     clientSecret, 
     checkoutFormError, 
-    TABS
+    TABS,
+    setActiveTab,
+    selectedPrice,
+    createPayPalOrderWithRetry,
+    setPaymentStatus,
+    setCheckoutFormError,
+    paypalButtonContainerRef,
+    onPayPalLoad,
+    onPayPalError
   ]);
 
-  const renderSummaryCard = useCallback((includePaymentForm: boolean = false) => (
+  const renderDesktopSummaryCard = useCallback(() => (
     <motion.div 
       variants={itemVariants} 
       className="w-full max-w-sm bg-white/5 backdrop-blur-md rounded-2xl p-6 shadow-2xl shadow-black/20 border border-white/10"
@@ -586,192 +790,16 @@ export default function CheckoutSection({
       </div>
       <div className="pt-5 flex justify-between items-baseline">
         <span className="text-base font-semibold text-gray-200">Amount Due Today</span>
-        <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500">${selectedPriceOption.price.toFixed(2)}</span>
-      </div>
-      
-      {/* Only show payment form in mobile view when on summary card */}
-      {includePaymentForm && activeCardIndex === 1 && (
-        <div className="mt-8 pt-6 border-t border-white/10">
-          <h3 className="text-xl font-semibold text-white mb-6">Complete Payment</h3>
-          {activeTab === 'stripe' ? (
-            <StripePaymentForm 
-              containerId="summary-card-stripe"
-              handleSubmit={handleStripeSubmit}
-              paymentStatus={paymentStatus}
-              stripe={stripe}
-              elements={elements}
-              isFormValid={isFormValid}
-              clientSecret={clientSecret}
-            />
-          ) : (
-            <PayPalPaymentForm 
-              paypalButtonContainerRef={paypalButtonContainerRef}
-              onPayPalLoad={onPayPalLoad}
-              onPayPalError={onPayPalError}
-              paymentStatus={paymentStatus}
-              containerId={`summary-card-paypal-${activeTab === 'paypal' ? '1' : '0'}`}
-              createOrder={() => {
-                // If we have the retry function, use it
-                if (createPayPalOrderWithRetry) {
-                  return createPayPalOrderWithRetry(selectedPrice, name, email);
-                }
-                
-                // Otherwise use the original implementation as fallback
-                // This will be passed to our context's renderPayPalButton
-                return new Promise((resolve, reject) => {
-                  try {
-                    setPaymentStatus('loading');
-                    fetch('/api/orders', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ priceId: selectedPrice, name, email })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                      if (data.error) {
-                        setPaymentStatus('error');
-                        setCheckoutFormError(data.error);
-                        reject(new Error(data.error));
-                      } else {
-                        resolve(data.id);
-                      }
-                    })
-                    .catch((error: unknown) => {
-                      console.error('Error creating PayPal order:', error);
-                      setPaymentStatus('error');
-                      setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                      reject(error);
-                    });
-                  } catch (error: unknown) {
-                    console.error('Exception in createOrder:', error);
-                    setPaymentStatus('error');
-                    setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                    reject(error);
-                  }
-                });
-              }}
-              onApprove={(data) => {
-                return new Promise((resolve, reject) => {
-                  fetch('/api/orders/capture', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderID: data.orderID })
-                  })
-                  .then(res => res.json())
-                  .then(details => {
-                    if (details.error) {
-                      console.error('Error capturing PayPal order:', details);
-                      setPaymentStatus('error');
-                      setCheckoutFormError(details.error);
-                      reject(new Error(details.error));
-                    } else {
-                      setPaymentStatus('success');
-                      resolve();
-                    }
-                  })
-                  .catch((error: unknown) => {
-                    console.error('Error capturing PayPal payment:', error);
-                    setPaymentStatus('error');
-                    setCheckoutFormError(error instanceof Error ? error.message : 'Failed to capture payment');
-                    reject(error);
-                  });
-                });
-              }}
-              onCancel={() => {
-                console.log('PayPal payment cancelled');
-                setPaymentStatus('cancel');
-              }}
-            />
-          )}
+        <div className="flex items-baseline">
+          <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500">${selectedPriceOption.price.toFixed(2)}</span>
+          <span className="ml-1 text-xs text-gray-400">USD</span>
         </div>
-      )}
-      
-      {activeCardIndex === 1 && !includePaymentForm && (
-        <motion.div 
-          className="flex items-center gap-2 mt-6 justify-center text-fuchsia-400"
-          animate={{ x: [0, -10, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          <i className="fas fa-arrow-left"></i>
-          <span>Swipe for details</span>
-        </motion.div>
-      )}
+      </div>
     </motion.div>
   ), [
     itemVariants, 
     selectedPriceOption, 
-    timeInfo, 
-    activeCardIndex, 
-    activeTab, 
-    handleStripeSubmit,
-    paymentStatus, 
-    checkoutFormError
-  ]);
-
-  // Render mobile/tablet card switcher with swipe functionality
-  const renderMobileCardSwitcher = useCallback(() => {
-    return (
-      <div className="relative w-full max-w-md mx-auto md:hidden">
-        <motion.div 
-          variants={itemVariants}
-          className="w-full bg-white/5 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl shadow-black/20 border border-white/10"
-        >
-          {/* Billing Information Section */}
-          <h3 className="text-xl font-semibold text-white mb-6">Billing Information</h3>
-          <div className="space-y-6 mb-8">
-            <div>
-              <div className="relative group">
-                <div className={`absolute -inset-0.5 rounded-lg blur transition duration-300 ${nameError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
-                <i className="far fa-user text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
-                <input type="text" id="name-checkout-mobile" required value={name} disabled={isUserSignedIn}
-                  onChange={e => !isUserSignedIn && setName(e.target.value)}
-                  className={`relative w-full px-4 py-3 pl-10 border-b-2 bg-black/20 focus:outline-none transition text-white ${nameError ? 'border-red-500' : 'border-white/20 focus:border-fuchsia-400/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-black/30' : ''}`}
-                />
-                <label htmlFor="name-checkout-mobile" className={`absolute left-10 transition-all duration-300 pointer-events-none ${name || isUserSignedIn ? '-top-5 left-0' : 'top-3'} text-${name || isUserSignedIn ? 'xs' : 'base'} ${nameError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-5 group-focus-within:text-xs group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Full Name</label>
-                {isUserSignedIn && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                    <span className="bg-gradient-to-r from-green-500 to-cyan-500 text-xs text-black font-medium py-0.5 px-2 rounded-full flex items-center gap-1">
-                      <i className="fas fa-check text-[10px]"></i> Auto-filled
-                    </span>
-                  </div>
-                )}
-              </div>
-              <AnimatePresence>
-                {nameError && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><i className="fas fa-exclamation-circle"></i>{nameError}</motion.p>}
-              </AnimatePresence>
-            </div>
-            <div>
-              <div className="relative group">
-                <div className={`absolute -inset-0.5 rounded-lg blur transition duration-300 ${emailError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
-                <i className="far fa-envelope text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
-                <input type="email" id="email-checkout-mobile" required value={email} disabled={isUserSignedIn}
-                  onChange={e => !isUserSignedIn && setEmail(e.target.value)}
-                  className={`relative w-full px-4 py-3 pl-10 border-b-2 bg-black/20 focus:outline-none transition text-white ${emailError ? 'border-red-500' : 'border-white/20 focus:border-fuchsia-400/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-black/30' : ''}`}
-                />
-                <label htmlFor="email-checkout-mobile" className={`absolute left-10 transition-all duration-300 pointer-events-none ${email || isUserSignedIn ? '-top-5 left-0' : 'top-3'} text-${email || isUserSignedIn ? 'xs' : 'base'} ${emailError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-5 group-focus-within:text-xs group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Email Address</label>
-                {isUserSignedIn && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                    <span className="bg-gradient-to-r from-green-400 to-cyan-400 text-xs text-black font-medium py-0.5 px-2 rounded-full flex items-center gap-1">
-                      <i className="fas fa-check text-[10px]"></i> Auto-filled
-                    </span>
-                  </div>
-                )}
-              </div>
-              <AnimatePresence>
-                {emailError && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="mt-1.5 text-xs text-red-400 flex items-center gap-1"><i className="fas fa-exclamation-circle"></i>{emailError}</motion.p>}
-              </AnimatePresence>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }, [
-    name, 
-    email, 
-    nameError, 
-    emailError, 
-    isUserSignedIn, 
-    isFormValid
+    timeInfo
   ]);
 
   return (
@@ -821,7 +849,7 @@ export default function CheckoutSection({
           </motion.p>
         </motion.div>
         
-        {/* Mobile combined view */}
+        {/* Mobile view */}
         <motion.div 
           className="md:hidden" 
           initial="hidden" 
@@ -838,8 +866,8 @@ export default function CheckoutSection({
           animate={isInView ? "visible" : "hidden"} 
           variants={containerVariants}
         >
-          {renderBillingCard(true)} {/* Include payment form in desktop view */}
-          {renderSummaryCard(false)} {/* Don't include payment form in desktop summary */}
+          {renderDesktopBillingCard()}
+          {renderDesktopSummaryCard()}
         </motion.div>
       </div>
     </section>
