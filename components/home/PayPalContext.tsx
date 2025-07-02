@@ -151,33 +151,8 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
 
     const safeOnApprove = async (data: any) => {
       try {
-        console.log(`PayPal onApprove called for ${containerId} with data:`, data);
-        
-        // Store the orderID on the container element for fallback redirection
-        if (data && data.orderID) {
-          const container = document.getElementById(containerId);
-          if (container) {
-            container.setAttribute('data-latest-order-id', data.orderID);
-          }
-        }
-        
+        // We no longer need to store order ID for redirection
         const result = await onApprove(data);
-        console.log(`PayPal onApprove completed for ${containerId} with result:`, result);
-        
-        // Get the payment status from the data-payment-status attribute on the container
-        const container = document.getElementById(containerId);
-        const paymentStatus = container?.getAttribute('data-payment-status');
-        
-        // Check if we need to redirect (for cases where the consumer component doesn't handle it)
-        if (data && data.orderID && paymentStatus === 'success') {
-          console.log(`PayPal payment completed successfully. Redirecting to success page with OrderID: ${data.orderID}`);
-          
-          // Add a short delay to allow any state updates to complete
-          setTimeout(() => {
-            window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
-          }, 500);
-        }
-        
         return result;
       } catch (error) {
         console.error(`Error in onApprove for ${containerId}:`, error);

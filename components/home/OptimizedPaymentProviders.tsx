@@ -4,16 +4,6 @@ import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { isClient } from '@/utils/optimizationHelpers';
 import { StripePaymentProvider } from './StripePaymentContext';
 
-// Add a global event for PayPal payment success redirection
-if (typeof window !== 'undefined') {
-  window.addEventListener('paypal-payment-success', (e: any) => {
-    if (e && e.detail && e.detail.orderID) {
-      console.log('Global PayPal success event captured, redirecting...');
-      window.location.href = `${window.location.origin}/success?paypal_order_id=${e.detail.orderID}`;
-    }
-  });
-}
-
 // Lightweight loading indicators for payment providers
 const PayPalFallback = () => (
   <div className="w-full h-12 bg-white/5 backdrop-blur-sm rounded-lg animate-pulse"></div>

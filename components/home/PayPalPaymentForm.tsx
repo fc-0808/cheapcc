@@ -104,17 +104,6 @@ export default function PayPalPaymentForm({
     effectiveOnError
   ]);
 
-  useEffect(() => {
-    if (!mountedRef.current || !paypalButtonContainerRef.current) {
-      return;
-    }
-
-    const container = document.getElementById(uniqueContainerId);
-    if (container) {
-      container.setAttribute('data-payment-status', paymentStatus);
-    }
-  }, [paymentStatus, uniqueContainerId, paypalButtonContainerRef]);
-
   return (
     <div className="space-y-4">
       <div 
@@ -123,7 +112,6 @@ export default function PayPalPaymentForm({
         id={uniqueContainerId}
         data-paypal-container={containerId}
         data-email={email}
-        data-payment-status={paymentStatus}
       >
         {!isPayPalScriptLoaded && (
           <div className="p-4 text-center">

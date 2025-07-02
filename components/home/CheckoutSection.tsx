@@ -11,6 +11,49 @@ import StripePaymentForm from './StripePaymentForm';
 import PayPalPaymentForm from './PayPalPaymentForm';
 import { useRouter } from 'next/navigation';
 
+// Success message component to show after successful payment
+const PaymentSuccessMessage = ({ email }: { email: string }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }} 
+      animate={{ opacity: 1, scale: 1 }} 
+      className="w-full max-w-md rounded-2xl bg-white/5 backdrop-blur-md p-8 border border-white/10 shadow-2xl"
+    >
+      <div className="text-center">
+        <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i className="fas fa-check-circle text-green-400 text-3xl"></i>
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Payment Successful!</h2>
+        <p className="text-gray-300 mb-6">Thank you for your purchase.</p>
+        
+        <div className="bg-white/5 rounded-lg p-4 mb-6 text-left">
+          <p className="text-sm text-gray-300 mb-2">
+            <i className="fas fa-envelope mr-2 text-fuchsia-400"></i>
+            We've sent an order confirmation to:
+          </p>
+          <p className="text-white font-medium truncate">{email}</p>
+        </div>
+        
+        <div className="bg-blue-500/10 border-l-4 border-blue-500 p-4 rounded-r-lg text-left mb-6">
+          <h3 className="font-medium text-blue-300 flex items-center gap-2 mb-1">
+            <i className="fas fa-info-circle"></i>What happens next?
+          </h3>
+          <p className="text-blue-200/80 text-sm">
+            You'll receive an email with your login details and instructions within 24 hours. Please check your inbox (including spam/junk folders).
+          </p>
+        </div>
+        
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-6 py-3 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 text-white font-semibold rounded-lg transition hover:shadow-lg"
+        >
+          Return to Homepage
+        </button>
+      </div>
+    </motion.div>
+  </div>
+);
+
 // Simple requestIdleCallback polyfill - IMPORTANT: Must be outside the component
 const scheduleIdleTask = (callback: Function): any => {
   if (typeof window !== 'undefined') {
@@ -197,19 +240,24 @@ export default function CheckoutSection({
         return;
       }
       
-      const { error } = await stripe.confirmPayment({
-        elements, clientSecret,
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements, 
+        clientSecret,
         confirmParams: {
-          return_url: `${window.location.origin}/success`,
+          // We still need return_url for redirect fallback, but we'll process success in-page
+          return_url: window.location.href, // Redirect back to the same page if needed
           receipt_email: email,
           payment_method_data: { billing_details: { name, email } }
         },
-        redirect: 'always',
+        redirect: 'if_required', // Only redirect if the payment requires additional steps
       });
 
       if (error) {
         setCheckoutFormError(error.message || "An unexpected error occurred.");
         setPaymentStatus('error');
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        // Payment successful, show success message by setting status
+        setPaymentStatus('success');
       }
     } catch (error: any) {
       console.error("Payment submission error:", error);
@@ -453,25 +501,7 @@ export default function CheckoutSection({
                           setCheckoutFormError(details.error);
                           reject(new Error(details.error));
                         } else {
-                          console.log('PayPal payment successful, initiating redirect to success page...');
                           setPaymentStatus('success');
-                          
-                          // Dispatch global event for PayPal success
-                          if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('paypal-payment-success', {
-                              detail: { orderID: data.orderID }
-                            }));
-                          }
-                          
-                          // Redirect to success page with the order ID
-                          try {
-                            window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
-                          } catch (redirectError) {
-                            console.error('Failed to redirect after successful payment:', redirectError);
-                            // Try a direct navigation as fallback
-                            window.location.assign(`${window.location.origin}/success?paypal_order_id=${data.orderID}`);
-                          }
-                          
                           resolve();
                         }
                       })
@@ -635,25 +665,7 @@ export default function CheckoutSection({
                       setCheckoutFormError(details.error);
                       reject(new Error(details.error));
                     } else {
-                      console.log('PayPal payment successful, initiating redirect to success page...');
                       setPaymentStatus('success');
-                      
-                      // Dispatch global event for PayPal success
-                      if (typeof window !== 'undefined') {
-                        window.dispatchEvent(new CustomEvent('paypal-payment-success', {
-                          detail: { orderID: data.orderID }
-                        }));
-                      }
-                      
-                      // Redirect to success page with the order ID
-                      try {
-                        window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
-                      } catch (redirectError) {
-                        console.error('Failed to redirect after successful payment:', redirectError);
-                        // Try a direct navigation as fallback
-                        window.location.assign(`${window.location.origin}/success?paypal_order_id=${data.orderID}`);
-                      }
-                      
                       resolve();
                     }
                   })
@@ -762,39 +774,9 @@ export default function CheckoutSection({
     isFormValid
   ]);
 
-  // Add this effect after other useEffects to monitor payment status and handle redirection
-  useEffect(() => {
-    let redirectTimeout: NodeJS.Timeout | null = null;
-
-    // Handle PayPal success redirection
-    if (paymentStatus === 'success' && activeTab === 'paypal') {
-      console.log('Payment status changed to success, ensuring redirection happens...');
-      
-      // Get PayPal order ID from the closest element with data attribute
-      const paypalContainers = document.querySelectorAll('[data-paypal-container]');
-      let orderIdFromDom: string | null = null;
-      
-      // Check for any recent PayPal order ID in the DOM
-      paypalContainers.forEach(container => {
-        const id = container.getAttribute('data-latest-order-id');
-        if (id) orderIdFromDom = id;
-      });
-      
-      if (orderIdFromDom) {
-        console.log(`Found PayPal order ID in DOM: ${orderIdFromDom}, redirecting as fallback...`);
-        redirectTimeout = setTimeout(() => {
-          window.location.href = `${window.location.origin}/success?paypal_order_id=${orderIdFromDom}`;
-        }, 1000); // Delay to allow other redirection methods to work first
-      }
-    }
-    
-    return () => {
-      if (redirectTimeout) clearTimeout(redirectTimeout);
-    };
-  }, [paymentStatus, activeTab]);
-
   return (
     <section className="relative py-20 md:py-32 overflow-hidden" id="checkout" ref={sectionRef}>
+      {paymentStatus === 'success' && <PaymentSuccessMessage email={email} />}
       <div className="container px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div className="text-center mb-10 sm:mb-14" initial="hidden" animate={isInView ? "visible" : "hidden"} variants={containerVariants}>
         <motion.h2 
