@@ -1,12 +1,12 @@
 'use client';
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import Link from 'next/link';
 import { login } from './actions';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import LoginPageURLMessages from '@/components/LoginPageURLMessages';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import LightweightParticles from '@/components/home/LightweightParticles';
-import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,11 +15,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // New state to toggle email login form visibility
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // Check URL for message parameters
   useEffect(() => {
+    setIsClient(true);
+    
     const params = new URLSearchParams(window.location.search);
     const messageParam = params.get('message');
     const typeParam = params.get('type');
@@ -55,7 +57,6 @@ export default function LoginPage() {
     try {
       await login(formData);
       // If this code runs, the login action didn't redirect, which is unexpected
-      // Most likely, this should not occur since successful login redirects via the server action
       setFormMessage('Redirecting...');
       setFormMessageType('info');
     } catch (error: any) {
@@ -67,38 +68,38 @@ export default function LoginPage() {
     }
   };
 
+  // Optimize rendering for mobile devices
+  const particleCount = typeof window !== 'undefined' && window.innerWidth < 768 ? 8 : 15;
+
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-6 sm:py-8 overflow-y-auto bg-[#0f111a] relative">
-      {/* Replace framer-motion particles with our optimized lightweight particles */}
+      {/* Background particles - only render on client side */}
+      {isClient && (
       <LightweightParticles 
-        count={15}
+          count={particleCount}
         color="rgba(255, 255, 255, 0.4)"
         minSize={1}
         maxSize={3}
         minSpeed={10}
         maxSpeed={30}
       />
+      )}
 
-      {/* Background glow effect - using CSS instead of framer-motion */}
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] bg-[radial-gradient(ellipse_at_center,_rgba(255,_51,_102,_0.15),_transparent_70%)] pointer-events-none animate-pulse"
-        style={{ 
-          animationDuration: '8s',
-          transformOrigin: 'center'
+      {/* Background glow effect */}
+      <motion.div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] bg-[radial-gradient(ellipse_at_center,_rgba(255,_51,_102,_0.15),_transparent_70%)] pointer-events-none"
+        animate={{ 
+          scale: [1, 1.05, 1],
+          opacity: [0.3, 0.5, 0.3],
         }}
+        transition={{ 
+          duration: 8, 
+          repeat: Infinity, 
+          ease: "easeInOut" 
+        }}
+        style={{ willChange: 'transform, opacity' }}
       />
       
-      <Suspense fallback={
-        <div className="w-full max-w-md rounded-xl p-6 sm:p-7 mt-0 mb-2 relative z-10 bg-[rgba(17,17,40,0.7)] border border-white/10 shadow-2xl">
-          <div className="w-32 h-8 mx-auto mb-4 bg-white/5 animate-pulse rounded-md"></div>
-          <div className="h-8 bg-white/5 animate-pulse rounded-md mb-4"></div>
-          <div className="h-4 bg-white/5 animate-pulse rounded-md mb-8 w-2/3 mx-auto"></div>
-          <div className="h-12 bg-white/5 animate-pulse rounded-md mb-5"></div>
-          <div className="h-px bg-white/10 my-5"></div>
-          <div className="h-12 bg-white/5 animate-pulse rounded-md mb-4"></div>
-          <div className="h-4 bg-white/5 animate-pulse rounded-md mt-4 w-1/2 mx-auto"></div>
-        </div>
-      }>
         <motion.div 
           className="w-full max-w-md rounded-xl p-6 sm:p-7 mt-0 mb-2 relative z-10"
           style={{
@@ -133,7 +134,6 @@ export default function LoginPage() {
             Sign in to access your account
           </motion.p>
 
-          {/* Component to display messages from URL parameters */}
           <Suspense fallback={
             <div className="mb-3 p-3 rounded-lg text-sm font-medium bg-white/5 backdrop-blur-sm border border-white/10 text-gray-200">
               Loading messages...
@@ -185,12 +185,14 @@ export default function LoginPage() {
             <span>{showEmailForm ? 'Hide email login' : 'Login with email'}</span>
           </motion.button>
 
-          {/* Expandable Email Login Form */}
+        {/* Expandable Email Login Form with smoother animation */}
+        <AnimatePresence>
           {showEmailForm && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
               className="overflow-hidden"
             >
               <form className="space-y-3" onSubmit={handleSubmit}>
@@ -273,25 +275,12 @@ export default function LoginPage() {
                   className="w-full py-2.5 px-4 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 text-white font-semibold rounded-lg transition focus:ring-2 focus:ring-white/25 focus:outline-none cursor-pointer disabled:opacity-60 shadow-lg relative overflow-hidden"
                   disabled={isLoading}
                 >
-                  {/* Animated shine effect */}
-                  <motion.span 
-                    className="absolute inset-0 opacity-40"
-                    animate={{
-                      background: [
-                        "linear-gradient(45deg, transparent 25%, rgba(255, 255, 255, 0.1) 50%, transparent 75%)",
-                        "linear-gradient(45deg, transparent 20%, rgba(255, 255, 255, 0.2) 50%, transparent 80%)",
-                        "linear-gradient(45deg, transparent 25%, rgba(255, 255, 255, 0.1) 50%, transparent 75%)"
-                      ],
-                      backgroundSize: ["200% 200%"],
-                      backgroundPosition: ["-200% -200%", "200% 200%", "-200% -200%"]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-                  />
                   <span className="relative z-10">{isLoading ? 'Signing in...' : 'Sign in'}</span>
                 </motion.button>
               </form>
             </motion.div>
           )}
+        </AnimatePresence>
 
           {/* Registration Link */}
           <div className="text-center mt-4 text-sm text-gray-400">
@@ -305,7 +294,6 @@ export default function LoginPage() {
             </Link>
           </div>
         </motion.div>
-      </Suspense>
     </main>
   );
 } 

@@ -24,6 +24,8 @@ export default function SEOImage({
   fallbackSrc = '/image-placeholder.jpg',
   priority = false, 
   className = '', 
+  quality = 80,
+  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
   ...props 
 }: SEOImageProps) {
   const [imgSrc, setImgSrc] = useState<string | StaticImport>(src);
@@ -45,7 +47,10 @@ export default function SEOImage({
         <div 
           className="absolute inset-0 bg-gray-200 animate-pulse"
           aria-hidden="true"
-          style={{ width, height }}
+          style={{ 
+            width: typeof width === 'number' ? width : '100%', 
+            height: typeof height === 'number' ? height : '100%' 
+          }}
         />
       )}
       <Image
@@ -57,6 +62,8 @@ export default function SEOImage({
         loading={priority ? "eager" : "lazy"}
         onError={handleError}
         onLoad={handleLoad}
+        quality={quality}
+        sizes={sizes}
         className={`${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 ${className}`}
         {...props}
       />

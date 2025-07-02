@@ -1,17 +1,15 @@
 import React from 'react';
-import { Metadata } from 'next';
-import Header from '@/components/Header';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - Adobe Creative Cloud Subscriptions',
-  description: 'Our privacy policy explains how we collect, use, and protect your information when purchasing Adobe Creative Cloud subscriptions from CheapCC.',
-  keywords: 'adobe cc privacy policy, cheapcc privacy, creative cloud subscription privacy, adobe subscription data privacy',
+  title: 'Privacy Policy - CheapCC',
+  description: 'CheapCC privacy policy and data protection practices. Learn how we handle your personal information when using our Adobe Creative Cloud subscription service.',
+  keywords: 'cheapcc privacy, adobe cc privacy policy, creative cloud data protection, cheapcc data practices',
 };
 
 export default function PrivacyPolicy() {
   return (
     <>
-      <Header />
       <section className="min-h-screen bg-[#0f111a] py-20 px-4 relative z-0">
         {/* Background glow effect */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-[radial-gradient(ellipse_at_center,_rgba(255,_51,_102,_0.15),_transparent_70%)] pointer-events-none"></div>

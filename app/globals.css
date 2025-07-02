@@ -3297,3 +3297,106 @@ input:focus, select:focus, textarea:focus {
 .animate-cc-swap .cc-2 {
   animation: fade-and-swap-c2 4s ease-in-out infinite;
 }
+
+/* Add these styles at the end of the file */
+
+/* Font Awesome icon fixes */
+.fa-loaded [class^="fas "],
+.fa-loaded [class^="far "],
+.fa-loaded [class^="fab "],
+.fa-loaded [class*=" fas "],
+.fa-loaded [class*=" far "],
+.fa-loaded [class*=" fab "] {
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+}
+
+/* Fallback for icons */
+i[class^="fas "],
+i[class^="far "],
+i[class^="fab "],
+i[class*=" fas "],
+i[class*=" far "],
+i[class*=" fab "] {
+  min-width: 1em;
+  min-height: 1em;
+  display: inline-block;
+}
+
+/* Ensure icons are visible while Font Awesome is loading */
+html:not(.fa-loaded) i[class^="fas "],
+html:not(.fa-loaded) i[class^="far "],
+html:not(.fa-loaded) i[class^="fab "],
+html:not(.fa-loaded) i[class*=" fas "],
+html:not(.fa-loaded) i[class*=" far "],
+html:not(.fa-loaded) i[class*=" fab "] {
+  position: relative;
+}
+
+html:not(.fa-loaded) i[class^="fas "]::before,
+html:not(.fa-loaded) i[class^="far "]::before,
+html:not(.fa-loaded) i[class^="fab "]::before,
+html:not(.fa-loaded) i[class*=" fas "]::before,
+html:not(.fa-loaded) i[class*=" far "]::before,
+html:not(.fa-loaded) i[class*=" fab "]::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+/* Dashboard mode specific styles */
+body.dashboard-mode {
+  background-color: #0f111a;
+  color: #ffffff;
+}
+
+/* Handle authenticated state specifically */
+html.dark-theme {
+  color-scheme: dark;
+}
+
+/* Dark mode colors for dashboard */
+.dashboard-mode .fa-chart-line,
+.dashboard-mode .fa-user,
+.dashboard-mode .fa-sign-out-alt,
+.dashboard-mode i.text-\[\#ff3366\] {
+  color: #ff3366 !important;
+}
+
+/* Handle fontawesome CSS when animations start too early */
+.fa-loading i.fas,
+.fa-loading i.far,
+.fa-loading i.fab {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.fa-loaded i.fas,
+.fa-loaded i.far,
+.fa-loaded i.fab {
+  opacity: 1;
+}
+
+/* Fix for authenticated state */
+.cheapcc-main-content {
+  min-height: calc(100vh - 80px);
+  width: 100%;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 768px) {
+  /* Ensure mobile menu renders correctly */
+  .mobile-menu-open {
+    overflow: hidden;
+  }
+  
+  /* Increase tap target sizes for mobile */
+  .dashboard-mode a,
+  .dashboard-mode button {
+    padding: 0.5rem;
+  }
+}

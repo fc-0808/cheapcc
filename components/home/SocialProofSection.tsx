@@ -126,7 +126,7 @@ function Counter({ from, to, suffix, icon, label, index }: CounterProps) {
               transition={{ duration: 3, repeat: Infinity, repeatType: "reverse", delay: floatDelay }}
             />
             {/* UPDATED Icon with gradient text styling */}
-            <i className={`${icon} text-2xl bg-gradient-to-br from-pink-500 to-red-500 bg-clip-text text-transparent`}></i>
+            <i className={`${icon} text-2xl bg-gradient-to-br from-pink-500 to-red-500 bg-clip-text text-transparent`} aria-hidden="true"></i>
           </motion.div>
         </div>
         

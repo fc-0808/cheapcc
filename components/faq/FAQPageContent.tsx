@@ -87,36 +87,63 @@ export default function FAQPageContent() {
   );
 
   return (
-    <main className="faq-page bg-white min-h-screen">
+    <main className="min-h-screen bg-[#0f111a]">
       {/* Hero Section */}
-      <section className="faq-hero py-16 bg-gradient-to-b from-[#f3f4f6] to-white">
-        <div className="container faq-hero-container text-center">
-          <h1 className="text-4xl font-extrabold text-[#2c2d5a] mb-2">Frequently Asked Questions</h1>
-          <p className="text-lg text-gray-500">Find answers to the most common questions about our Adobe Creative Cloud subscriptions</p>
+      <section className="py-20 relative overflow-hidden">
+        {/* Background glow effect */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] bg-[radial-gradient(ellipse_at_center,_rgba(255,_51,_102,_0.15),_transparent_70%)] pointer-events-none"
+          style={{ opacity: 0.5 }}
+        />
+        
+        <div className="container mx-auto px-4 relative z-10 text-center">
+          <div className="inline-block mb-14">
+          </div>
+
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6" style={{ textShadow: '0 0 20px rgba(255, 51, 102, 0.3)' }}>
+            <span className="inline-block">Frequently </span>
+            <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent inline-block"
+              style={{ backgroundSize: "200% 100%" }}>
+              &nbsp;Asked Questions
+            </span>
+          </h1>
+          
+          <p className="text-white/80 mx-auto mb-8 text-base sm:text-lg font-light tracking-wide max-w-2xl">
+            Find answers to the most common questions about our Adobe Creative Cloud subscriptions
+          </p>
         </div>
       </section>
 
       {/* FAQ Content Section */}
-      <section className="faq-content py-10">
-        <div className="container">
+      <section className="py-10 relative">
+        <div className="container mx-auto px-4 relative z-10">
           {/* Search Bar */}
-          <div className="faq-search flex items-center max-w-xl mx-auto mb-8 relative">
-            <input
-              type="text"
-              className="w-full border border-gray-200 rounded-lg py-3 px-4 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-[#ff3366]"
-              placeholder="Search questions..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            <i className="fas fa-search absolute right-4 text-gray-400 pointer-events-none" />
+          <div className="max-w-xl mx-auto mb-8 relative">
+            <div className="relative group">
+              <div className="absolute -inset-0.5 rounded-lg blur opacity-50 bg-gradient-to-r from-fuchsia-600 to-pink-600 group-hover:opacity-75 transition duration-300"></div>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  className="w-full border-none rounded-lg py-3 px-4 pl-10 text-base focus:outline-none text-white bg-white/5 backdrop-blur-sm"
+                  placeholder="Search questions..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+                <i className="fas fa-search absolute left-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
           </div>
 
           {/* Category Tabs */}
-          <div className="faq-categories flex flex-wrap justify-center gap-2 mb-8">
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
             {FAQ_CATEGORIES.map(cat => (
               <button
                 key={cat.key}
-                className={`faq-tab px-4 py-2 rounded-full font-semibold border transition ${activeCategory === cat.key ? 'bg-[#ff3366] text-white border-[#ff3366]' : 'bg-white text-[#2c2d5a] border-gray-200 hover:bg-[#f3f4f6]'}`}
+                className={`px-4 py-2 rounded-full font-semibold transition backdrop-blur-sm ${
+                  activeCategory === cat.key 
+                    ? 'bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 text-white shadow-[0_4px_15px_rgba(219,39,119,0.4)]' 
+                    : 'bg-white/5 text-white/80 border border-white/10 hover:bg-white/10'
+                }`}
                 onClick={() => setActiveCategory(cat.key)}
               >
                 {cat.label}
@@ -125,33 +152,57 @@ export default function FAQPageContent() {
           </div>
 
           {/* FAQ List */}
-          <div className="faq-list max-w-2xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             {filteredFaqs.length === 0 && (
-              <div className="text-center text-gray-400 py-8">No questions found.</div>
+              <div className="text-center text-gray-400 py-8">
+                <i className="fas fa-search text-2xl mb-2"></i>
+                <p>No questions found matching your search.</p>
+              </div>
             )}
             {filteredFaqs.map((item, idx) => (
               <div
                 key={item.q}
-                className={`faq-item mb-4 border border-gray-100 rounded-lg shadow-sm bg-white ${openIdx === idx ? 'active' : ''}`}
+                className={`mb-6 relative backdrop-blur-sm border transition-all duration-300 ${
+                  openIdx === idx 
+                    ? 'border-pink-500/30 shadow-[0_0_25px_rgba(219,39,119,0.15)]' 
+                    : 'border-white/10 hover:border-white/20'
+                } rounded-xl overflow-hidden`}
               >
                 <div
-                  className="faq-question flex justify-between items-center cursor-pointer px-6 py-4"
+                  className={`p-5 sm:p-6 flex justify-between items-center cursor-pointer ${
+                    openIdx === idx ? 'bg-white/10' : 'bg-white/5'
+                  }`}
                   onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
                   tabIndex={0}
                   role="button"
                   aria-expanded={openIdx === idx}
                   onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setOpenIdx(openIdx === idx ? null : idx)}
                 >
-                  <h3 className="font-semibold text-lg text-[#2c2d5a]">{item.q}</h3>
-                  <span className="faq-icon ml-4 text-[#ff3366] text-xl transition-transform" style={{ transform: openIdx === idx ? 'rotate(180deg)' : 'none' }}>
-                    <i className="fas fa-chevron-down" />
-                  </span>
+                  <h3 className="text-lg sm:text-xl font-medium text-white pr-10">{item.q}</h3>
+                  <div 
+                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white transition-transform duration-300"
+                    style={{ transform: openIdx === idx ? 'rotate(45deg)' : 'rotate(0deg)' }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                  </div>
                 </div>
+                
                 <div
-                  className="faq-answer px-6 pb-4 text-gray-700 text-base transition-all"
-                  style={{ maxHeight: openIdx === idx ? 300 : 0, opacity: openIdx === idx ? 1 : 0, overflow: openIdx === idx ? 'visible' : 'hidden' }}
+                  className="overflow-hidden transition-all duration-300"
+                  style={{ 
+                    maxHeight: openIdx === idx ? '1000px' : '0px',
+                    opacity: openIdx === idx ? 1 : 0,
+                    visibility: openIdx === idx ? 'visible' : 'hidden',
+                  }}
                 >
-                  <p>{item.a}</p>
+                  <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-white/10">
+                    <p className="text-gray-300 pt-4">
+                      {item.a}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -159,15 +210,33 @@ export default function FAQPageContent() {
         </div>
       </section>
 
-      {/* Still Have Questions Section */}
-      <section className="still-have-questions py-16 bg-[#f8f9fa]">
-        <div className="container text-center">
-          <h2 className="text-2xl font-bold text-[#2c2d5a] mb-2">Still Have Questions?</h2>
-          <p className="text-gray-500 mb-6">Our support team is here to help you with any questions or concerns about Adobe Creative Cloud.</p>
-          <a href="mailto:support@cheapcc.online" className="btn btn-primary inline-block px-6 py-3 rounded-full bg-[#ff3366] text-white font-semibold shadow hover:bg-[#ff6b8b] transition mb-4">Contact Support</a>
-          <div className="home-link-container mt-2">
-            <a href="/" className="home-link text-[#2c2d5a] hover:underline inline-flex items-center gap-2 font-medium">
-              Back to Homepage <i className="fas fa-home" />
+      {/* Contact Section */}
+      <section className="py-20 relative overflow-hidden">
+        {/* Background glow effect */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[40vh] bg-[radial-gradient(ellipse_at_center,_rgba(124,_58,_237,_0.15),_transparent_70%)] pointer-events-none"
+          style={{ opacity: 0.5 }}
+        />
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Still Have Questions?</h2>
+          <p className="text-white/70 mb-8 max-w-2xl mx-auto">
+            Our support team is here to help you with any questions or concerns about Adobe Creative Cloud.
+          </p>
+          <a 
+            href="mailto:support@cheapcc.online" 
+            className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-600 text-white font-semibold text-base shadow-lg shadow-red-500/30 border border-white/20 transition hover:shadow-xl hover:shadow-red-500/40"
+          >
+            <i className="fas fa-envelope mr-2"></i>
+            Contact Support
+          </a>
+          <div className="mt-6">
+            <a 
+              href="/" 
+              className="inline-flex items-center gap-2 text-white/80 hover:text-white transition"
+            >
+              <i className="fas fa-home"></i>
+              Return to Homepage
             </a>
           </div>
         </div>

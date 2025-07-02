@@ -37,28 +37,28 @@ export default function BenefitsSection() {
       id: "save-money",
       title: "Save Money",
       description: "Pay up to 75% less than official Adobe pricing while getting the exact same product and benefits.",
-      icon: "fa-piggy-bank",
+      icon: "fas fa-piggy-bank",
       color: "#ff3366"
     },
     {
       id: "email-delivery",
       title: "Email Delivery",
       description: "Receive your Adobe account details via email immediately after purchase with all apps ready to download.",
-      icon: "fa-envelope-open-text",
+      icon: "fas fa-envelope-open-text",
       color: "#7e22ce"
     },
     {
       id: "genuine",
       title: "100% Genuine Products",
       description: "Full access to all Creative Cloud apps and services with regular updates and cloud storage.",
-      icon: "fa-certificate",
+      icon: "fas fa-certificate",
       color: "#3b82f6"
     },
     {
       id: "alternative",
       title: "Safe Alternative",
       description: "A trusted alternative destination for affordable Adobe Creative Cloud subscriptions with excellent support.",
-      icon: "fa-shield-alt",
+      icon: "fas fa-shield-alt",
       color: "#10b981"
     },
   ];
@@ -340,7 +340,7 @@ export default function BenefitsSection() {
                     }}
                   >
                     <motion.i 
-                      className={`fas ${benefit.icon}`}
+                      className={benefit.icon}
                       animate={{ rotate: [0, 10, 0, -10, 0] }}
                       transition={{ 
                         duration: 6, 

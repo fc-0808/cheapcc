@@ -18,7 +18,6 @@ import BenefitsSection from "@/components/home/BenefitsSection";
 import PricingSection from "@/components/home/PricingSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import LoginPopup from "@/components/home/LoginPopup";
-import Header from '@/components/Header';
 
 // Dynamically import heavy components
 const CheckoutSection = dynamic(() => import("@/components/home/CheckoutSection"), {
@@ -329,7 +328,6 @@ export default function Home() {
   return (
     <main className="min-h-screen overflow-x-hidden">
       <OptimizedPaymentProviders>
-        <Header />
         <LoginPopup 
           show={showLoginPopup} 
           onClose={() => setShowLoginPopup(false)}

@@ -1,17 +1,15 @@
 import React from 'react';
-import { Metadata } from 'next';
-import Header from '@/components/Header';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Refund Policy - Adobe Creative Cloud Subscription Returns',
-  description: 'Our 7-day money-back guarantee and refund policy for Adobe Creative Cloud subscriptions purchased through CheapCC. Learn about our refund eligibility and process.',
-  keywords: 'adobe cc refund, cheapcc money back guarantee, creative cloud refund policy, adobe subscription return',
+  title: 'Refund Policy - CheapCC',
+  description: 'CheapCC refund policy for Adobe Creative Cloud subscriptions. Learn about our refund terms and conditions for your Adobe CC purchase.',
+  keywords: 'cheapcc refund, adobe cc refund policy, creative cloud refund, cheapcc money back',
 };
 
 export default function RefundPolicy() {
   return (
     <>
-      <Header />
       <section className="min-h-screen bg-[#0f111a] py-20 px-4 relative z-0">
         {/* Background glow effect */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-[radial-gradient(ellipse_at_center,_rgba(255,_51,_102,_0.15),_transparent_70%)] pointer-events-none"></div>
