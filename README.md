@@ -263,3 +263,56 @@ To learn more about the technologies used in this project:
 - [Supabase Documentation](https://supabase.io/docs)
 - [PayPal API Documentation](https://developer.paypal.com/docs/api/overview/)
 - [Stripe API Documentation](https://stripe.com/docs/api)
+
+## Performance Optimizations
+
+This project includes several performance optimizations to ensure fast loading times and a smooth user experience:
+
+### JavaScript Optimizations
+
+1. **Code Splitting and Lazy Loading**:
+   - Components are dynamically imported using `next/dynamic` and `React.lazy`
+   - Heavy components like payment forms are only loaded when needed
+   - Below-the-fold content is lazy-loaded based on viewport visibility
+
+2. **Bundle Size Optimization**:
+   - Added bundle analyzer for monitoring JavaScript bundle sizes
+   - Optimized package imports for heavy libraries (framer-motion, lodash, etc.)
+   - Tree-shaking is enabled for production builds
+
+3. **Rendering Optimizations**:
+   - Memoization of expensive calculations with `useMemo` and custom `memoize` helper
+   - Prevention of unnecessary re-renders with `useCallback` and `React.memo`
+   - Optimized intersection observer implementation for viewport detection
+
+4. **Resource Loading**:
+   - Payment provider scripts are loaded on-demand
+   - Staggered component mounting to avoid layout shifts
+   - Idle callbacks for non-critical operations
+
+5. **State Management**:
+   - Efficient form validation that doesn't block rendering
+   - Properly memoized callbacks to prevent excessive re-renders
+   - Optimized event handlers with passive event listeners
+
+### Configuration Optimizations
+
+1. **Next.js Config**:
+   - Enabled SWC minification for faster builds
+   - Configured modern CSS transform with Lightning CSS
+   - Disabled unnecessary headers for better performance
+   - Added compression for faster loading times
+   - Enabled Partial Prerendering for better page loads
+
+2. **Image Optimization**:
+   - Configured efficient image caching
+   - Set up appropriate device sizes for responsive images
+   - Enabled modern image formats (AVIF, WebP)
+
+To analyze bundle sizes, run:
+
+```bash
+npm run analyze
+```
+
+This will generate a visual report of your JavaScript bundles to identify opportunities for further optimization.

@@ -1,4 +1,8 @@
 /** @type {import('next').NextConfig} */
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+	enabled: process.env.ANALYZE === 'true',
+})
+
 const nextConfig = {
 	reactStrictMode: process.env.NODE_ENV === 'development', // Only enable in development
 	env: {
@@ -22,12 +26,16 @@ const nextConfig = {
 	},
 	experimental: {
 		optimizeCss: true,
-		// Allow 'fs' module in server components
-		serverExternalPackages: ['fs', 'path'],
+		// Enable optimized package imports to reduce bundle size
+		optimizePackageImports: ['framer-motion', 'date-fns', 'lodash', 'three', 'react-google-recaptcha'],
 	},
 	typescript: {
 		ignoreBuildErrors: true,
 	},
+	// Improve output compression for faster load times
+	compress: true,
+	// Avoid adding X-Powered-By header
+	poweredByHeader: false,
 }
 
-module.exports = nextConfig
+module.exports = withBundleAnalyzer(nextConfig)

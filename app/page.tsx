@@ -9,6 +9,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
 import { v4 as uuidv4 } from 'uuid';
 import { PRICING_OPTIONS } from '@/utils/products';
+import dynamic from 'next/dynamic';
 
 // Import section components
 import HeroSection from "@/components/home/HeroSection";
@@ -16,12 +17,31 @@ import SocialProofSection from "@/components/home/SocialProofSection";
 import BenefitsSection from "@/components/home/BenefitsSection";
 import PricingSection from "@/components/home/PricingSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
-import CheckoutSection from "@/components/home/CheckoutSection";
-import HomeFAQSection from "@/components/home/HomeFAQSection";
 import LoginPopup from "@/components/home/LoginPopup";
-import StripePaymentContextWrapper from '@/components/home/StripePaymentContextWrapper';
-import PayPalContextWrapper from '@/components/home/PayPalContextWrapper';
 import Header from '@/components/Header';
+
+// Dynamically import heavy components
+const CheckoutSection = dynamic(() => import("@/components/home/CheckoutSection"), {
+  loading: () => (
+    <div className="py-20 md:py-32">
+      <div className="container px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center">
+          <div className="h-8 w-8 border-2 border-fuchsia-500/50 border-t-fuchsia-500 rounded-full animate-spin"></div>
+        </div>
+      </div>
+    </div>
+  ),
+  ssr: false
+});
+
+const HomeFAQSection = dynamic(() => import("@/components/home/HomeFAQSection"), {
+  ssr: false
+});
+
+// Dynamically import the optimized payment providers
+const OptimizedPaymentProviders = dynamic(() => import('@/components/home/OptimizedPaymentProviders'), {
+  ssr: false
+});
 
 // Load Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -308,64 +328,62 @@ export default function Home() {
 
   return (
     <main className="min-h-screen overflow-x-hidden">
-      <PayPalContextWrapper>
-        <StripePaymentContextWrapper>
-          <Header />
-          <LoginPopup 
-            show={showLoginPopup} 
-            onClose={() => setShowLoginPopup(false)}
-            onRegisterClick={handleRegisterClick}
-            onContinueAsGuest={handleContinueAsGuest}
-          />
-          
-          <React.Suspense fallback={<div>Loading messages...</div>}>
-            <UrlMessageDisplay />
-          </React.Suspense>
+      <OptimizedPaymentProviders>
+        <Header />
+        <LoginPopup 
+          show={showLoginPopup} 
+          onClose={() => setShowLoginPopup(false)}
+          onRegisterClick={handleRegisterClick}
+          onContinueAsGuest={handleContinueAsGuest}
+        />
+        
+        <React.Suspense fallback={<div>Loading messages...</div>}>
+          <UrlMessageDisplay />
+        </React.Suspense>
 
-          <HeroSection />
-          <SocialProofSection />
-          <BenefitsSection />
-          
-          <PricingSection 
-            selectedPrice={selectedPrice}
-            setSelectedPrice={setSelectedPrice}
-            selectedPriceRef={selectedPriceRef}
-            userEmail={email}
-          />
-          
-          <HowItWorksSection />
+        <HeroSection />
+        <SocialProofSection />
+        <BenefitsSection />
+        
+        <PricingSection 
+          selectedPrice={selectedPrice}
+          setSelectedPrice={setSelectedPrice}
+          selectedPriceRef={selectedPriceRef}
+          userEmail={email}
+        />
+        
+        <HowItWorksSection />
 
-          <div ref={checkoutRef}>
-            <Elements
-              stripe={stripePromise}
-              options={stripeOptions}
-            >
-              <CheckoutSection
-                  selectedPrice={selectedPrice}
-                  isUserSignedIn={isUserSignedIn}
-                  name={name}
-                  setName={setName}
-                  email={email}
-                  setEmail={setEmail}
-                  canPay={canPay}
-                  paymentStatus={paymentStatus}
-                  setPaymentStatus={setPaymentStatus}
-                  checkoutFormError={checkoutFormError}
-                  setCheckoutFormError={setCheckoutFormError}
-                  paypalButtonContainerRef={paypalButtonContainerRef}
-                  sdkReady={sdkReady}
-                  onPayPalLoad={handlePayPalLoad}
-                  onPayPalError={handlePayPalError}
-                  renderPayPalButton={renderPayPalButton}
-                  clientSecret={clientSecret}
-                  createPayPalOrderWithRetry={createPayPalOrderWithRetry}
-              />
-            </Elements>
-          </div>
-          
-          <HomeFAQSection />
-        </StripePaymentContextWrapper>
-      </PayPalContextWrapper>
+        <div ref={checkoutRef}>
+          <Elements
+            stripe={stripePromise}
+            options={stripeOptions}
+          >
+            <CheckoutSection
+                selectedPrice={selectedPrice}
+                isUserSignedIn={isUserSignedIn}
+                name={name}
+                setName={setName}
+                email={email}
+                setEmail={setEmail}
+                canPay={canPay}
+                paymentStatus={paymentStatus}
+                setPaymentStatus={setPaymentStatus}
+                checkoutFormError={checkoutFormError}
+                setCheckoutFormError={setCheckoutFormError}
+                paypalButtonContainerRef={paypalButtonContainerRef}
+                sdkReady={sdkReady}
+                onPayPalLoad={handlePayPalLoad}
+                onPayPalError={handlePayPalError}
+                renderPayPalButton={renderPayPalButton}
+                clientSecret={clientSecret}
+                createPayPalOrderWithRetry={createPayPalOrderWithRetry}
+            />
+          </Elements>
+        </div>
+        
+        <HomeFAQSection />
+      </OptimizedPaymentProviders>
     </main>
   );
 }

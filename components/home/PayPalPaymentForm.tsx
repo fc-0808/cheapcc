@@ -8,65 +8,63 @@ interface PayPalPaymentFormProps {
   onPayPalLoad?: () => void;
   onPayPalError?: () => void;
   renderPayPalButton?: () => void;
-  paymentStatus: 'idle' | 'loading' | 'success' | 'error' | 'cancel';
-  containerId: string;
-  createOrder: () => Promise<string>;
-  onApprove: (data: any) => Promise<void>;
+  paymentStatus?: 'idle' | 'loading' | 'success' | 'error' | 'cancel';
+  containerId?: string;
+  createOrder?: () => Promise<string>;
+  onApprove?: (data: any) => Promise<void>;
   onCancel?: () => void;
+  email?: string;
+  onLoad?: () => void;
+  onError?: () => void;
 }
 
 export default function PayPalPaymentForm({
   paypalButtonContainerRef,
   onPayPalLoad,
   onPayPalError,
-  paymentStatus,
-  containerId,
+  paymentStatus = 'idle',
+  containerId = 'default-paypal-container',
   createOrder,
   onApprove,
-  onCancel
+  onCancel,
+  email,
+  onLoad,
+  onError
 }: PayPalPaymentFormProps) {
   const { isPayPalScriptLoaded, renderPayPalButton, cleanupPayPalButton } = usePayPal();
   const mountedRef = useRef(true);
   const renderedRef = useRef(false);
   const uniqueContainerId = `paypal-button-${containerId}`;
 
-  // Handle component lifecycle
+  const effectiveOnLoad = onLoad || onPayPalLoad;
+  const effectiveOnError = onError || onPayPalError;
+
   useEffect(() => {
-    // Mark component as mounted
     mountedRef.current = true;
     renderedRef.current = false;
     
     return () => {
-      // Mark component as unmounted
       mountedRef.current = false;
-      
-      // We don't need to manually clean up PayPal buttons on unmount
-      // This avoids errors when the container is already removed from the DOM
-      // The tracking in PayPalContext will handle this more safely
     };
   }, []);
 
-  // Render PayPal button when SDK is loaded
   useEffect(() => {
     if (!isPayPalScriptLoaded || !mountedRef.current || !paypalButtonContainerRef.current) {
       return;
     }
 
-    // Make sure container exists before attempting to render
     const container = document.getElementById(uniqueContainerId);
     if (!container) {
       console.error(`PayPal button container with ID ${uniqueContainerId} not found`);
       return;
     }
 
-    // Safely clean up any existing button first
     try {
       if (renderedRef.current) {
         cleanupPayPalButton(uniqueContainerId);
       }
     } catch (err) {
       console.error(`Error cleaning up previous PayPal button for ${uniqueContainerId}:`, err);
-      // Continue with rendering even if cleanup failed
     }
     
     console.log(`PayPal script loaded, rendering button in container ${uniqueContainerId}`);
@@ -80,18 +78,18 @@ export default function PayPalPaymentForm({
         onCancel,
         (err) => {
           console.error('PayPal button error:', err);
-          if (onPayPalError && mountedRef.current) onPayPalError();
+          if (effectiveOnError && mountedRef.current) effectiveOnError();
         }
       );
       
       renderedRef.current = true;
       
-      if (onPayPalLoad && mountedRef.current) {
-        onPayPalLoad();
+      if (effectiveOnLoad && mountedRef.current) {
+        effectiveOnLoad();
       }
     } catch (error) {
       console.error(`Error rendering PayPal button for ${uniqueContainerId}:`, error);
-      if (onPayPalError && mountedRef.current) onPayPalError();
+      if (effectiveOnError && mountedRef.current) effectiveOnError();
     }
   }, [
     isPayPalScriptLoaded,
@@ -102,8 +100,8 @@ export default function PayPalPaymentForm({
     onCancel,
     renderPayPalButton,
     cleanupPayPalButton,
-    onPayPalLoad,
-    onPayPalError
+    effectiveOnLoad,
+    effectiveOnError
   ]);
 
   return (
@@ -113,6 +111,7 @@ export default function PayPalPaymentForm({
         className={`w-full flex items-center justify-center min-h-14 rounded-md ${paymentStatus === 'loading' ? 'opacity-60 pointer-events-none' : ''}`}
         id={uniqueContainerId}
         data-paypal-container={containerId}
+        data-email={email}
       >
         {!isPayPalScriptLoaded && (
           <div className="p-4 text-center">
@@ -120,7 +119,6 @@ export default function PayPalPaymentForm({
             <p className="text-sm text-gray-400">Loading PayPal...</p>
           </div>
         )}
-        {/* PayPal buttons will be rendered here by the SDK */}
         {paymentStatus === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md z-10">
             <div className="h-6 w-6 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
