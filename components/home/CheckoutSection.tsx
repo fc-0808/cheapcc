@@ -454,6 +454,7 @@ export default function CheckoutSection({
                           reject(new Error(details.error));
                         } else {
                           setPaymentStatus('success');
+                          window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
                           resolve();
                         }
                       })
@@ -618,6 +619,7 @@ export default function CheckoutSection({
                       reject(new Error(details.error));
                     } else {
                       setPaymentStatus('success');
+                      window.location.href = `${window.location.origin}/success?paypal_order_id=${data.orderID}`;
                       resolve();
                     }
                   })
