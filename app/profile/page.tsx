@@ -11,6 +11,7 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
@@ -26,6 +27,7 @@ export default function ProfilePage() {
   // State for the new password form
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newPasswordTouched, setNewPasswordTouched] = useState(false);
@@ -98,50 +100,75 @@ export default function ProfilePage() {
     setIsSubmittingProfile(true);
     setProfileMessage(""); setProfileMessageType("");
 
-    const formData = new FormData(e.currentTarget);
-    const result = await updateProfile(formData);
+    try {
+      const result = await updateProfile(name);
 
-    if (result.error) {
-      setProfileMessage(result.error);
+      if (result.error) {
+        setProfileMessage(result.error);
+        setProfileMessageType("error");
+      } else if (result.success) {
+        setProfileMessage(result.message || "Profile updated successfully!");
+        setProfileMessageType("success");
+      }
+    } catch (error) {
+      setProfileMessage("An unexpected error occurred.");
       setProfileMessageType("error");
-    } else if (result.success) {
-      setProfileMessage(result.message || "Profile updated successfully!");
-      setProfileMessageType("success");
+    } finally {
+      setIsSubmittingProfile(false);
     }
-    setIsSubmittingProfile(false);
   };
 
   const handlePasswordChangeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPasswordMessage(""); setPasswordMessageType("");
 
+    if (!currentPassword) {
+      setPasswordMessage("Current password is required.");
+      setPasswordMessageType("error");
+      return;
+    }
+
     if (!newPassword || !confirmPassword) {
       setPasswordMessage("New password and confirmation are required.");
-      setPasswordMessageType("error"); return;
+      setPasswordMessageType("error"); 
+      return;
     }
+    
     if (!isNewPasswordClientValid) {
       setPasswordMessage("New password does not meet all requirements.");
-      setPasswordMessageType("warning"); return;
+      setPasswordMessageType("warning"); 
+      return;
     }
+    
     if (newPassword !== confirmPassword) {
       setPasswordMessage("New passwords do not match.");
-      setPasswordMessageType("error"); return;
+      setPasswordMessageType("error"); 
+      return;
     }
 
     setIsSubmittingPassword(true);
-    const formData = new FormData(e.currentTarget);
-    const result = await changeUserPasswordOnProfile(formData);
+    
+    try {
+      const result = await changeUserPasswordOnProfile(currentPassword, newPassword);
 
-    if (result.error) {
-      setPasswordMessage(result.error);
+      if (result.error) {
+        setPasswordMessage(result.error);
+        setPasswordMessageType("error");
+      } else if (result.success) {
+        setPasswordMessage(result.message || "Password changed successfully!");
+        setPasswordMessageType("success");
+        setCurrentPassword("");
+        setNewPassword(""); 
+        setConfirmPassword("");
+        setNewPasswordTouched(false); 
+        setConfirmPasswordTouched(false);
+      }
+    } catch (error) {
+      setPasswordMessage("An unexpected error occurred.");
       setPasswordMessageType("error");
-    } else if (result.success) {
-      setPasswordMessage(result.message || "Password changed successfully!");
-      setPasswordMessageType("success");
-      setNewPassword(""); setConfirmPassword("");
-      setNewPasswordTouched(false); setConfirmPasswordTouched(false);
+    } finally {
+      setIsSubmittingPassword(false);
     }
-    setIsSubmittingPassword(false);
   };
   
   const handlePreferencesUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -149,39 +176,39 @@ export default function ProfilePage() {
     setIsSubmittingPrefs(true);
     setPrefsMessage(""); setPrefsMessageType("");
 
-    const formData = new FormData(e.currentTarget);
-    const result = await updatePreferences(formData);
-    
-    if (result.error) {
+    try {
+      const result = await updatePreferences(isSubscribed);
+      
+      if (result.error) {
         setPrefsMessage(result.error);
         setPrefsMessageType("error");
-    } else if (result.success) {
+      } else if (result.success) {
         setPrefsMessage(result.message || "Preferences updated!");
         setPrefsMessageType("success");
+      }
+    } catch (error) {
+      setPrefsMessage("An unexpected error occurred.");
+      setPrefsMessageType("error");
+    } finally {
+      setIsSubmittingPrefs(false);
     }
-    setIsSubmittingPrefs(false);
   };
   
   // Loading state UI
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-white to-[#f8f9fa]">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0f111a]">
         <div className="text-center relative">
-          <div className="mb-6 flex items-center justify-center">
-            <div className="text-4xl font-extrabold text-[#2c2d5a] tracking-tight">
+          <div className="mb-8 flex items-center justify-center">
+            <div className="text-3xl font-extrabold text-white tracking-tight">
               Cheap<span className="text-[#ff3366] relative inline-flex">CC
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#ff3366] rounded-full animate-ping opacity-75"></span>
-                <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-[#2c2d5a] rounded-full animate-ping opacity-75 animation-delay-500"></span>
+                <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-[#ff3366] rounded-full animate-ping opacity-60"></span>
               </span>
             </div>
           </div>
-          <div className="absolute -top-2 -right-16 transform rotate-12 bg-[#ff3366] text-white text-xs px-3 py-1 rounded-full font-bold shadow-md animate-bounce" style={{ animationDuration: '2s' }}>75% OFF</div>
-          <div className="relative h-2 w-48 mx-auto bg-gray-200 rounded-full overflow-hidden mb-4">
-            <div className="absolute top-0 left-0 h-full w-1/2 bg-gradient-to-r from-[#2c2d5a] to-[#ff3366] rounded-full animate-[loading_2s_ease-in-out_infinite]"></div>
-          </div>
-          <h2 className="text-xs font-semibold text-[#2c2d5a] mb-1">Loading creative goodness...</h2>
+          <div className="w-16 h-16 border-4 border-[rgba(255,255,255,0.1)] border-t-[#ff3366] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-sm font-medium text-gray-300">Loading your profile...</p>
         </div>
-        <style jsx>{` @keyframes loading { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(-100%); } } .animation-delay-500 { animation-delay: 500ms; } `}</style>
       </div>
     );
   }
@@ -191,92 +218,296 @@ export default function ProfilePage() {
     if (!message) return null;
     const isSuccess = type === 'success';
     const isWarning = type === 'warning';
-    const bgColor = isSuccess ? 'bg-green-50' : isWarning ? 'bg-yellow-50' : 'bg-red-50';
-    const textColor = isSuccess ? 'text-green-700' : isWarning ? 'text-yellow-700' : 'text-red-700';
+    const bgColor = isSuccess ? 'bg-green-500/10' : isWarning ? 'bg-yellow-500/10' : 'bg-red-500/10';
+    const textColor = isSuccess ? 'text-green-400' : isWarning ? 'text-yellow-400' : 'text-red-400';
     const icon = isSuccess ? 'fa-check-circle' : isWarning ? 'fa-exclamation-triangle' : 'fa-times-circle';
 
     return (
-      <div className={`text-xs p-2.5 rounded-md flex items-center gap-2 ${bgColor} ${textColor}`}>
-        <i className={`fas ${icon}`}></i>
+      <div className={`text-sm p-3 rounded-md flex items-start gap-3 ${bgColor} ${textColor}`}>
+        <i className={`fas ${icon} mt-0.5`}></i>
         <span>{message}</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center py-4 px-2 sm:py-6 sm:px-4 mt-10">
-      <div className="w-full max-w-xl bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
-        <h1 className="text-lg font-bold text-[#2c2d5a] mb-4 pb-3 border-b border-gray-200 flex items-center gap-2.5">
-          <i className="fas fa-user-cog text-[#ff3366]"></i>
-          Account Settings
-        </h1>
+    <div className="min-h-screen bg-[#0f111a] flex items-center justify-center p-4 sm:p-6 lg:p-8 pt-24">
+      <div className="w-full max-w-2xl">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-bold text-white mb-2">Account Settings</h1>
+          <p className="text-gray-400">Manage your profile and preferences</p>
+        </div>
         
         <div className="space-y-6">
           {/* Personal Information */}
-          <form onSubmit={handleProfileUpdate} className="space-y-3">
-            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><i className="fas fa-id-card text-gray-400"></i>Personal Information</h2>
-            <div>
-              <label htmlFor="name" className="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
-              <input id="name" name="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="Enter your full name" className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] text-sm"/>
+          <div className="rounded-xl overflow-hidden"
+            style={{
+              background: "rgba(17, 17, 40, 0.7)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)"
+            }}>
+            <div className="p-4 sm:p-6 border-b border-white/10">
+              <h2 className="text-base font-semibold text-white flex items-center gap-2.5">
+                <i className="fas fa-user-circle text-[#ff3366]"></i>
+                Personal Information
+              </h2>
+              <p className="mt-1 text-sm text-gray-400">Update your name and view your email address</p>
             </div>
-            <div>
-              <label htmlFor="email" className="block text-xs font-medium text-gray-600 mb-1">Email Address</label>
-              <input id="email" name="email" type="email" value={email} disabled className="w-full px-3 py-1.5 border border-gray-300 rounded-md bg-gray-100 text-gray-500 text-sm cursor-not-allowed"/>
+            
+            <div className="p-4 sm:p-6">
+              <form onSubmit={handleProfileUpdate} className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1.5">Full Name</label>
+                  <input 
+                    id="name" 
+                    name="name" 
+                    type="text" 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)} 
+                    required 
+                    placeholder="Enter your full name" 
+                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-[#ff3366]/20 focus:border-[#ff3366] transition text-white text-sm"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1.5">Email Address</label>
+                  <input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    value={email} 
+                    disabled 
+                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-gray-400 text-sm cursor-not-allowed"
+                  />
+                </div>
+                
+                {renderMessage(profileMessage, profileMessageType)}
+                
+                <div className="pt-2">
+                  <button 
+                    type="submit" 
+                    className="py-2.5 px-5 bg-white/10 hover:bg-white/15 text-white font-medium rounded-lg transition focus:ring-4 focus:ring-white/5 disabled:opacity-60 text-sm flex items-center justify-center gap-2" 
+                    disabled={isSubmittingProfile}
+                  >
+                    {isSubmittingProfile ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-save"></i>
+                        <span>Save Changes</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
-            {renderMessage(profileMessage, profileMessageType)}
-            <div className="flex justify-end">
-              <button type="submit" className="py-1.5 px-4 bg-[#2c2d5a] text-white font-semibold rounded-md hover:bg-[#3e3f7a] transition focus:ring-2 focus:ring-offset-2 focus:ring-[#2c2d5a] disabled:opacity-50 text-xs" disabled={isSubmittingProfile}>
-                {isSubmittingProfile ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-          </form>
-
-          {/* Separator */}
-          <hr className="border-gray-200" />
+          </div>
 
           {/* Change Password */}
-          <form onSubmit={handlePasswordChangeSubmit} className="space-y-3">
-             <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><i className="fas fa-key text-gray-400"></i>Change Password</h2>
-             <div>
-                <label htmlFor="newPasswordProfile" className="block text-xs font-medium text-gray-600 mb-1">New Password</label>
-                <div className="relative"><input id="newPasswordProfile" name="newPassword" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setNewPasswordTouched(true); }} required placeholder="Enter new password" className="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-[#2c2d5a] pr-10 text-sm"/><button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700" onClick={() => setShowNewPassword(!showNewPassword)}><i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i></button></div>
-                {newPasswordTouched && <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">{Object.entries(passwordRequirements).map(([key, valid]) => <p key={key} className={`text-xs flex items-center gap-1.5 ${valid ? "text-green-600" : "text-gray-500"}`}><i className={`fas ${valid ? "fa-check-circle" : "fa-times-circle"} fa-xs`}></i>{key.replace(/([A-Z])/g, ' $1').trim()}</p>)}</div>}
-             </div>
-             <div>
-                <label htmlFor="confirmPasswordProfile" className="block text-xs font-medium text-gray-600 mb-1">Confirm New Password</label>
-                <div className="relative"><input id="confirmPasswordProfile" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setConfirmPasswordTouched(true); }} required placeholder="Confirm new password" className={`w-full px-3 py-1.5 border rounded-md focus:ring-1 focus:ring-[#ff3366] transition text-[#2c2d5a] pr-10 text-sm ${!passwordsMatch ? "border-red-400 bg-red-50" : "border-gray-300"}`}/><button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-700" onClick={() => setShowConfirmPassword(!showConfirmPassword)}><i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i></button></div>
-                {!passwordsMatch && <p className="mt-1 text-xs text-red-600">New passwords do not match.</p>}
+          <div className="rounded-xl overflow-hidden"
+            style={{
+              background: "rgba(17, 17, 40, 0.7)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)"
+            }}>
+            <div className="p-4 sm:p-6 border-b border-white/10">
+              <h2 className="text-base font-semibold text-white flex items-center gap-2.5">
+                <i className="fas fa-lock text-[#ff3366]"></i>
+                Security
+              </h2>
+              <p className="mt-1 text-sm text-gray-400">Update your password to keep your account secure</p>
             </div>
-            {renderMessage(passwordMessage, passwordMessageType)}
-            <div className="flex justify-end">
-              <button type="submit" className="py-1.5 px-4 bg-[#ff3366] text-white font-semibold rounded-md hover:bg-[#ff6b8b] transition focus:ring-2 focus:ring-offset-2 focus:ring-[#ff3366] disabled:opacity-50 text-xs" disabled={isSubmittingPassword || !isNewPasswordClientValid || !passwordsMatch || !newPassword}>{isSubmittingPassword ? "Updating..." : "Update Password"}</button>
-            </div>
-          </form>
-
-          {/* Separator */}
-          <hr className="border-gray-200" />
-          
-          {/* Preferences */}
-          <form onSubmit={handlePreferencesUpdate} className="space-y-3">
-            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><i className="fas fa-sliders-h text-gray-400"></i>Preferences</h2>
-            <div>
-              <label htmlFor="marketingConsent" className="flex items-center justify-between cursor-pointer">
+            
+            <div className="p-4 sm:p-6">
+              <form onSubmit={handlePasswordChangeSubmit} className="space-y-4">
                 <div>
-                  <span className="text-sm font-medium text-gray-700">Email Marketing</span>
-                  <p className="text-xs text-gray-500 font-normal">Receive news, special offers, and tips from CheapCC.</p>
+                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-300 mb-1.5">Current Password</label>
+                  <div className="relative">
+                    <input 
+                      id="currentPassword" 
+                      name="currentPassword" 
+                      type={showCurrentPassword ? "text" : "password"} 
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required 
+                      placeholder="Enter current password" 
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-[#ff3366]/20 focus:border-[#ff3366] transition text-white pr-10 text-sm"
+                    />
+                    <button 
+                      type="button" 
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-white transition" 
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    >
+                      <i className={`fas ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                    </button>
+                  </div>
                 </div>
-                <div className="relative">
-                  <input id="marketingConsent" name="marketingConsent" type="checkbox" className="sr-only peer" checked={isSubscribed} onChange={(e) => setIsSubscribed(e.target.checked)}/>
-                  <div className="w-10 h-5 bg-gray-200 rounded-full peer peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-offset-2 peer-focus:ring-[#ff3366] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#ff3366]"></div>
-                </div>
-              </label>
-            </div>
-            {renderMessage(prefsMessage, prefsMessageType)}
-            <div className="flex justify-end">
-              <button type="submit" className="py-1.5 px-4 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 text-xs" disabled={isSubmittingPrefs}>{isSubmittingPrefs ? "Saving..." : "Save Preferences"}</button>
-            </div>
-          </form>
 
+                <div>
+                  <label htmlFor="newPasswordProfile" className="block text-sm font-medium text-gray-300 mb-1.5">New Password</label>
+                  <div className="relative">
+                    <input 
+                      id="newPasswordProfile" 
+                      name="newPassword" 
+                      type={showNewPassword ? "text" : "password"} 
+                      value={newPassword} 
+                      onChange={(e) => { setNewPassword(e.target.value); setNewPasswordTouched(true); }} 
+                      required 
+                      placeholder="Enter new password" 
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-[#ff3366]/20 focus:border-[#ff3366] transition text-white pr-10 text-sm"
+                    />
+                    <button 
+                      type="button" 
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-white transition" 
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      <i className={`fas ${showNewPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                    </button>
+                  </div>
+                  
+                  {newPasswordTouched && (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 bg-white/5 p-3 rounded-lg border border-white/10">
+                      {Object.entries(passwordRequirements).map(([key, valid]) => (
+                        <p key={key} className={`text-sm flex items-center gap-2 ${valid ? "text-green-400" : "text-gray-400"}`}>
+                          <i className={`fas ${valid ? "fa-check-circle text-green-400" : "fa-circle text-gray-500"}`}></i>
+                          {key === "minLength" ? "At least 8 characters" :
+                           key === "hasUppercase" ? "One uppercase letter" :
+                           key === "hasLowercase" ? "One lowercase letter" :
+                           key === "hasNumber" ? "One number" :
+                           "One special character"}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <label htmlFor="confirmPasswordProfile" className="block text-sm font-medium text-gray-300 mb-1.5">Confirm New Password</label>
+                  <div className="relative">
+                    <input 
+                      id="confirmPasswordProfile" 
+                      name="confirmPassword" 
+                      type={showConfirmPassword ? "text" : "password"} 
+                      value={confirmPassword} 
+                      onChange={(e) => { setConfirmPassword(e.target.value); setConfirmPasswordTouched(true); }} 
+                      required 
+                      placeholder="Confirm new password" 
+                      className={`w-full px-4 py-2.5 bg-white/5 border rounded-lg focus:ring-2 focus:ring-[#ff3366]/20 transition text-white pr-10 text-sm ${!passwordsMatch ? "border-red-500/50 bg-red-500/10" : "border-white/10"}`}
+                    />
+                    <button 
+                      type="button" 
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-white transition" 
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      <i className={`fas ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                    </button>
+                  </div>
+                  
+                  {!passwordsMatch && (
+                    <p className="mt-1.5 text-sm text-red-400 flex items-center gap-2">
+                      <i className="fas fa-exclamation-circle"></i>
+                      Passwords don't match
+                    </p>
+                  )}
+                </div>
+                
+                {renderMessage(passwordMessage, passwordMessageType)}
+                
+                <div className="pt-2">
+                  <button 
+                    type="submit" 
+                    className="py-2.5 px-5 bg-[#ff3366] text-white font-medium rounded-lg hover:bg-[#ff4b7d] transition focus:ring-4 focus:ring-[#ff3366]/25 disabled:opacity-60 text-sm flex items-center justify-center gap-2" 
+                    disabled={isSubmittingPassword || !isNewPasswordClientValid || !passwordsMatch || !newPassword || !currentPassword}
+                  >
+                    {isSubmittingPassword ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        <span>Updating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-key"></i>
+                        <span>Update Password</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Preferences */}
+          <div className="rounded-xl overflow-hidden"
+            style={{
+              background: "rgba(17, 17, 40, 0.7)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)"
+            }}>
+            <div className="p-4 sm:p-6 border-b border-white/10">
+              <h2 className="text-base font-semibold text-white flex items-center gap-2.5">
+                <i className="fas fa-bell text-[#ff3366]"></i>
+                Communication Preferences
+              </h2>
+              <p className="mt-1 text-sm text-gray-400">Control how we communicate with you</p>
+            </div>
+            
+            <div className="p-4 sm:p-6">
+              <form onSubmit={handlePreferencesUpdate} className="space-y-4">
+                <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+                  <label htmlFor="marketingConsent" className="flex items-center justify-between cursor-pointer gap-4">
+                    <div>
+                      <span className="text-base font-medium text-white">Marketing Communications</span>
+                      <p className="text-sm text-gray-400 mt-1">Receive exclusive offers, tips, and product updates from CheapCC</p>
+                    </div>
+                    <div className="relative">
+                      <input 
+                        id="marketingConsent" 
+                        name="marketingConsent" 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={isSubscribed} 
+                        onChange={(e) => setIsSubscribed(e.target.checked)}
+                      />
+                      <div className="w-12 h-6 bg-gray-700 rounded-full peer peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#ff3366]/30 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ff3366]"></div>
+                    </div>
+                  </label>
+                </div>
+                
+                {renderMessage(prefsMessage, prefsMessageType)}
+                
+                <div className="pt-2">
+                  <button 
+                    type="submit" 
+                    className="py-2.5 px-5 bg-white/10 hover:bg-white/15 text-white font-medium rounded-lg transition focus:ring-4 focus:ring-white/5 disabled:opacity-60 text-sm flex items-center justify-center gap-2" 
+                    disabled={isSubmittingPrefs}
+                  >
+                    {isSubmittingPrefs ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-check"></i>
+                        <span>Save Preferences</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-8 text-center text-sm text-gray-400">
+          <p>Need help? <a href="#" className="text-[#ff3366] hover:underline">Contact Support</a></p>
         </div>
       </div>
     </div>

@@ -162,7 +162,8 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
   return (
     <>
       {productSchema && <Script id="product-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />}
-      <section className="relative py-20 md:py-32" id="pricing" ref={pricingRef}>
+      {/* FIX: `overflow-x-hidden` is added here to contain the full-bleed element */}
+      <section className="relative py-20 md:py-32 overflow-x-hidden overflow-y-visible" id="pricing" ref={pricingRef}>
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.7, ease: [0.215, 0.61, 0.355, 1] as any }}>
             <motion.h2
@@ -204,19 +205,12 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
           </motion.div>
         </div>
 
-        {/* --- FIX APPLIED HERE --- */}
-        {/*
-          This container now breaks out of the parent's padding to achieve a "full-bleed" effect.
-          - `w-screen`: Makes it as wide as the viewport.
-          - `-ml-[50vw] left-1/2`: Centers the viewport-width element on the screen.
-          - `px-4 sm:px-6 md:px-8`: This padding is now applied correctly to provide gutters at the screen edges.
-        */}
         <motion.div
-          className="relative left-1/2 -ml-[50vw] w-screen flex overflow-x-auto pb-8 snap-x snap-mandatory sm:snap-none justify-start md:justify-center gap-6 lg:gap-8 mt-10 md:mt-14 hide-scrollbar px-4 sm:px-6 md:px-8"
+          className="relative left-1/2 -ml-[50vw] w-screen flex overflow-x-auto pb-20 pt-4 snap-x snap-mandatory sm:snap-none justify-start md:justify-center gap-6 lg:gap-8 mt-10 md:mt-14 hide-scrollbar px-4 sm:px-6 md:px-8"
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={containerVariants}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'visible' }}
         >
           {sortedPricingOptions.length > 0 ? (
             sortedPricingOptions.map((option) => (
@@ -231,7 +225,8 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
                   width: '220px',
                   minHeight: '420px',
                   perspective: '1000px',
-                  transformStyle: 'preserve-3d', // Good for child animations
+                  transformStyle: 'preserve-3d',
+                  transformOrigin: 'center center',
                 }}
                 onClick={() => handlePlanSelect(option.id)}
                 tabIndex={0}
@@ -239,18 +234,22 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
                 aria-pressed={selectedPrice === option.id}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && handlePlanSelect(option.id)}
                 variants={cardVariants}
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)" }}
+                whileHover={{ 
+                  scale: 1.05, 
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)",
+                  zIndex: 20
+                }}
               >
                 <div className="flex flex-col h-full w-full">
                   {option.id === '14d' && (
-                    <div className="absolute top-0 left-0 -translate-x-1 -translate-y-1 z-10">
+                    <div className="absolute top-0 left-0 z-30 origin-top-left" style={{ transform: "translate(-4px, -4px)" }}>
                       <div className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-br from-pink-500 to-fuchsia-600 text-white text-[0.65rem] sm:text-xs font-bold rounded-tl-lg rounded-br-lg shadow-lg">
                         ONE-TIME
                       </div>
                     </div>
                   )}
                   {option.id === '6m' && (
-                    <div className="absolute top-0 left-0 -translate-x-1 -translate-y-1 z-10">
+                    <div className="absolute top-0 left-0 z-30 origin-top-left" style={{ transform: "translate(-4px, -4px)" }}>
                       <div className="px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-br from-blue-500 to-purple-500 text-white text-[0.65rem] sm:text-xs font-bold rounded-tl-lg rounded-br-lg shadow-lg flex items-center gap-0.5 sm:gap-1">
                         <i className="fas fa-star text-[0.6rem] sm:text-xs opacity-90"></i>
                         BEST VALUE
@@ -316,7 +315,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
         </motion.div>
 
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div className="text-center sm:text-right mt-4 sm:mt-6 text-xs sm:text-sm text-gray-400 italic" initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : { opacity: 0 }} transition={{ delay: 0.8 }}>
+        <motion.div className="text-right sm:text-right mt-4 sm:mt-6 text-xs sm:text-sm text-gray-400 italic md:-mr-14" initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : { opacity: 0 }} transition={{ delay: 0.8 }}>
               *All prices are listed in USD
             </motion.div>
             <motion.div

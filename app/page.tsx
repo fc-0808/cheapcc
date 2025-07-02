@@ -19,6 +19,9 @@ import HowItWorksSection from "@/components/home/HowItWorksSection";
 import CheckoutSection from "@/components/home/CheckoutSection";
 import HomeFAQSection from "@/components/home/HomeFAQSection";
 import LoginPopup from "@/components/home/LoginPopup";
+import StripePaymentContextWrapper from '@/components/home/StripePaymentContextWrapper';
+import PayPalContextWrapper from '@/components/home/PayPalContextWrapper';
+import Header from '@/components/Header';
 
 // Load Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -97,154 +100,91 @@ export default function Home() {
   
   // Memoize renderPayPalButton with useCallback
   const renderPayPalButton = useCallback(() => {
-    if (!paypalButtonContainerRef.current) {
-      console.log('PayPal button container not found, cannot render.');
-      return;
-    }
-    paypalButtonContainerRef.current.innerHTML = ''; // Clear existing buttons first
+    // This is now handled by our PayPalContext
+    console.log('PayPal button rendering is now handled by PayPalContext');
+  }, []);
 
-    console.log('Attempting to render PayPal button...');
-    if (typeof window !== 'undefined' && window.paypal) {
-      try {
-        // Log PayPal environment for debugging
-        console.log(`PayPal environment: ${process.env.NEXT_PUBLIC_PAYPAL_API_MODE || 'sandbox (default)'}`);
-        
-        // Render PayPal Buttons
-        window.paypal.Buttons({
-          onClick: (data: any, actions: any) => {
-            const currentName = nameRef.current;
-            const currentEmail = emailRef.current;
-            const currentSelectedPrice = selectedPriceRef.current;
-            
-            // Just validate without setting error message (handled by CheckoutSection's useEffect)
-            if (!currentName.trim() || !isValidEmail(currentEmail) || !currentSelectedPrice) {
-              return actions.reject();
-            }
-            
-            // Clear any previous errors and reset payment status
-            setCheckoutFormError(null);
-            if (paymentStatus === 'error') setPaymentStatus('idle');
-            return actions.resolve();
-          },
-          createOrder: async () => {
-            const currentName = nameRef.current;
-            const currentEmail = emailRef.current;
-            const currentSelectedPrice = selectedPriceRef.current;
-            try {
-              setPaymentStatus('loading');
-              setCheckoutFormError(null);
-              
-              // Log the order creation attempt
-              console.log(`Creating order for price ID: ${currentSelectedPrice}, user: ${currentEmail}`);
-              
-              const response = await fetch('/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priceId: currentSelectedPrice, name: currentName, email: currentEmail }),
-              });
-              
-              const orderData = await response.json();
-              
-              // Enhanced error handling
-              if (!response.ok) {
-                console.error('Order creation failed:', orderData);
-                const errorMessage = orderData.error || `Failed to create order (status: ${response.status})`;
-                const errorDetails = orderData.details ? ` Details: ${orderData.details}` : '';
-                const envInfo = orderData.environment ? ` Environment: ${orderData.environment}` : '';
-                throw new Error(`${errorMessage}${errorDetails}${envInfo}`);
-              }
-              
-              if (orderData.error) {
-                throw new Error(orderData.error);
-              }
-              
-              console.log('Order created successfully:', orderData.id);
-              return orderData.id;
-            } catch (error: any) {
-              console.error('Error in createOrder:', error);
-              setCheckoutFormError(error.message || 'An unexpected error occurred during order creation.');
-              setPaymentStatus('error');
-              throw error;
-            }
-          },
-          onApprove: async (data: any, actions: any) => {
-            try {
-              setPaymentStatus('loading');
-              console.log(`Capturing order: ${data.orderID}`);
-              
-              const response = await fetch('/api/orders/capture', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ orderID: data.orderID }),
-              });
-              
-              const captureData = await response.json();
-              
-              // Enhanced error handling
-              if (!response.ok) {
-                console.error('Order capture failed:', captureData);
-                const errorMessage = captureData.error || `Failed to capture order (status: ${response.status})`;
-                const errorDetails = captureData.details ? ` Details: ${captureData.details}` : '';
-                throw new Error(`${errorMessage}${errorDetails}`);
-              }
-              
-              if (captureData.error) {
-                throw new Error(captureData.error);
-              }
-              
-              console.log('Order captured successfully:', data.orderID);
-              setPaymentStatus('success');
-              router.push(`/success?paypal_order_id=${data.orderID}`);
-            } catch (error: any) {
-              console.error('PayPal payment capture error:', error);
-              setCheckoutFormError(error.message || 'An error occurred while capturing the payment.');
-              setPaymentStatus('error');
-            }
-          },
-          onCancel: () => {
-            console.log('Payment cancelled by user');
-            setPaymentStatus('cancel');
-            setCheckoutFormError('Payment was cancelled.');
-          },
-          onError: (err: Error) => {
-            console.error('PayPal button error:', err);
-            setCheckoutFormError(`PayPal Error: ${err.message}. Please check your details or try again.`);
-            setPaymentStatus('error');
-          },
-        }).render('#paypal-button-container');
-        console.log('PayPal button.render() called.');
-      } catch (err: any) {
-        console.error('Error rendering payment buttons:', err);
-        setCheckoutFormError('Error rendering payment options. Please refresh the page or try again later.');
-      }
-    } else {
-      console.error('PayPal SDK not available on window object during render attempt.');
-      setCheckoutFormError('Payment services are not ready. Please wait a moment or refresh the page.');
-    }
-  }, [router, setCheckoutFormError, setPaymentStatus]);
-
-  const handlePayPalLoad = () => {
+  const handlePayPalLoad = useCallback(() => {
     console.log('PayPal SDK loaded successfully (app/page.tsx)');
     setSdkReady(true);
-  };
+  }, []);
 
-  const handlePayPalError = () => {
+  const handlePayPalError = useCallback(() => {
     console.error('PayPal SDK failed to load (app/page.tsx)');
     setCheckoutFormError("Failed to load PayPal. Please refresh the page or try again later.");
-  };
+  }, []);
+
+  // Add a utility function for PayPal order creation with retry
+  const createPayPalOrderWithRetry = useCallback(async (
+    selectedPrice: string, 
+    name: string, 
+    email: string, 
+    maxRetries = 3
+  ) => {
+    let retryCount = 0;
+    let lastError = null;
+
+    while (retryCount <= maxRetries) {
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ priceId: selectedPrice, name, email })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          // Check if this is a retryable error
+          if (response.status === 503 && data.retry === true && retryCount < maxRetries) {
+            console.warn(`Network error connecting to PayPal. Retry attempt ${retryCount + 1}/${maxRetries}`);
+            retryCount++;
+            // Exponential backoff: wait longer between each retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+            continue;
+          }
+          
+          throw new Error(data.error || 'Failed to create order');
+        }
+        
+        return data.id;
+      } catch (error) {
+        lastError = error;
+        if (retryCount >= maxRetries) {
+          console.error('Max retries reached for PayPal order creation:', error);
+          break;
+        }
+        retryCount++;
+        console.warn(`Error creating PayPal order, retry ${retryCount}/${maxRetries}`);
+        // Exponential backoff: wait longer between each retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+      }
+    }
+    
+    // If we've exhausted all retries, throw the last error
+    if (lastError) {
+      throw lastError;
+    }
+    
+    throw new Error('Failed to create PayPal order after multiple attempts');
+  }, []);
   
-  // Component initialization
+  // Component initialization - use safer approach for PayPal
   useEffect(() => {
+    // Use a mount reference to track component lifecycle
+    const isMounted = { current: true };
+    
+    // Check for PayPal SDK availability
     if (typeof window !== 'undefined' && window.paypal && !sdkReady) {
-        console.log('PayPal SDK already present on window, calling handlePayPalLoad.');
+      console.log('PayPal SDK already present on window, calling handlePayPalLoad.');
       handlePayPalLoad();
     }
+    
     return () => {
-      if (paypalButtonContainerRef.current) {
-        paypalButtonContainerRef.current.innerHTML = '';
-      }
+      // Mark component as unmounted to prevent any late state updates
+      isMounted.current = false;
     };
-  }, [sdkReady]);
+  }, [sdkReady, handlePayPalLoad]);
   
   // Update canPay
   useEffect(() => {
@@ -351,8 +291,8 @@ export default function Home() {
         // For when payment intent is created
         clientSecret,
         appearance: {
-          theme: 'stripe',
-          variables: { colorPrimary: '#ff3366' },
+          theme: 'night' as const,
+          variables: { colorPrimary: '#ff33ff' },
         },
       }
     : {
@@ -367,59 +307,65 @@ export default function Home() {
       };
 
   return (
-    <main className="bg-white">
-      <LoginPopup 
-        show={showLoginPopup} 
-        onClose={() => setShowLoginPopup(false)}
-        onRegisterClick={handleRegisterClick}
-        onContinueAsGuest={handleContinueAsGuest}
-      />
-      
-      <React.Suspense fallback={<div>Loading messages...</div>}>
-        <UrlMessageDisplay />
-      </React.Suspense>
-
-      <HeroSection />
-      <SocialProofSection />
-      <BenefitsSection />
-      
-      <PricingSection 
-        selectedPrice={selectedPrice}
-        setSelectedPrice={setSelectedPrice}
-        selectedPriceRef={selectedPriceRef}
-        userEmail={email}
-      />
-      
-      <HowItWorksSection />
-
-      <div ref={checkoutRef}>
-        <Elements
-          stripe={stripePromise}
-          options={stripeOptions}
-        >
-          <CheckoutSection
-              selectedPrice={selectedPrice}
-              isUserSignedIn={isUserSignedIn}
-              name={name}
-              setName={setName}
-              email={email}
-              setEmail={setEmail}
-              canPay={canPay}
-              paymentStatus={paymentStatus}
-              setPaymentStatus={setPaymentStatus}
-              checkoutFormError={checkoutFormError}
-              setCheckoutFormError={setCheckoutFormError}
-              paypalButtonContainerRef={paypalButtonContainerRef}
-              sdkReady={sdkReady}
-              onPayPalLoad={handlePayPalLoad}
-              onPayPalError={handlePayPalError}
-              renderPayPalButton={renderPayPalButton}
-              clientSecret={clientSecret}
+    <main className="min-h-screen overflow-x-hidden">
+      <PayPalContextWrapper>
+        <StripePaymentContextWrapper>
+          <Header />
+          <LoginPopup 
+            show={showLoginPopup} 
+            onClose={() => setShowLoginPopup(false)}
+            onRegisterClick={handleRegisterClick}
+            onContinueAsGuest={handleContinueAsGuest}
           />
-        </Elements>
-      </div>
-      
-      <HomeFAQSection />
+          
+          <React.Suspense fallback={<div>Loading messages...</div>}>
+            <UrlMessageDisplay />
+          </React.Suspense>
+
+          <HeroSection />
+          <SocialProofSection />
+          <BenefitsSection />
+          
+          <PricingSection 
+            selectedPrice={selectedPrice}
+            setSelectedPrice={setSelectedPrice}
+            selectedPriceRef={selectedPriceRef}
+            userEmail={email}
+          />
+          
+          <HowItWorksSection />
+
+          <div ref={checkoutRef}>
+            <Elements
+              stripe={stripePromise}
+              options={stripeOptions}
+            >
+              <CheckoutSection
+                  selectedPrice={selectedPrice}
+                  isUserSignedIn={isUserSignedIn}
+                  name={name}
+                  setName={setName}
+                  email={email}
+                  setEmail={setEmail}
+                  canPay={canPay}
+                  paymentStatus={paymentStatus}
+                  setPaymentStatus={setPaymentStatus}
+                  checkoutFormError={checkoutFormError}
+                  setCheckoutFormError={setCheckoutFormError}
+                  paypalButtonContainerRef={paypalButtonContainerRef}
+                  sdkReady={sdkReady}
+                  onPayPalLoad={handlePayPalLoad}
+                  onPayPalError={handlePayPalError}
+                  renderPayPalButton={renderPayPalButton}
+                  clientSecret={clientSecret}
+                  createPayPalOrderWithRetry={createPayPalOrderWithRetry}
+              />
+            </Elements>
+          </div>
+          
+          <HomeFAQSection />
+        </StripePaymentContextWrapper>
+      </PayPalContextWrapper>
     </main>
   );
 }

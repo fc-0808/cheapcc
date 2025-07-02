@@ -93,7 +93,7 @@ export default function HowItWorksSection() {
           style={{ transformStyle: 'preserve-3d' }}
         >
           {/* A more elegant, solid connecting line that feels like a confident path */}
-          <div className="hidden md:block absolute top-12 left-0 w-full h-24 z-0" style={{ transform: 'translateZ(0)' }}>
+          <div className="hidden md:block absolute top-12 left-0 w-full h-24 pointer-events-none" style={{ transform: 'translateZ(-10px)' }}>
             <svg width="100%" height="100%" viewBox="0 0 1200 100" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="how-it-works-gradient" x1="0%" y1="0%" x2="100%" y2="0%">

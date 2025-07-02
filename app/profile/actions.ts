@@ -19,7 +19,7 @@ function formatZodError(error: ZodError) {
   return `${pathString}: ${firstError.message}`;
 }
 
-export async function updateProfile(formData: FormData): Promise<{ error?: string; success?: boolean, message?: string }> {
+export async function updateProfile(name: string): Promise<{ error?: string; success?: boolean, message?: string }> {
   const actionName = "updateProfile";
   const headersList = await headers(); // Ensure await is here
   const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
@@ -46,71 +46,67 @@ export async function updateProfile(formData: FormData): Promise<{ error?: strin
       const errorMessage = `Too many profile update attempts. Please try again ${retryAfter ? `in ${retryAfter} seconds` : 'later'}.`;
       console.warn(JSON.stringify({ ...logContext, event: "rate_limit_exceeded", retryAfter }, null, 2));
       return { error: errorMessage };
-  }
+    }
 
-  const rawFormData = {
-    name: formData.get('name'),
-  };
+    const validationResult = UpdateProfileSchema.safeParse({ name });
 
-  const validationResult = UpdateProfileSchema.safeParse(rawFormData);
-
-  if (!validationResult.success) {
+    if (!validationResult.success) {
       const errorMessage = formatZodError(validationResult.error);
       console.warn(JSON.stringify({
         ...logContext, event: "validation_failed", error: errorMessage,
-        formDataName: rawFormData.name
+        formDataName: name
       }, null, 2));
       return { error: errorMessage };
-  }
+    }
 
-  const { name } = validationResult.data;
+    const { name: validatedName } = validationResult.data;
 
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .update({ name: name, updated_at: new Date().toISOString() })
-    .eq('id', user.id);
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ full_name: validatedName, updated_at: new Date().toISOString() })
+      .eq('id', user.id);
 
-  if (profileError) {
+    if (profileError) {
       console.error(JSON.stringify({
-        ...logContext, event: "supabase_profiles_update_error", name,
+        ...logContext, event: "supabase_profiles_update_error", name: validatedName,
         dbError: profileError.message, dbErrorCode: profileError.code,
       }, null, 2));
       return { error: `Failed to update profile in database: ${profileError.message}` };
-  }
+    }
 
-  const { error: metadataError } = await supabase.auth.updateUser({
-    data: { name: name }
-  });
+    const { error: metadataError } = await supabase.auth.updateUser({
+      data: { name: validatedName }
+    });
 
-  if (metadataError) {
+    if (metadataError) {
       console.warn(JSON.stringify({
-        ...logContext, event: "supabase_auth_metadata_update_error", name,
+        ...logContext, event: "supabase_auth_metadata_update_error", name: validatedName,
         metadataError: metadataError.message,
       }, null, 2));
-  }
+    }
 
-    console.info(JSON.stringify({ ...logContext, event: "profile_update_successful", newName: name }, null, 2));
-  revalidatePath('/profile');
+    console.info(JSON.stringify({ ...logContext, event: "profile_update_successful", newName: validatedName }, null, 2));
+    revalidatePath('/profile');
     revalidatePath('/dashboard');
-  return { success: true, message: "Profile updated successfully!" };
+    return { success: true, message: "Profile updated successfully!" };
 
   } catch (error: any) {
-     if (error.message === 'NEXT_REDIRECT' || (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))) {
+    if (error.message === 'NEXT_REDIRECT' || (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))) {
       console.info(JSON.stringify({ ...logContext, event: "intentional_redirect_caught_in_profile_update", redirectType: error.message, digest: error.digest }, null, 2));
       throw error;
     }
     
     const unexpectedErrorMessage = "An unexpected error occurred while updating your profile.";
     console.error(JSON.stringify({
-        ...logContext, event: "update_profile_action_exception",
-        errorMessage: error.message, errorStack: error.stack?.substring(0, 1000),
-        formDataName: formData.get('name')
+      ...logContext, event: "update_profile_action_exception",
+      errorMessage: error.message, errorStack: error.stack?.substring(0, 1000),
+      formDataName: name
     }, null, 2));
     return { error: unexpectedErrorMessage };
   }
 }
 
-export async function changeUserPasswordOnProfile(formData: FormData): Promise<{ error?: string; success?: boolean, message?: string }> {
+export async function changeUserPasswordOnProfile(currentPassword: string, newPassword: string): Promise<{ error?: string; success?: boolean, message?: string }> {
   const actionName = "changeUserPasswordOnProfile";
   const headersList = await headers(); // Ensure await is here
   const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
@@ -137,58 +133,70 @@ export async function changeUserPasswordOnProfile(formData: FormData): Promise<{
       const errorMessage = `Too many password change attempts. Please try again ${retryAfter ? `in ${retryAfter} seconds` : 'later'}.`;
       console.warn(JSON.stringify({ ...logContext, event: "rate_limit_exceeded", retryAfter }, null, 2));
       return { error: errorMessage };
-  }
+    }
 
-  const rawFormData = {
-    newPassword: formData.get('newPassword'),
-    confirmPassword: formData.get('confirmPassword'),
-  };
+    // First verify the current password
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email!,
+      password: currentPassword,
+    });
 
-    const validationResult = ProfileUpdatePasswordSchema.safeParse(rawFormData);
+    if (signInError) {
+      console.warn(JSON.stringify({
+        ...logContext, event: "current_password_verification_failed",
+        supabaseError: signInError.message
+      }, null, 2));
+      return { error: "Current password is incorrect." };
+    }
 
-  if (!validationResult.success) {
+    const validationResult = ProfileUpdatePasswordSchema.safeParse({
+      newPassword,
+      confirmPassword: newPassword // Since we've already verified they match in the client
+    });
+
+    if (!validationResult.success) {
       const errorMessage = formatZodError(validationResult.error);
       console.warn(JSON.stringify({
         ...logContext, event: "validation_failed", error: errorMessage,
       }, null, 2));
       return { error: errorMessage };
-  }
+    }
 
-    const { newPassword } = validationResult.data;
+    const { newPassword: validatedPassword } = validationResult.data;
 
-  const { error: updateError } = await supabase.auth.updateUser({
-    password: newPassword,
-  });
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: validatedPassword,
+    });
 
-  if (updateError) {
+    if (updateError) {
       console.error(JSON.stringify({
         ...logContext, event: "supabase_auth_password_update_error",
         supabaseError: updateError.message, supabaseStatus: updateError.status,
       }, null, 2));
-    return { error: `Failed to change password: ${updateError.message}` };
-  }
+      return { error: `Failed to change password: ${updateError.message}` };
+    }
 
     console.info(JSON.stringify({ ...logContext, event: "profile_password_change_successful" }, null, 2));
-  revalidatePath('/profile');
+    revalidatePath('/profile');
     return { success: true, message: "Password changed successfully! Other active sessions have been signed out." };
 
   } catch (error: any) {
-     if (error.message === 'NEXT_REDIRECT' || (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))) {
+    if (error.message === 'NEXT_REDIRECT' || (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))) {
       console.info(JSON.stringify({ ...logContext, event: "intentional_redirect_caught_in_profile_pw_change", redirectType: error.message, digest: error.digest }, null, 2));
       throw error;
     }
 
     const unexpectedErrorMessage = "An unexpected error occurred while changing your password.";
     console.error(JSON.stringify({
-        ...logContext, event: "change_password_action_exception",
-        errorMessage: error.message,
-        errorStack: error.stack?.substring(0, 1000),
+      ...logContext, event: "change_password_action_exception",
+      errorMessage: error.message,
+      errorStack: error.stack?.substring(0, 1000),
     }, null, 2));
     return { error: unexpectedErrorMessage };
   }
 } 
 
-export async function updatePreferences(formData: FormData): Promise<{ error?: string; success?: boolean; message?: string }> {
+export async function updatePreferences(isSubscribed: boolean): Promise<{ error?: string; success?: boolean; message?: string }> {
   const actionName = "updatePreferences";
   const headersList = await headers();
   const ip = headersList.get('x-forwarded-for') ?? headersList.get('x-real-ip') ?? '127.0.0.1';
@@ -210,11 +218,9 @@ export async function updatePreferences(formData: FormData): Promise<{ error?: s
   const logContext = { action: actionName, ip, userId: userIdForLog, email: user.email, source: "app/profile/actions.ts (updatePreferences)" };
 
   try {
-    const rawFormData = {
-      marketingConsent: formData.get('marketingConsent') === 'on',
-    };
-
-    const validationResult = UpdatePreferencesSchema.safeParse(rawFormData);
+    const validationResult = UpdatePreferencesSchema.safeParse({
+      marketingConsent: isSubscribed,
+    });
 
     if (!validationResult.success) {
       const errorMessage = "Invalid data provided.";
@@ -226,7 +232,7 @@ export async function updatePreferences(formData: FormData): Promise<{ error?: s
 
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ is_subscribed_to_marketing: marketingConsent, updated_at: new Date().toISOString() })
+      .update({ is_subscribed: marketingConsent, updated_at: new Date().toISOString() })
       .eq('id', user.id);
 
     if (profileError) {

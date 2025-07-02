@@ -22,6 +22,8 @@ const nextConfig = {
 	},
 	experimental: {
 		optimizeCss: true,
+		// Allow 'fs' module in server components
+		serverExternalPackages: ['fs', 'path'],
 	},
 	typescript: {
 		ignoreBuildErrors: true,

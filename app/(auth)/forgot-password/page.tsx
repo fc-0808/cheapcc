@@ -81,12 +81,16 @@ export default function ForgotPasswordPage() {
               required
             />
           </div>
-          <div className="flex justify-center">
-            <ReCAPTCHA
+          <div className="flex justify-center w-full">
+            <div className="w-full max-w-md overflow-hidden">
+              <ReCAPTCHA
                 ref={recaptchaRef}
                 sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
                 onChange={handleRecaptchaChange}
+                size="normal"
+                className="transform scale-[1.03] origin-left"
               />
+            </div>
           </div>
           <div>
             <button

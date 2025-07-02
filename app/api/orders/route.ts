@@ -62,12 +62,62 @@ try {
       oAuthClientSecret: clientSecret
     },
     environment: paypalApiEnv,
+    // Use the correct property name for logging
     logging: {
-      logLevel: LogLevel.Info, // Consider LogLevel.Error for production to reduce noise
-      logRequest: { logBody: process.env.NODE_ENV !== 'production' }, // Log request body only in dev
-      logResponse: { logHeaders: process.env.NODE_ENV !== 'production' } // Log response headers only in dev
+      logLevel: LogLevel.Info,
+      logRequest: { logBody: process.env.NODE_ENV !== 'production' },
+      logResponse: { logHeaders: process.env.NODE_ENV !== 'production' }
     }
   });
+  
+  // Implement a custom request interceptor for handling DNS issues
+  // Note: This is a workaround since we can't directly customize the HTTP client
+  try {
+    // Add a DNS resolution test to check connectivity
+    const testConnectivity = async () => {
+      try {
+        const apiHost = process.env.PAYPAL_API_MODE === 'live' 
+          ? 'api-m.paypal.com' 
+          : 'api-m.sandbox.paypal.com';
+          
+        // Try a basic DNS lookup
+        const response = await fetch(`https://${apiHost}/v1/oauth2/token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`
+          },
+          body: 'grant_type=client_credentials',
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        });
+        
+        if (!response.ok) {
+          console.warn(JSON.stringify({
+            message: "PayPal connectivity test failed with non-OK response",
+            status: response.status,
+            statusText: response.statusText,
+            source: "app/api/orders/route.ts initialization test"
+          }, null, 2));
+        } else {
+          console.info(JSON.stringify({
+            message: "PayPal connectivity test successful",
+            source: "app/api/orders/route.ts initialization test"
+          }, null, 2));
+        }
+      } catch (testError: unknown) {
+        console.warn(JSON.stringify({
+          message: "PayPal connectivity test failed",
+          error: testError instanceof Error ? testError.message : String(testError),
+          source: "app/api/orders/route.ts initialization test"
+        }, null, 2));
+      }
+    };
+    
+    // Run the test asynchronously
+    testConnectivity().catch(e => console.error("PayPal connectivity test threw:", e));
+  } catch (configError) {
+    console.error("Error setting up PayPal connectivity test:", configError);
+  }
   
   console.info(JSON.stringify({
     message: "PayPal client initialized successfully",
@@ -78,6 +128,7 @@ try {
   console.error(JSON.stringify({
     message: "Failed to initialize PayPal client",
     error: error.message,
+    errorStack: error.stack?.substring(0, 500),
     source: "app/api/orders/route.ts client initialization"
   }, null, 2));
   throw error;
@@ -206,8 +257,46 @@ export async function POST(request: NextRequest) {
       requestBody: paypalRequestBody
     }, null, 2));
     
-    const paypalApiResponse = await ordersController.createOrder({ body: paypalRequestBody, prefer: 'return=minimal' });
-    const orderData: Order = paypalApiResponse.result;
+    // Create PayPal order with retry logic
+    let paypalApiResponse;
+    let retryCount = 0;
+    const maxRetries = 2;
+    
+    while (retryCount <= maxRetries) {
+      try {
+        paypalApiResponse = await ordersController.createOrder({ 
+          body: paypalRequestBody, 
+          prefer: 'return=minimal' 
+        });
+        // Success - break out of retry loop
+        break;
+      } catch (error) {
+        retryCount++;
+        
+        // Log the retry attempt with proper type checking
+        console.warn(JSON.stringify({
+          message: `PayPal API error (attempt ${retryCount}/${maxRetries + 1})`,
+          error: error instanceof Error ? error.message : String(error),
+          code: typeof error === 'object' && error !== null && 'code' in error ? 
+                String((error as any).code) : 'unknown',
+          hostname: typeof error === 'object' && error !== null && 'hostname' in error ? 
+                    String((error as any).hostname) : 'unknown',
+          source: "app/api/orders/route.ts POST (retry)"
+        }, null, 2));
+        
+        // If this was our last retry, rethrow the error
+        if (retryCount > maxRetries) {
+          throw error;
+        }
+        
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+      }
+    }
+    
+    // The orderData will be defined here because we broke out of the loop on success
+    // or threw an error if all retries failed
+    const orderData: Order = paypalApiResponse!.result;
     
     console.log("PayPal API response:", JSON.stringify({
       orderId: orderData.id,
@@ -237,8 +326,18 @@ export async function POST(request: NextRequest) {
     // Ensure full PayPal error is available for logging, especially in production for debugging
     const paypalErrorDetails = error.response?.data || error.details || {};
 
+    // Check if it's a DNS or network error
+    const networkErrorCodes = ['ENOTFOUND', 'ETIMEDOUT', 'ECONNREFUSED'];
+    const isNetworkError = 
+      (typeof error === 'object' && error !== null && 
+       'code' in error && typeof error.code === 'string' && 
+       networkErrorCodes.includes(error.code)) ||
+      (error instanceof Error && error.message?.includes('getaddrinfo'));
+
     const errorContext = {
-        message: "Error creating PayPal order in /api/orders.",
+        message: isNetworkError 
+          ? "Network connectivity error with PayPal API" 
+          : "Error creating PayPal order in /api/orders.",
         priceId: priceIdSubmitted,
         userEmail: emailSubmitted,
         errorMessage: error.message,
@@ -248,8 +347,12 @@ export async function POST(request: NextRequest) {
         // Log more detailed PayPal response, even in prod for better debugging
         paypalResponseDataFull: paypalErrorDetails,
         paypalErrorDetails: typeof paypalErrorDetails === 'object' ? JSON.stringify(paypalErrorDetails) : String(paypalErrorDetails),
-        paypalResponseHeaders: error.response?.headers,
         paypalEnvironment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
+        networkDetails: isNetworkError ? {
+          code: error.code,
+          syscall: error.syscall,
+          hostname: error.hostname
+        } : undefined,
         durationMs,
         source: "app/api/orders/route.ts POST (catch)"
     };
@@ -258,15 +361,26 @@ export async function POST(request: NextRequest) {
     // Always log raw error for debugging
     console.error("FULL PAYPAL ERROR:", error);
 
-    const userErrorMessage = 'Failed to create order. Please try again or contact support if the issue persists.';
-    // Always provide error details for better debugging
-    const errorDetailsForClient = paypalErrorDetails.message || error.message || 'Unknown PayPal error';
-    const statusCode = error.response?.status || 500;
+    // Create a user-friendly error message based on error type
+    let userErrorMessage, errorDetailsForClient, statusCode;
+    
+    if (isNetworkError) {
+      userErrorMessage = 'We are currently having trouble connecting to our payment processor. Please try again in a few moments.';
+      errorDetailsForClient = 'Connection to payment service temporarily unavailable';
+      statusCode = 503; // Service Unavailable
+    } else {
+      userErrorMessage = 'Failed to create order. Please try again or contact support if the issue persists.';
+      errorDetailsForClient = process.env.NODE_ENV !== 'production' 
+        ? (paypalErrorDetails.message || error.message || 'Unknown PayPal error')
+        : 'Payment processing error';
+      statusCode = error.response?.status || 500;
+    }
 
     return NextResponse.json(
       { 
         error: userErrorMessage, 
         details: errorDetailsForClient,
+        retry: isNetworkError, // Signal to the client that this is retryable
         environment: process.env.NODE_ENV !== 'production' ? process.env.PAYPAL_API_MODE || 'sandbox (default)' : undefined 
       },
       { status: statusCode }

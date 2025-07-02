@@ -1,6 +1,8 @@
 /* app/globals.css */
 html {
   scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #ec4899 rgba(15, 15, 30, 0.1);
 }
 
 @import "tailwindcss";
@@ -79,6 +81,193 @@ html {
   --transition: all 0.2s ease-in-out;
   --content-width: 1280px;
   --grid-gap: 1.5rem;
+}
+
+/* Blog Post Typography Styles */
+.prose {
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 65ch;
+  line-height: 1.75;
+  font-size: 1.125rem;
+}
+
+.prose p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
+.prose h1 {
+  color: white;
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.prose h2 {
+  color: white;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.3;
+}
+
+.prose h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.prose h4 {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.prose a {
+  color: #ff3366;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.prose a:hover {
+  color: #ff6b8b;
+  text-decoration: underline;
+}
+
+.prose strong {
+  color: white;
+  font-weight: 600;
+}
+
+.prose ul, .prose ol {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+.prose li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-left: 0.375em;
+}
+
+.prose blockquote {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.8);
+  border-left: 4px solid #ff3366;
+  margin-left: 0;
+  padding-left: 1.5rem;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+
+.prose blockquote p {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+
+.prose code {
+  color: #ff3366;
+  font-weight: 600;
+  font-size: 0.875em;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+}
+
+.prose pre {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow-x: auto;
+  font-size: 0.875em;
+  line-height: 1.7;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  border-radius: 0.375rem;
+  padding: 1rem;
+}
+
+.prose hr {
+  border-color: rgba(255, 255, 255, 0.2);
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.prose img {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  border-radius: 0.375rem;
+}
+
+.prose figcaption {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875em;
+  line-height: 1.4;
+  margin-top: 0.5em;
+  text-align: center;
+}
+
+.prose table {
+  width: 100%;
+  table-layout: auto;
+  text-align: left;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  font-size: 0.875em;
+}
+
+.prose thead {
+  color: white;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.prose thead th {
+  vertical-align: bottom;
+  padding: 0.5em 0.75em;
+}
+
+.prose tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prose tbody td {
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+
+/* Fix for dark mode content */
+.prose-dark {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.prose-dark h1, 
+.prose-dark h2, 
+.prose-dark h3, 
+.prose-dark h4 {
+  color: white;
+}
+
+.prose-dark strong {
+  color: white;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -314,12 +503,32 @@ input:focus, select:focus, textarea:focus {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  background: #f3f4f6;
+  width: 10px;
+  background: rgba(15, 15, 30, 0.1);
+  transition: all 0.3s ease;
 }
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 15, 30, 0.1);
+  border-radius: 10px;
+  margin: 2px;
+}
+
 ::-webkit-scrollbar-thumb {
-  background: #b9a7d1;
-  border-radius: 4px;
+  background: linear-gradient(to bottom, #d946ef, #ec4899, #ef4444);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #c026d3, #db2777, #dc2626);
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 
@@ -959,6 +1168,7 @@ input:focus, select:focus, textarea:focus {
   flex-shrink: 0;
   margin: 0.5rem;
   overflow: visible !important;
+  transform-origin: center center;
 }
 
 /* Mobile and tablet specific styles for plan cards */
@@ -1063,6 +1273,10 @@ input:focus, select:focus, textarea:focus {
   transform: translateY(-8px);
   box-shadow: var(--shadow-xl);
   border-color: var(--primary-light);
+  overflow: visible !important;
+  z-index: 5;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .plan-card.selected {
