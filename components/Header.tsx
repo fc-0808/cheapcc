@@ -19,6 +19,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Check if current path is dashboard or profile
   const isDashboardOrProfile = pathname?.includes('/dashboard') || pathname?.includes('/profile');
@@ -107,6 +108,10 @@ export default function Header() {
             
             setUserName(name);
           }
+          
+          // Check if user is admin
+          const ADMIN_EMAIL = 'w088studio@gmail.com';
+          setIsAdmin(session?.user?.email === ADMIN_EMAIL);
         }
       } catch (e) {
         if (!isMounted) return;
@@ -260,14 +265,17 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Mobile menu toggle button - more subtle */}
+        {/* Mobile menu toggle button - more sophisticated */}
         <div className="md:hidden">
           <button
             id="mobile-menu-toggle"
             onClick={toggleMobileMenu}
-            className="p-2 rounded-full bg-white/5 text-white/80 border border-white/10"
+            className="p-2 rounded-lg bg-white/5 text-white/90 border border-white/10 backdrop-blur-sm shadow-lg hover:bg-white/10 transition-all duration-300"
             aria-label="Toggle mobile menu"
             aria-expanded={isMobileMenuOpen}
+            style={{
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05) inset"
+            }}
           >
             <div className={`transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-90' : 'rotate-0'}`}>
               <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-base`}></i>
@@ -292,6 +300,21 @@ export default function Header() {
               )}
             </Link>
           </div>
+          
+          {/* Admin link for desktop */}
+          {isAdmin && (
+            <div>
+              <Link 
+                href="/admin" 
+                prefetch={false}
+                className={`${navLinkClasses} relative group text-[#ff3366] hover:text-[#ff6b8b]`}
+                onClick={handleNavLinkClick}
+              >
+                <span className="relative z-10">Admin</span>
+                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
+              </Link>
+            </div>
+          )}
 
           {!authChecked ? (
             <div className="bg-white/5 h-8 w-28 rounded-md backdrop-blur-sm" />
@@ -445,21 +468,24 @@ export default function Header() {
         </div>
       </div>
       
-      {/* Mobile dropdown menu */}
+      {/* Mobile dropdown menu - updated sophisticated style */}
       {isMobileMenuOpen && isMounted && (
         <div 
           id="mobile-menu" 
           ref={mobileMenuRef} 
-          className="md:hidden mt-2 px-4 transition-all duration-300"
+          className="md:hidden mt-3 px-4 transition-all duration-300"
         >
           <div 
-            className="pt-2 pb-3 space-y-1 backdrop-blur-sm rounded-2xl overflow-hidden relative"
+            className="pt-2 pb-3 space-y-1 backdrop-blur-md rounded-xl overflow-hidden relative"
             style={{
-              background: "rgba(23, 23, 70, 0.4)",
-              boxShadow: "0 8px 20px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08)",
+              background: "rgba(17, 17, 40, 0.7)",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1) inset",
               border: "1px solid rgba(255, 255, 255, 0.08)"
             }}
           >
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/5 via-transparent to-pink-500/5 pointer-events-none"></div>
+            
             <div className="px-4 py-2 relative z-10">
               {!authChecked ? (
                 <div className="py-4">
@@ -474,64 +500,74 @@ export default function Header() {
                 </div>
               ) : user ? (
                 <>
-                  <div className="py-3 border-b border-white/5 mb-3">
+                  <div className="py-3 border-b border-white/10 mb-3">
                     <div
-                      className="block text-sm font-light truncate py-2.5 px-4 rounded-lg relative overflow-hidden"
+                      className="block text-sm font-medium truncate py-3 px-4 rounded-lg relative overflow-hidden"
                       style={{
-                        background: "linear-gradient(135deg, rgba(79, 70, 229, 0.6) 0%, rgba(219, 39, 119, 0.6) 100%)",
-                        boxShadow: "0 3px 10px rgba(79, 70, 229, 0.15)"
+                        background: "linear-gradient(135deg, rgba(192, 38, 211, 0.2) 0%, rgba(219, 39, 119, 0.2) 100%)",
+                        boxShadow: "0 4px 12px rgba(192, 38, 211, 0.15)"
                       }}
                     >
                       <div className="flex items-center relative z-10">
-                        <i className="fas fa-user-circle mr-2 text-white/70" />
-                        <span className="text-white/90 font-light">
-                          {userName || (user?.email ? user.email.split('@')[0] : 'User')}
-                        </span>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg mr-3">
+                          <i className="fas fa-user-circle"></i>
+                        </div>
+                        <div>
+                          <div className="text-white/90 font-medium">
+                            {userName || (user?.email ? user.email.split('@')[0] : 'User')}
+                          </div>
+                          <div className="text-white/60 text-xs truncate mt-0.5">
+                            {user?.email}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                   
-                  {['Dashboard', 'Profile', 'Log Out'].map((item, idx) => {
-                    const Icon = idx === 0 
-                      ? "fas fa-tachometer-alt" 
-                      : idx === 1 
-                        ? "fas fa-user-circle" 
-                        : "fas fa-sign-out-alt";
-                    const color = idx === 0 
-                      ? "indigo" 
-                      : idx === 1 
-                        ? "purple" 
-                        : "pink";
-                    const path = idx === 0 
-                      ? "/dashboard" 
-                      : idx === 1 
-                        ? "/profile" 
-                        : "";
-                    const action = idx === 2 ? handleLogout : undefined;
+                  {[
+                    { title: 'Dashboard', icon: 'fa-tachometer-alt', color: 'indigo', path: '/dashboard' },
+                    { title: 'Profile', icon: 'fa-user-circle', color: 'purple', path: '/profile' },
+                    { title: 'Log Out', icon: 'fa-sign-out-alt', color: 'pink', path: '' }
+                  ].map((item, idx) => {
+                    const action = item.title === 'Log Out' ? handleLogout : undefined;
                     
                     return (
-                      <div key={item}>
-                        {idx === 2 ? (
+                      <div key={item.title}>
+                        {item.title === 'Log Out' ? (
                           <button
                             onClick={action}
-                            className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-light text-white/80 hover:bg-white/5 transition-all duration-300`}
+                            className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
                           >
-                            <span className={`w-7 h-7 rounded-full bg-${color}-500/10 flex items-center justify-center`}>
-                              <i className={`${Icon} text-${color}-300`}></i>
+                            <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                              background: "rgba(236, 72, 153, 0.15)",
+                              boxShadow: "0 2px 5px rgba(236, 72, 153, 0.1)"
+                            }}>
+                              <i className={`fas ${item.icon} text-pink-400`}></i>
                             </span>
-                            {item}
+                            {item.title}
                           </button>
                         ) : (
                           <Link 
-                            href={path}
+                            href={item.path}
                             prefetch={false}
                             onClick={handleNavLinkClick}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-light text-white/80 hover:bg-white/5 transition-all duration-300`}
+                            className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300 ${
+                              pathname?.startsWith(item.path) ? 'bg-white/10' : ''
+                            }`}
                           >
-                            <span className={`w-7 h-7 rounded-full bg-${color}-500/10 flex items-center justify-center`}>
-                              <i className={`${Icon} text-${color}-300`}></i>
+                            <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                              background: item.color === 'indigo' 
+                                ? "rgba(99, 102, 241, 0.15)" 
+                                : "rgba(168, 85, 247, 0.15)",
+                              boxShadow: item.color === 'indigo'
+                                ? "0 2px 5px rgba(99, 102, 241, 0.1)"
+                                : "0 2px 5px rgba(168, 85, 247, 0.1)"
+                            }}>
+                              <i className={`fas ${item.icon} ${
+                                item.color === 'indigo' ? 'text-indigo-400' : 'text-purple-400'
+                              }`}></i>
                             </span>
-                            {item}
+                            {item.title}
                           </Link>
                         )}
                       </div>
@@ -540,51 +576,100 @@ export default function Header() {
                 </>
               ) : (
                 <>
-                  {[
-                    { title: 'Log In', icon: 'fa-sign-in-alt', color: 'indigo', path: '/login' },
-                    { title: 'Register', icon: 'fa-user-plus', color: 'pink', path: '/register' }
-                  ].map((item, idx) => (
-                    <div key={item.title}>
+                  <div className="py-3 mb-2">
+                    <div className="grid grid-cols-1 gap-3">
                       <Link 
-                        href={item.path}
+                        href="/login"
                         prefetch={false}
                         onClick={handleNavLinkClick}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-light text-white/80 hover:bg-white/5 transition-all duration-300`}
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-white/90 border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
                       >
-                        <span className={`w-7 h-7 rounded-full bg-${item.color}-500/10 flex items-center justify-center`}>
-                          <i className={`fas ${item.icon} text-${item.color}-300`}></i>
-                        </span>
-                        {item.title}
+                        <i className="fas fa-sign-in-alt text-fuchsia-400"></i>
+                        <span>Log In</span>
+                      </Link>
+                      
+                      <Link 
+                        href="/register"
+                        prefetch={false}
+                        onClick={handleNavLinkClick}
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-white relative overflow-hidden"
+                        style={{
+                          background: "linear-gradient(135deg, rgba(192, 38, 211, 0.9), rgba(219, 39, 119, 0.9), rgba(239, 68, 68, 0.9))",
+                          boxShadow: "0 4px 12px rgba(219, 39, 119, 0.3)"
+                        }}
+                      >
+                        <i className="fas fa-user-plus text-white"></i>
+                        <span>Register</span>
                       </Link>
                     </div>
-                  ))}
+                  </div>
                 </>
               )}
               
-              {/* Blog and Support links */}
-              <div>
+              {/* Divider */}
+              <div className="border-t my-3 border-white/10"></div>
+              
+              {/* Common links for both logged in and non-logged in users */}
+              <div className="py-1">
+                {/* Admin link - only for admin user */}
+                {isAdmin && (
+                  <Link 
+                    href="/admin"
+                    prefetch={false}
+                    onClick={handleNavLinkClick}
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-[#ff3366] hover:bg-white/10 transition-all duration-300"
+                  >
+                    <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                      background: "rgba(244, 63, 94, 0.15)",
+                      boxShadow: "0 2px 5px rgba(244, 63, 94, 0.1)"
+                    }}>
+                      <i className="fas fa-lock text-[#ff3366]"></i>
+                    </span>
+                    Admin Dashboard
+                  </Link>
+                )}
+                
                 <Link 
                   href="/blog"
                   prefetch={false}
                   onClick={handleNavLinkClick}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-light text-white/80 hover:bg-white/5 transition-all duration-300 ${isBlogPage ? 'font-normal' : ''}`}
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300 ${
+                    isBlogPage ? 'bg-white/10' : ''
+                  }`}
                 >
-                  <span className={`w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center`}>
-                    <i className={`fas fa-book-open text-blue-300`}></i>
+                  <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                    background: "rgba(59, 130, 246, 0.15)",
+                    boxShadow: "0 2px 5px rgba(59, 130, 246, 0.1)"
+                  }}>
+                    <i className="fas fa-book-open text-blue-400"></i>
                   </span>
                   Blog
                 </Link>
-              </div>
-              
-              <div className="border-t my-2 border-white/5" />
-              
-              <div>
+                
+                <Link 
+                  href="/#pricing"
+                  prefetch={false}
+                  onClick={handleNavLinkClick}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                >
+                  <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                    background: "rgba(16, 185, 129, 0.15)",
+                    boxShadow: "0 2px 5px rgba(16, 185, 129, 0.1)"
+                  }}>
+                    <i className="fas fa-tag text-emerald-400"></i>
+                  </span>
+                  Pricing
+                </Link>
+                
                 <Link 
                   href="mailto:support@cheapcc.online"
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-light text-white/80 hover:bg-white/5 transition-all duration-300`}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
                 >
-                  <span className={`w-7 h-7 rounded-full bg-gray-500/10 flex items-center justify-center`}>
-                    <i className={`fas fa-envelope text-white/60`} />
+                  <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                    background: "rgba(156, 163, 175, 0.15)",
+                    boxShadow: "0 2px 5px rgba(156, 163, 175, 0.1)"
+                  }}>
+                    <i className="fas fa-envelope text-gray-400"></i>
                   </span>
                   Support
                 </Link>

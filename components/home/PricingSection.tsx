@@ -30,10 +30,23 @@ const COMMON_FEATURES = [
 
 export default function PricingSection({ selectedPrice, setSelectedPrice, selectedPriceRef, userEmail }: PricingSectionProps) {
   const pricingRef = useRef<HTMLDivElement>(null);
+  const pricingContainerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(pricingRef, { once: true, margin: "-100px" });
   const [adminError, setAdminError] = useState<string | null>(null);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [hoverParticles, setHoverParticles] = useState<{[key: string]: HoverParticle[]}>({});
+  
+  // Ensure scrollable container starts at correct position
+  useEffect(() => {
+    if (pricingContainerRef.current && window.innerWidth >= 768 && window.innerWidth <= 1023) {
+      // Set initial scroll position for tablet view to show first card properly
+      requestAnimationFrame(() => {
+        if (pricingContainerRef.current) {
+          pricingContainerRef.current.scrollLeft = 1; // Just enough to allow scrolling left
+        }
+      });
+    }
+  }, []);
 
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleInView = useInView(titleRef, { once: false, margin: "-100px 0px" });
@@ -162,8 +175,8 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
   return (
     <>
       {productSchema && <Script id="product-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />}
-      {/* FIX: `overflow-x-hidden` is added here to contain the full-bleed element */}
-      <section className="relative py-20 md:py-32 overflow-x-hidden overflow-y-visible" id="pricing" ref={pricingRef}>
+      {/* Removed overflow-x-hidden to prevent container issues on tablet view */}
+      <section className="relative py-20 md:py-32 overflow-y-visible" id="pricing" ref={pricingRef}>
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.7, ease: [0.215, 0.61, 0.355, 1] as any }}>
             <motion.h2
@@ -206,11 +219,18 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
         </div>
 
         <motion.div
-          className="relative left-1/2 -ml-[50vw] w-screen flex overflow-x-auto pb-20 pt-4 snap-x snap-mandatory sm:snap-none justify-start md:justify-center gap-6 lg:gap-8 mt-10 md:mt-14 hide-scrollbar px-4 sm:px-6 md:px-8"
+          ref={pricingContainerRef}
+          className="relative left-1/2 -ml-[50vw] w-screen flex overflow-x-auto pb-20 pt-4 snap-x snap-proximity sm:snap-none justify-start md:justify-center gap-6 lg:gap-8 mt-10 md:mt-14 hide-scrollbar px-4 sm:px-6 md:px-8"
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={containerVariants}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'visible' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none', 
+            overflowY: 'visible',
+            position: 'relative',
+            zIndex: 5
+          }}
         >
           {sortedPricingOptions.length > 0 ? (
             sortedPricingOptions.map((option) => (
@@ -237,7 +257,8 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
                 whileHover={{ 
                   scale: 1.05, 
                   boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)",
-                  zIndex: 20
+                  zIndex: 20,
+                  y: -10
                 }}
               >
                 <div className="flex flex-col h-full w-full">
@@ -318,6 +339,8 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
         <motion.div className="text-right sm:text-right mt-4 sm:mt-6 text-xs sm:text-sm text-gray-400 italic md:-mr-14" initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : { opacity: 0 }} transition={{ delay: 0.8 }}>
               *All prices are listed in USD
             </motion.div>
+            {/* Extra spacing div for tablet view */}
+            <div className="hidden md:block lg:hidden h-10"></div>
             <motion.div
               className="md:hidden flex justify-center items-center mt-4 mb-2"
               initial={{ opacity: 0 }}

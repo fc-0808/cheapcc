@@ -6,6 +6,7 @@ import Script from "next/script";
 import { Suspense } from 'react';
 import Loading from './loading';
 import UnifiedBackground from "@/components/UnifiedBackground";
+import VisitorTracker from '@/components/VisitorTracker';
 
 export default function RootLayout({
   children,
@@ -236,6 +237,11 @@ export default function RootLayout({
             }, 2000);
           `}
         </Script>
+        
+        {/* Track visitor data */}
+        <Suspense fallback={null}>
+          <VisitorTracker />
+        </Suspense>
       </body>
     </html>
   );

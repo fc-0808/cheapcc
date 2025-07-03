@@ -3107,13 +3107,14 @@ input:focus, select:focus, textarea:focus {
 
 /* Mobile summary styling */
 .mobile-stats-summary {
-  background: linear-gradient(145deg, #ffffff, #fafbff);
+  background: rgba(15, 17, 26, 0.85);
   border-radius: 0.85rem;
   padding: 1.25rem;
-  border: 1px solid rgba(229, 231, 235, 0.8);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .mobile-stats-summary::before {
@@ -3121,12 +3122,13 @@ input:focus, select:focus, textarea:focus {
   position: absolute;
   top: 0;
   right: 0;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(255, 51, 102, 0.03) 0%, rgba(44, 45, 90, 0.01) 60%, transparent 70%);
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(192, 38, 211, 0.2) 0%, rgba(219, 39, 119, 0.12) 60%, transparent 70%);
   border-radius: 50%;
   transform: translate(30%, -30%);
   z-index: 0;
+  animation: pulse 8s ease-in-out infinite alternate;
 }
 
 .mobile-stats-item {
@@ -3139,44 +3141,45 @@ input:focus, select:focus, textarea:focus {
 }
 
 .mobile-stats-item:not(:last-child) {
-  border-bottom: 1px dashed rgba(229, 231, 235, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .mobile-stats-label {
   display: flex;
   align-items: center;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .mobile-stats-label i {
-  margin-right: 0.5rem;
-  color: var(--accent);
+  margin-right: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 0.875rem;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 51, 102, 0.08);
+  background: rgba(192, 38, 211, 0.15);
   border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(192, 38, 211, 0.2);
+  background-image: linear-gradient(135deg, rgba(192, 38, 211, 0.2), rgba(219, 39, 119, 0.2));
 }
 
 .mobile-stats-value {
   font-weight: 600;
   font-size: 0.9375rem;
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .mobile-stats-value.accent {
-  background: linear-gradient(135deg, var(--accent), #ff5c86);
+  background: linear-gradient(135deg, #c026d3, #db2777, #ef4444);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  text-shadow: none;
 }
 
 /* === Final, High-Fidelity & Sophisticated Icon Animations === */
@@ -3399,5 +3402,132 @@ html.dark-theme {
   .dashboard-mode a,
   .dashboard-mode button {
     padding: 0.5rem;
+  }
+
+  /* Enhanced mobile menu styling */
+  #mobile-menu {
+    animation: mobileMenuFadeIn 0.3s ease-out forwards;
+  }
+
+  @keyframes mobileMenuFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Mobile menu backdrop effect */
+  #mobile-menu::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    backdrop-filter: blur(10px);
+    border-radius: inherit;
+  }
+}
+
+/* Tablet-specific styles for pricing cards (768px to 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Container styling */
+  #pricing {
+    overflow: visible !important;
+    position: relative;
+    padding-bottom: 3rem !important; /* Add extra padding at the bottom */
+  }
+  
+  /* Add horizontal scroll indicator */
+  #pricing::after {
+    content: "";
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    z-index: 10;
+    animation: scrollIndicator 2s infinite ease-in-out;
+  }
+  
+  @keyframes scrollIndicator {
+    0%, 100% { transform: translateX(-65%); }
+    50% { transform: translateX(-35%); }
+  }
+
+  /* Main card container */
+  #pricing .relative.left-1\/2.-ml-\[50vw\].w-screen {
+    display: flex !important;
+    justify-content: flex-start !important;
+    gap: 1.5rem !important;
+    padding-left: calc(50% - 140px) !important; /* This ensures the first card can be scrolled past */
+    padding-right: 4rem !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    scroll-snap-type: x proximity; /* Changed from mandatory to proximity for smoother scrolling */
+    scroll-padding: 1rem;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, black, black 95%, transparent) !important;
+    -webkit-mask-image: linear-gradient(to right, black, black 95%, transparent) !important;
+  }
+
+  /* Individual pricing cards */
+  #pricing [role="button"] {
+    min-width: 240px !important;
+    max-width: 280px !important;
+    margin: 0.75rem !important;
+    flex-shrink: 0 !important;
+    scroll-snap-align: start;  /* Changed from center to start */
+    transform-origin: center center !important;
+    height: auto !important;
+    min-height: 440px !important;
+    background: rgba(30, 30, 50, 0.4) !important;
+  }
+
+  /* Selected pricing card */
+  #pricing [role="button"][aria-pressed="true"] {
+    background: linear-gradient(to bottom right, rgba(217, 70, 239, 0.2), rgba(225, 29, 72, 0.2)) !important;
+    transform: translateY(-5px) scale(1.03) !important;
+    z-index: 20 !important;
+    box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  #pricing .relative.left-1\/2.-ml-\[50vw\].w-screen::-webkit-scrollbar {
+    height: 0;
+    width: 0;
+    display: none;
+  }
+
+  #pricing .relative.left-1\/2.-ml-\[50vw\].w-screen {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  /* Improve swipe indicator visibility */
+  #pricing .flex.justify-center.items-center.mt-4.mb-2 {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Fix for border box styling on tablet view */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Make sure the pricing section has proper spacing */
+  section#pricing {
+    padding-bottom: 5rem !important;
+  }
+
+  /* Ensure proper card content alignment */
+  #pricing [role="button"] > div {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 100% !important;
+  }
+  
+  /* Fix button positioning */
+  #pricing [role="button"] button {
+    width: 100% !important;
+    margin-top: 1rem !important;
   }
 }

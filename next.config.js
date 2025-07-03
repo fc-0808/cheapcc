@@ -5,6 +5,26 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig = {
 	reactStrictMode: process.env.NODE_ENV === 'development', // Only enable in development
+	// Force dynamic rendering for blog content
+	staticPageGenerationTimeout: 300, // Increased from 120 to 300 seconds
+	// Disable etags for better cache control
+	generateEtags: false, // Disable etags for better cache control
+	// Disable output file tracing for blog pages
+	outputFileTracing: true,
+	// Add specific configuration for blog routes
+	async headers() {
+		return [
+			{
+				source: '/blog/:path*',
+				headers: [
+					{
+						key: 'Cache-Control',
+						value: 'no-store, max-age=0',
+					},
+				],
+			},
+		]
+	},
 	env: {
 		NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
 		NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
