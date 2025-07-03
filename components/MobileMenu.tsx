@@ -155,19 +155,6 @@ const MobileMenu = memo(({
               Profile
             </Link>
             
-            {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={handleNavLinkClick}
-                className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
-              >
-                <span className="w-9 h-9 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-500/20 to-pink-600/20 shadow-lg shadow-pink-500/10">
-                  <i className="fas fa-lock text-pink-400"></i>
-                </span>
-                Admin Dashboard
-              </Link>
-            )}
-            
             <button
               onClick={handleLogout}
               className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"

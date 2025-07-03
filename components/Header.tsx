@@ -611,24 +611,6 @@ export default function Header() {
               
               {/* Common links for both logged in and non-logged in users */}
               <div className="py-1">
-                {/* Admin link - only for admin user */}
-                {isAdmin && (
-                  <Link 
-                    href="/admin"
-                    prefetch={false}
-                    onClick={handleNavLinkClick}
-                    className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-[#ff3366] hover:bg-white/10 transition-all duration-300"
-                  >
-                    <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                      background: "rgba(244, 63, 94, 0.15)",
-                      boxShadow: "0 2px 5px rgba(244, 63, 94, 0.1)"
-                    }}>
-                      <i className="fas fa-lock text-[#ff3366]"></i>
-                    </span>
-                    Admin Dashboard
-                  </Link>
-                )}
-                
                 <Link 
                   href="/blog"
                   prefetch={false}
