@@ -1154,8 +1154,6 @@ input:focus, select:focus, textarea:focus {
 }
 
 .plan-card {
-  background-color: var(--white);
-  border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
@@ -1175,60 +1173,62 @@ input:focus, select:focus, textarea:focus {
 /* Mobile and tablet specific styles for plan cards */
 @media (max-width: 1023px) {
   .plan-card {
-    padding: 1.25rem 0.75rem;
-    min-height: auto;
-    margin: 0;
-    height: 100%;
+    padding: 1.25rem 1rem;
+    min-height: 400px;
+    margin: 0.5rem 0.25rem;
+    width: 90%;
   }
   
   .plan-duration {
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
-  
-  .plan-price {
-    font-size: 2rem;
+    font-size: 0.9rem;
     margin-bottom: 0.75rem;
   }
   
+  .plan-price {
+    font-size: 1.75rem;
+  }
+  
   .plan-price::before {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
   .plan-features {
-    margin: 0.5rem 0 1rem;
+    margin: 1rem 0;
   }
   
   .plan-features li {
-    margin-bottom: 0.5rem;
     font-size: 0.85rem;
+    margin-bottom: 0.5rem;
   }
   
   .select-btn {
-    padding: 0.7rem 0;
-    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
   }
   
   .one-time-purchase-ribbon,
   .best-value-ribbon,
   .admin-ribbon {
-    padding: 0.25rem 0.75rem;
     font-size: 0.65rem;
-    white-space: nowrap;
+    padding: 0.25rem 0.75rem;
+    top: 0.5rem;
+    right: 0.5rem;
   }
 }
 
 /* Even smaller screens (mobile phones) */
 @media (max-width: 639px) {
   .plan-card {
-    padding: 1rem 0.5rem;
+    padding: 1.25rem 1rem;
+    margin: 0.75rem 0.25rem;
+    width: 85%;
+    border-radius: 0.75rem;
+    min-height: 380px;
   }
   
   .plan-duration {
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
-    padding-bottom: 0.4rem;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
   }
   
   .plan-duration::after {
@@ -1237,36 +1237,50 @@ input:focus, select:focus, textarea:focus {
   }
   
   .plan-price {
-    font-size: 1.6rem;
-    margin-bottom: 0.6rem;
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
   }
   
   .plan-price::before {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   
   .plan-features li {
-    padding-left: 1.5rem;
-    font-size: 0.8rem;
+    padding-left: 1.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: flex;
+    align-items: center;
   }
   
   .plan-features li:before {
-    font-size: 0.75rem;
-    width: 16px;
-    height: 16px;
+    font-size: 0.8rem;
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .select-btn {
     padding: 0.6rem 0;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
   }
   
   .one-time-purchase-ribbon,
   .best-value-ribbon,
   .admin-ribbon {
-    padding: 0.2rem 0.5rem;
-    font-size: 0.6rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.65rem;
     transform: translateX(5%) rotate(10deg);
+    top: 0.5rem;
+    right: 0.5rem;
   }
 }
 
@@ -1282,7 +1296,7 @@ input:focus, select:focus, textarea:focus {
 
 .plan-card.selected {
   border-color: var(--accent);
-  background: linear-gradient(to bottom, white, rgba(255, 51, 102, 0.03));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 51, 102, 0.05));
   box-shadow: 0 10px 25px rgba(var(--accent-rgb), 0.15), 0 0 0 1px rgba(var(--accent-rgb), 0.4);
   transform: translateY(-5px) scale(1.03);
   z-index: 10;
@@ -1497,15 +1511,17 @@ input:focus, select:focus, textarea:focus {
   color: var(--success);
   position: absolute;
   left: 0;
-  top: 1px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 0.9rem;
-  background: rgba(var(--success-rgb), 0.1);
+  background: rgba(var(--success-rgb), 0.15);
   width: 20px;
   height: 20px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(var(--success-rgb), 0.1);
 }
 
 .select-btn {
@@ -3480,15 +3496,21 @@ html.dark-theme {
     transform-origin: center center !important;
     height: auto !important;
     min-height: 440px !important;
-    background: rgba(30, 30, 50, 0.4) !important;
   }
 
   /* Selected pricing card */
   #pricing [role="button"][aria-pressed="true"] {
     background: linear-gradient(to bottom right, rgba(217, 70, 239, 0.2), rgba(225, 29, 72, 0.2)) !important;
+    border: 1px solid rgba(226, 51, 102, 0.4) !important;
     transform: translateY(-5px) scale(1.03) !important;
     z-index: 20 !important;
-    box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1), 0 0 15px rgba(226, 51, 102, 0.25) !important;
+  }
+
+  /* Ensure unselected cards have proper background */
+  #pricing [role="button"]:not([aria-pressed="true"]) {
+    background: rgba(30, 30, 50, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
 
   /* Hide scrollbar but keep functionality */
@@ -3508,10 +3530,7 @@ html.dark-theme {
     display: flex !important;
     opacity: 1 !important;
   }
-}
-
-/* Fix for border box styling on tablet view */
-@media (min-width: 768px) and (max-width: 1023px) {
+  
   /* Make sure the pricing section has proper spacing */
   section#pricing {
     padding-bottom: 5rem !important;
@@ -3525,9 +3544,142 @@ html.dark-theme {
     height: 100% !important;
   }
   
+  /* Ensure text is visible */
+  #pricing [role="button"] .text-gray-200 {
+    color: #e5e7eb !important;
+  }
+  
+  #pricing [role="button"] .text-gray-300 {
+    color: #d1d5db !important;
+  }
+  
+  #pricing [role="button"] .text-white {
+    color: #ffffff !important;
+  }
+  
+  /* Ensure feature icons are visible */
+  #pricing [role="button"] .flex-shrink-0 i.fas {
+    color: #ffffff !important;
+  }
+  
   /* Fix button positioning */
   #pricing [role="button"] button {
     width: 100% !important;
     margin-top: 1rem !important;
   }
+  
+  /* Hide particle animations on tablet only */
+  #pricing [role="button"] .absolute.w-1\.5.h-1\.5.rounded-full,
+  #pricing [role="button"] .group-hover\:opacity-100 {
+    display: none !important;
+  }
 }
+
+/* Mobile Optimization Enhancements */
+/* These classes enhance mobile experience without changing existing functionality */
+
+/* Mobile-optimized pricing section */
+@media (max-width: 768px) {
+  /* Improve touch targets */
+  .faq-question,
+  .nav-link,
+  .btn,
+  button,
+  a[role="button"],
+  .select-btn,
+  .footer-links a {
+    min-height: 44px;
+    padding: 12px !important;
+  }
+  
+  /* Responsive tables */
+  .responsive-table-container {
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .data-table-responsive {
+    width: 100%;
+  }
+  
+  .data-table-responsive thead {
+    border: none;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+  
+  .data-table-responsive tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: block;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  
+  .data-table-responsive td {
+    display: block;
+    font-size: 0.875rem;
+    text-align: right;
+    padding: 0.75rem 1rem;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .data-table-responsive td:last-child {
+    border-bottom: none;
+  }
+  
+  .data-table-responsive td::before {
+    content: attr(data-label);
+    float: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* Focus styles for better accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid rgba(255, 51, 102, 0.6);
+  outline-offset: 2px;
+}
+
+/* Enhanced touch area for mobile inputs */
+@media (max-width: 640px) {
+  .mobile-enhanced-input {
+    padding: 12px 16px !important;
+    min-height: 48px;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  body, .safe-area-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .fixed-bottom, .sticky-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Utility class to hide elements only on tablet screens */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hidden-tablet-only {
+    display: none !important;
+  }
+}
+
+/* Focus styles for better accessibility */

@@ -220,7 +220,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
 
         <motion.div
           ref={pricingContainerRef}
-          className="relative left-1/2 -ml-[50vw] w-screen flex overflow-x-auto pb-20 pt-4 snap-x snap-proximity sm:snap-none justify-start md:justify-center gap-6 lg:gap-8 mt-10 md:mt-14 hide-scrollbar px-4 sm:px-6 md:px-8"
+          className="relative left-1/2 -ml-[50vw] w-screen flex overflow-x-auto pb-20 pt-4 snap-x snap-mandatory sm:snap-proximity md:snap-none justify-start md:justify-center gap-6 lg:gap-8 mt-10 md:mt-14 hide-scrollbar px-4 sm:px-6 md:px-8 pricing-container"
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={containerVariants}
@@ -229,14 +229,15 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
             msOverflowStyle: 'none', 
             overflowY: 'visible',
             position: 'relative',
-            zIndex: 5
+            zIndex: 5,
+            WebkitOverflowScrolling: 'touch' // Enable momentum scrolling on iOS
           }}
         >
           {sortedPricingOptions.length > 0 ? (
             sortedPricingOptions.map((option) => (
               <motion.div
                 key={option.id}
-                className={`relative group rounded-xl backdrop-blur-sm p-4 sm:p-6 transition-all duration-300 transform cursor-pointer flex-shrink-0 snap-center ${
+                className={`relative group rounded-xl backdrop-blur-sm p-4 sm:p-6 transition-all duration-300 transform cursor-pointer flex-shrink-0 snap-center plan-card ${
                   selectedPrice === option.id
                     ? 'bg-gradient-to-br from-[rgba(217,70,239,0.2)] to-[rgba(225,29,72,0.2)] border border-[rgba(226,51,102,0.4)] shadow-[0_0_15px_rgba(226,51,102,0.25)]'
                     : 'bg-[rgba(30,30,50,0.4)] border border-[rgba(255,255,255,0.08)]'
@@ -317,7 +318,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
                   {hoverParticles[option.id]?.map((particle, particleIndex) => (
                     <motion.div
                       key={`particle-${option.id}-${particleIndex}`}
-                      className="absolute w-1.5 h-1.5 rounded-full opacity-0 group-hover:opacity-100"
+                      className="absolute w-1.5 h-1.5 rounded-full opacity-0 group-hover:opacity-100 hidden-tablet-only"
                       style={{ top: particle.top, left: particle.left, backgroundColor: particle.color, filter: "blur(0.5px)", boxShadow: `0 0 8px ${particle.color}` }}
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ y: [0, -30 - Math.random() * 40], x: [0, (Math.random() - 0.5) * 50], opacity: [0, 0.8, 0], scale: [0.5, 1, 0.5] }}
@@ -351,6 +352,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
                 className="flex items-center gap-2 text-white/80 text-xs bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg"
                 animate={{ x: [0, 10, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                style={{ touchAction: 'none' }}
               >
                 <i className="fas fa-arrow-left text-pink-500"></i>
                 <span>Swipe to view all plans</span>

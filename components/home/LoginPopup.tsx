@@ -14,11 +14,14 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
   const router = useRouter();
   const [particles, setParticles] = useState<Array<{top: number, left: number, size: number, delay: number}>>([]);
   
-  // Generate particles for background effect
+  // Generate particles for background effect - reduce count on mobile
   useEffect(() => {
     if (show) {
+      // Reduce particle count on mobile for better performance
+      const particleCount = window.innerWidth < 640 ? 10 : 20;
+      
       setParticles(
-        Array.from({ length: 20 }).map(() => ({
+        Array.from({ length: particleCount }).map(() => ({
           top: Math.random() * 100,
           left: Math.random() * 100,
           size: Math.random() * 4 + 1,
@@ -141,7 +144,7 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
     <AnimatePresence>
       {show && (
         <motion.div 
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm p-4 sm:p-0"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm px-4 py-6 sm:p-0"
           variants={backdropVariants}
           initial="hidden"
           animate="visible"
@@ -179,7 +182,7 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
           {/* Glowing overlay effect */}
           <div className="absolute inset-0 bg-black/50 pointer-events-none" />
           <motion.div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] bg-[radial-gradient(ellipse_at_center,_rgba(255,_51,_102,_0.2),_transparent_70%)] pointer-events-none"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] sm:w-[60vw] h-[70vh] sm:h-[60vh] bg-[radial-gradient(ellipse_at_center,_rgba(255,_51,_102,_0.2),_transparent_70%)] pointer-events-none"
             animate={{ 
               scale: [1, 1.1, 1],
               opacity: [0.3, 0.5, 0.3],
@@ -194,7 +197,7 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
           
           {/* Modal card */}
           <motion.div 
-            className="bg-gradient-to-b from-[#1e1e3f]/90 to-[#0f172a]/90 rounded-xl shadow-2xl p-6 w-full max-w-sm mx-auto border border-[#ff3366]/20 backdrop-blur-lg relative z-10 overflow-hidden"
+            className="bg-gradient-to-b from-[#1e1e3f]/90 to-[#0f172a]/90 rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-[90%] sm:max-w-sm mx-auto border border-[#ff3366]/20 backdrop-blur-lg relative z-10 overflow-hidden"
             variants={modalVariants}
             initial="hidden"
             animate="visible"
@@ -217,14 +220,14 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
             />
             
             <div className="relative z-10">
-              {/* Icon with animation */}
+              {/* Icon with animation - smaller on mobile */}
               <motion.div 
-                className="text-center mb-5"
+                className="text-center mb-4 sm:mb-5"
                 variants={iconVariants}
                 initial="hidden"
                 animate="visible"
               >
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-fuchsia-500 via-pink-500 to-rose-600 text-white shadow-lg relative">
+                <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-fuchsia-500 via-pink-500 to-rose-600 text-white shadow-lg relative">
                   {/* Orbital ring animation */}
                   <motion.div 
                     className="absolute -inset-1 opacity-0 pointer-events-none"
@@ -251,13 +254,13 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
                     </svg>
                   </motion.div>
                   
-                  <i className="fas fa-user text-3xl"></i>
+                  <i className="fas fa-user text-2xl sm:text-3xl"></i>
                   
                   {/* Animated particles around icon */}
                   {[...Array(3)].map((_, i) => (
                     <motion.div
                       key={i}
-                      className="absolute w-2 h-2 rounded-full bg-white opacity-70"
+                      className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-white opacity-70"
                       style={{
                         top: `${50 + Math.sin(i * Math.PI * 2 / 3) * 30}%`,
                         left: `${50 + Math.cos(i * Math.PI * 2 / 3) * 30}%`,
@@ -279,7 +282,7 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
               
               {/* Title with animation */}
               <motion.h3 
-                className="text-2xl font-bold text-white mb-3 text-center"
+                className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3 text-center"
                 custom={0}
                 variants={textVariants}
                 initial="hidden"
@@ -291,7 +294,7 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
               
               {/* Description with animation */}
               <motion.p 
-                className="text-white/70 mb-6 text-center"
+                className="text-sm sm:text-base text-white/70 mb-5 sm:mb-6 text-center"
                 custom={1}
                 variants={textVariants}
                 initial="hidden"
@@ -300,11 +303,11 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
                 Creating an account lets you track your orders and save your information for faster checkout.
               </motion.p>
               
-              {/* Buttons with animations */}
+              {/* Buttons with animations - stack vertically on mobile */}
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:justify-center">
                 <motion.button
                   onClick={onRegisterClick}
-                  className="py-2.5 px-5 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-600 text-white rounded-lg font-medium flex items-center justify-center whitespace-nowrap cursor-pointer shadow-lg shadow-rose-500/20 border border-white/10"
+                  className="py-2.5 px-5 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-600 text-white rounded-lg font-medium flex items-center justify-center whitespace-nowrap cursor-pointer shadow-lg shadow-rose-500/20 border border-white/10 w-full sm:w-auto"
                   custom={0}
                   variants={buttonVariants}
                   initial="hidden"
@@ -316,7 +319,7 @@ export default function LoginPopup({ show, onClose, onRegisterClick, onContinueA
                 </motion.button>
                 <motion.button
                   onClick={onContinueAsGuest}
-                  className="py-2.5 px-5 bg-white/10 backdrop-blur-sm text-white rounded-lg font-medium flex items-center justify-center whitespace-nowrap cursor-pointer border border-white/20"
+                  className="py-2.5 px-5 bg-white/10 backdrop-blur-sm text-white rounded-lg font-medium flex items-center justify-center whitespace-nowrap cursor-pointer border border-white/20 w-full sm:w-auto"
                   custom={1}
                   variants={buttonVariants}
                   initial="hidden"

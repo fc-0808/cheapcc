@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getSortedPostsData } from '@/lib/blog';
+import { getAllComparisonSlugs } from '@/lib/comparison-data';
 
 // FIX: Removed the Promise<> wrapper from the return type
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -18,6 +19,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     };
   });
+  
+  // Get all comparison pages for the sitemap
+  const comparisonSlugs = getAllComparisonSlugs();
+  
+  // Create sitemap entries for comparison pages
+  const comparisonUrls = comparisonSlugs.map((slug) => {
+    return {
+      url: `${baseUrl}/compare/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    };
+  });
 
   // Main site pages
   const routes = [
@@ -29,6 +43,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/compare`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
@@ -77,5 +97,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  return [...routes, ...blogUrls];
+  return [...routes, ...blogUrls, ...comparisonUrls];
 }

@@ -208,7 +208,8 @@ export default function LoginPage() {
                     name="email"
                     type="email"
                     autoComplete="email"
-                    className="w-full px-3 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-white placeholder-gray-400"
+                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-white placeholder-gray-400 mobile-enhanced-input"
+                    style={{ fontSize: '16px' }} /* Prevents iOS zoom on focus */
                     required
                     placeholder="you@example.com"
                     disabled={isLoading}
@@ -239,7 +240,8 @@ export default function LoginPage() {
                       autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-3 py-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-white placeholder-gray-400 pr-10"
+                      className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg focus:ring-2 focus:ring-[#ff3366] focus:border-[#ff3366] transition text-white placeholder-gray-400 pr-12 mobile-enhanced-input"
+                      style={{ fontSize: '16px' }} /* Prevents iOS zoom on focus */
                       required
                       disabled={isLoading}
                     />

@@ -42,8 +42,8 @@ export default async function OrdersContent() {
         </div>
         
         {orders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto responsive-table-container">
+            <table className="w-full text-left data-table-responsive">
               <thead className="bg-white/5">
                 <tr>
                   <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
@@ -81,23 +81,23 @@ export default async function OrdersContent() {
                   
                   return (
                     <tr key={order.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-gray-300">
+                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-gray-300" data-label="Order ID">
                         {order.paypal_order_id || order.id}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300" data-label="Date">
                         {order.created_at ? new Date(order.created_at).toLocaleDateString(undefined, {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric'
                         }) : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white" data-label="Plan">
                         {getPlanDuration(order)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white" data-label="Amount">
                         {formatCurrency(parseFloat(order.amount) || 0)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap" data-label="Status">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${statusClass}`}>
                           <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isActive ? 'bg-green-400' : order.status?.toLowerCase() === 'completed' ? 'bg-blue-400' : order.status?.toLowerCase() === 'pending' ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
                           {statusText}
@@ -127,7 +127,7 @@ export default async function OrdersContent() {
         )}
         
         {orders.length > 0 && (
-          <div className="px-6 py-4 bg-white/5 border-t border-white/10 flex items-center justify-between">
+          <div className="px-6 py-4 bg-white/5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-sm text-gray-400">
               Showing {orders.length} order{orders.length !== 1 ? 's' : ''}
             </div>

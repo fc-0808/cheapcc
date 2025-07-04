@@ -9,8 +9,6 @@ const nextConfig = {
 	staticPageGenerationTimeout: 300, // Increased from 120 to 300 seconds
 	// Disable etags for better cache control
 	generateEtags: false, // Disable etags for better cache control
-	// Disable output file tracing for blog pages
-	outputFileTracing: true,
 	// Add specific configuration for blog routes
 	async headers() {
 		return [
@@ -45,6 +43,7 @@ const nextConfig = {
 		minimumCacheTTL: 60 * 60 * 24 * 7, // Cache images for a week
 	},
 	experimental: {
+		outputFileTracing: true,
 		optimizeCss: true,
 		// Enable optimized package imports to reduce bundle size
 		optimizePackageImports: ['framer-motion', 'date-fns', 'lodash', 'three', 'react-google-recaptcha'],

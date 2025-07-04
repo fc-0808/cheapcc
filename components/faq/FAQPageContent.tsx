@@ -176,12 +176,15 @@ export default function FAQPageContent() {
                   tabIndex={0}
                   role="button"
                   aria-expanded={openIdx === idx}
+                  aria-controls={`faq-answer-${idx}`}
                   onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setOpenIdx(openIdx === idx ? null : idx)}
+                  style={{ minHeight: '60px' }} /* Ensure minimum touch target height */
                 >
                   <h3 className="text-lg sm:text-xl font-medium text-white pr-10">{item.q}</h3>
                   <div 
-                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white transition-transform duration-300"
+                    className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white transition-transform duration-300"
                     style={{ transform: openIdx === idx ? 'rotate(45deg)' : 'rotate(0deg)' }}
+                    aria-hidden="true"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -191,6 +194,9 @@ export default function FAQPageContent() {
                 </div>
                 
                 <div
+                  id={`faq-answer-${idx}`}
+                  role="region"
+                  aria-labelledby={`faq-question-${idx}`}
                   className="overflow-hidden transition-all duration-300"
                   style={{ 
                     maxHeight: openIdx === idx ? '1000px' : '0px',
@@ -199,7 +205,7 @@ export default function FAQPageContent() {
                   }}
                 >
                   <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-0 border-t border-white/10">
-                    <p className="text-gray-300 pt-4">
+                    <p className="text-gray-300 pt-4 text-base leading-relaxed">
                       {item.a}
                     </p>
                   </div>

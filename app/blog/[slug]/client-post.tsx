@@ -7,6 +7,7 @@ import Script from 'next/script';
 import { motion, useScroll, useTransform, Variants } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
 import type { Post } from '@/lib/blog';
+import ComparisonTable from '@/components/blog/ComparisonTable';
 
 interface ClientPostProps {
   postData: Post;
@@ -120,6 +121,7 @@ export default function ClientPost({ postData }: ClientPostProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      <ComparisonTable htmlContent={postData.contentHtml} />
       <main className="min-h-screen relative overflow-hidden bg-[#0f111a]" ref={articleRef}>
         {/* Background particles */}
         {particles.map((particle, index) => (

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="450" viewBox="0 0 800 450">
+  <defs>
+    <linearGradient id="illustratorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9A00" />
+      <stop offset="100%" stop-color="#E16D00" />
+    </linearGradient>
+    <linearGradient id="figmaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F24E1E" />
+      <stop offset="25%" stop-color="#FF7262" />
+      <stop offset="50%" stop-color="#A259FF" />
+      <stop offset="75%" stop-color="#1ABCFE" />
+      <stop offset="100%" stop-color="#0ACF83" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="450" fill="#1A1A2E" />
+  <circle cx="200" cy="225" r="140" fill="url(#illustratorGradient)" opacity="0.15" />
+  <circle cx="600" cy="225" r="140" fill="url(#figmaGradient)" opacity="0.15" />
+  
+  <!-- Illustrator Icon -->
+  <g transform="translate(150, 175)" filter="url(#shadow)">
+    <rect width="100" height="100" rx="15" fill="url(#illustratorGradient)" />
+    <text x="50" y="70" font-family="Arial" font-weight="bold" font-size="60" fill="white" text-anchor="middle">Ai</text>
+  </g>
+  
+  <!-- Figma Icon -->
+  <g transform="translate(550, 175)" filter="url(#shadow)">
+    <rect width="100" height="100" rx="15" fill="#1E1E1E" />
+    <g transform="translate(50, 50)">
+      <!-- Figma logo simplified -->
+      <circle cx="-15" cy="-15" r="15" fill="#F24E1E" />
+      <circle cx="15" cy="-15" r="15" fill="#FF7262" />
+      <circle cx="-15" cy="15" r="15" fill="#A259FF" />
+      <circle cx="15" cy="15" r="15" fill="#1ABCFE" />
+      <circle cx="-15" cy="45" r="15" fill="#0ACF83" />
+    </g>
+  </g>
+  
+  <!-- VS Text -->
+  <g transform="translate(400, 225)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="50" fill="white" opacity="0.1" />
+    <text x="0" y="15" font-family="Arial" font-weight="bold" font-size="36" fill="white" text-anchor="middle">VS</text>
+  </g>
+  
+  <!-- Title -->
+  <text x="400" y="80" font-family="Arial" font-weight="bold" font-size="36" fill="white" text-anchor="middle">Illustrator vs Figma</text>
+  <text x="400" y="120" font-family="Arial" font-size="24" fill="#AAAAAA" text-anchor="middle">Design Tool Comparison 2025</text>
+  
+  <!-- Tool highlights -->
+  <g transform="translate(150, 310)">
+    <rect width="100" height="30" rx="15" fill="white" opacity="0.2" />
+    <text x="50" y="20" font-family="Arial" font-size="14" fill="white" text-anchor="middle">Vector Precision</text>
+  </g>
+  
+  <g transform="translate(550, 310)">
+    <rect width="100" height="30" rx="15" fill="white" opacity="0.2" />
+    <text x="50" y="20" font-family="Arial" font-size="14" fill="white" text-anchor="middle">Collaboration</text>
+  </g>
+  
+  <g transform="translate(340, 370)">
+    <rect width="120" height="30" rx="15" fill="#FF3366" />
+    <text x="60" y="20" font-family="Arial" font-weight="bold" font-size="16" fill="white" text-anchor="middle">CheapCC</text>
+  </g>
+</svg> 

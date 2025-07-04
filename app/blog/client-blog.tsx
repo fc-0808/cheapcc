@@ -51,7 +51,7 @@ export default function ClientBlog({ posts }: ClientBlogProps) {
   };
   
   return (
-    <main className="min-h-screen py-16 relative overflow-hidden bg-[#0f111a]">
+    <main className="min-h-screen py-20 relative overflow-hidden bg-[#0f111a]">
       {/* Background particles */}
       {particles.map((particle, index) => (
         <motion.div
@@ -152,6 +152,30 @@ export default function ClientBlog({ posts }: ClientBlogProps) {
           >
             Discover tips, tutorials, and insights about Adobe Creative Cloud apps, along with exclusive discount offers.
           </motion.p>
+          
+          <motion.div
+            className="flex justify-center space-x-4 mt-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 0.6, 
+              ease: [0.22, 1, 0.36, 1] 
+            }}
+          >
+            <Link 
+              href="/blog"
+              className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all duration-300"
+            >
+              All Articles
+            </Link>
+            <Link 
+              href="/compare"
+              className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all duration-300"
+            >
+              Software Comparisons
+            </Link>
+          </motion.div>
         </motion.header>
         
         {posts.length === 0 ? (
@@ -284,6 +308,117 @@ export default function ClientBlog({ posts }: ClientBlogProps) {
             ))}
           </motion.div>
         )}
+
+        {/* Software Comparisons Section */}
+        <motion.div
+          className="mt-16 bg-gradient-to-r from-purple-900/30 to-fuchsia-900/30 rounded-2xl overflow-hidden border border-white/10 p-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        >
+          <div className="text-center mb-8">
+            <motion.div 
+              className="inline-flex items-center px-4 py-1.5 bg-white/10 rounded-full text-xs font-semibold text-purple-200 mb-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <span className="mr-2">⚖️</span>
+              DETAILED COMPARISONS
+            </motion.div>
+            <motion.h2 
+              className="text-3xl font-bold text-white mb-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              Adobe Creative Cloud Software Comparisons
+            </motion.h2>
+            <motion.p 
+              className="text-white/70 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+            >
+              Detailed side-by-side comparisons of Adobe products with popular alternatives to help you make informed decisions.
+            </motion.p>
+          </div>
+          
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+            <motion.div 
+              className="bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:shadow-lg hover:shadow-fuchsia-500/10 transition-all duration-300"
+              whileHover={{ y: -5 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
+              <Link href="/compare/photoshop-vs-affinity-photo" className="block group">
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-fuchsia-400 transition-colors">
+                    Photoshop vs Affinity Photo
+                  </h3>
+                  <p className="text-white/70 mb-4">
+                    Compare features, pricing, and performance between Adobe Photoshop and Affinity Photo to find the best photo editing solution for your needs.
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Features, Pricing, UI & more</span>
+                    <span className="text-fuchsia-400 font-medium flex items-center text-sm">
+                      Read Comparison
+                      <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:shadow-lg hover:shadow-fuchsia-500/10 transition-all duration-300"
+              whileHover={{ y: -5 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+            >
+              <Link href="/compare/premiere-pro-vs-davinci-resolve" className="block group">
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-fuchsia-400 transition-colors">
+                    Premiere Pro vs DaVinci Resolve
+                  </h3>
+                  <p className="text-white/70 mb-4">
+                    A detailed comparison of Adobe Premiere Pro and DaVinci Resolve, covering editing capabilities, color grading, pricing models, and professional workflows.
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-white/50">Editing, Color Grading, Performance</span>
+                    <span className="text-fuchsia-400 font-medium flex items-center text-sm">
+                      Read Comparison
+                      <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          </div>
+          
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1 }}
+          >
+            <Link 
+              href="/compare" 
+              className="inline-flex items-center px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/10 transition-all duration-300"
+            >
+              View All Comparisons
+              <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </Link>
+          </motion.div>
+        </motion.div>
 
         {posts.length > 0 && (
           <motion.div 
