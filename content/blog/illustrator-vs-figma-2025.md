@@ -2,7 +2,7 @@
 title: 'Adobe Illustrator vs Figma: Which Design Tool Should You Choose in 2025?'
 date: '2025-06-18'
 excerpt: 'Trying to decide between Adobe Illustrator and Figma? Our comprehensive comparison breaks down features, workflow differences, pricing, and use cases to help you choose the right design tool in 2025.'
-featuredImage: '/blog-images/illustrator-vs-figma.svg'
+featuredImage: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # Adobe Illustrator vs Figma: Which Design Tool Should You Choose in 2025?

@@ -1,8 +1,8 @@
 ---
-title: 'Best Adobe Creative Cloud Alternatives in 2025: A Complete Guide'
-date: '2025-04-20'
-excerpt: 'Looking for Adobe CC alternatives? Explore our comprehensive guide to the best Adobe Creative Cloud alternatives in 2025, comparing features, pricing, and professional viability of Affinity Suite, DaVinci Resolve, Figma, and more.'
-featuredImage: '/blog-images/adobe-alternatives-2025.svg'
+title: 'Best Adobe Creative Cloud Alternatives in 2025: Free and Paid Options'
+date: '2025-02-20'
+excerpt: "Looking for alternatives to Adobe Creative Cloud? Discover the most powerful free and paid Adobe alternatives in 2025, from Affinity's suite to open-source options that rival Adobe's functionality."
+featuredImage: 'https://images.unsplash.com/photo-1626785774625-ddcddc3445e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # Best Adobe Creative Cloud Alternatives in 2025: A Complete Guide

@@ -1,141 +1,191 @@
+"use client";
+import { useEffect, useState, useMemo } from 'react';
+import { User } from '@supabase/supabase-js';
+import useSWR from 'swr';
+import { fetcher, getApiUrl, extractSWRError } from '@/utils/fetcher';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabase-server';
 import Link from 'next/link';
-import React from 'react';
 import { getPlanDuration, formatCurrency, isActiveSubscription } from '@/utils/products';
 
-export default async function OrdersContent() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+interface Order {
+  id: string;
+  user_id: string;
+  payment_method: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  email_sent: boolean;
+  adobe_id: string;
+  adobe_password: string;
+  adobe_password_hint: string;
+  subscription_type: string;
+  subscription_start: string | null;
+  subscription_end: string | null;
+  payment_intent_id?: string;
+  payment_id?: string;
+  amount: number;
+  invoice_id?: string;
+}
 
-  if (!user) {
-    redirect('/login');
+interface OrdersContentProps {
+  user: User | null;
+}
+
+export default function OrdersContent({ user }: OrdersContentProps) {
+  const { data: orders, error, isLoading, mutate } = useSWR<Order[]>(
+    user ? getApiUrl('/orders') : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateIfStale: true,
+      dedupingInterval: 10000, // 10 seconds
+      refreshInterval: 60000, // Refresh every minute
+    }
+  );
+
+  const errorDetails = useMemo(() => {
+    if (!error) return null;
+    return extractSWRError(error);
+  }, [error]);
+
+  // Derived data calculations
+  const sortedOrders = useMemo(() => {
+    if (!orders) return [];
+    return [...orders].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [orders]);
+
+  const hasActiveSubscriptions = useMemo(() => {
+    if (!orders) return false;
+    return orders.some(order => order.status === 'active');
+  }, [orders]);
+
+  const calculateDaysLeft = (endDate: string | null) => {
+    if (!endDate) return null;
+    
+    const end = new Date(endDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const refreshOrders = () => {
+    mutate();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#ff3366]"></div>
+      </div>
+    );
   }
 
-  const { data } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('email', user.email || '')
-    .order('created_at', { ascending: false });
-  const orders = data ?? [];
+  if (errorDetails) {
+    return (
+      <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 text-center">
+        <p className="text-red-300 mb-4">
+          <i className="fas fa-exclamation-triangle mr-2"></i>
+          {errorDetails.message || 'Error loading orders'}
+        </p>
+        <button 
+          onClick={refreshOrders}
+          className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-white rounded-md transition-colors"
+        >
+          <i className="fas fa-sync-alt mr-2"></i> Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (!orders || orders.length === 0) {
+    return (
+      <div className="empty-state">
+        <i className="fas fa-shopping-cart text-4xl mb-4"></i>
+        <h3>No Orders Yet</h3>
+        <p>You haven&apos;t placed any orders yet. Browse our pricing options to get started.</p>
+        <a href="/#pricing" className="btn btn-accent mt-4">View Pricing</a>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-white bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-          Order History
-        </h1>
-        <Link 
-          href="/dashboard" 
-          prefetch={false}
-          className="px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/10 rounded-lg text-white hover:bg-white/15 transition flex items-center gap-2 text-sm font-medium"
-        >
-          <i className="fas fa-arrow-left"></i>
-          Back to Dashboard
-        </Link>
-      </div>
-      
-      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden shadow-xl">
-        <div className="px-6 py-5 border-b border-white/10">
-          <h2 className="text-lg font-medium text-white">Complete Order History</h2>
-          <p className="text-gray-400 text-sm mt-1">View all your subscription orders and their current status</p>
+    <div className="space-y-6">
+      {hasActiveSubscriptions && (
+        <div className="p-4 bg-gradient-to-r from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-lg">
+          <div className="flex items-center gap-3 text-emerald-300">
+            <i className="fas fa-check-circle text-2xl"></i>
+            <p className="font-medium">You have active Adobe Creative Cloud subscription(s)!</p>
+          </div>
         </div>
-        
-        {orders.length > 0 ? (
-          <div className="overflow-x-auto responsive-table-container">
-            <table className="w-full text-left data-table-responsive">
-              <thead className="bg-white/5">
-                <tr>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Order ID
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Plan
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
+      )}
+
+      <div className="data-table-wrapper">
+        <table className="data-table w-full">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Status</th>
+              <th className="hidden sm:table-cell">Created</th>
+              <th className="hidden sm:table-cell">Expires</th>
+              <th className="hidden md:table-cell">Time Left</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedOrders.map((order) => {
+              const daysLeft = calculateDaysLeft(order.subscription_end);
+              let daysLeftClass = "good";
+              
+              if (daysLeft !== null) {
+                if (daysLeft <= 3) {
+                  daysLeftClass = "critical";
+                } else if (daysLeft <= 7) {
+                  daysLeftClass = "warning";
+                }
+              }
+
+              return (
+                <tr key={order.id}>
+                  <td>
+                    <span className="font-medium">{order.subscription_type || 'Adobe CC'}</span>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${order.status}`}>{order.status}</span>
+                  </td>
+                  <td className="hidden sm:table-cell">
+                    <span className="text-gray-300">{formatDate(order.created_at)}</span>
+                  </td>
+                  <td className="hidden sm:table-cell">
+                    <span className="text-gray-300">{formatDate(order.subscription_end)}</span>
+                  </td>
+                  <td className="hidden md:table-cell">
+                    {daysLeft !== null ? (
+                      <span className={`days-left-indicator ${daysLeftClass}`}>
+                        <i className={`fas ${daysLeftClass === "critical" ? "fa-exclamation-circle" : daysLeftClass === "warning" ? "fa-clock" : "fa-calendar-check"} mr-2`}></i>
+                        {daysLeft} days
+                      </span>
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {orders.map((order: any) => {
-                  const isActive = isActiveSubscription(order);
-                  const statusText = isActive ? 'Active' : (order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase() : 'Expired');
-                  let statusClass;
-                  
-                  if (isActive) {
-                    statusClass = 'bg-green-500/20 text-green-400 border-green-500/30';
-                  } else if (order.status?.toLowerCase() === 'completed') {
-                    statusClass = 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-                  } else if (order.status?.toLowerCase() === 'pending') {
-                    statusClass = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-                  } else {
-                    statusClass = 'bg-red-500/20 text-red-400 border-red-500/30';
-                  }
-                  
-                  return (
-                    <tr key={order.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs text-gray-300" data-label="Order ID">
-                        {order.paypal_order_id || order.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300" data-label="Date">
-                        {order.created_at ? new Date(order.created_at).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        }) : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white" data-label="Plan">
-                        {getPlanDuration(order)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white" data-label="Amount">
-                        {formatCurrency(parseFloat(order.amount) || 0)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap" data-label="Status">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium border ${statusClass}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isActive ? 'bg-green-400' : order.status?.toLowerCase() === 'completed' ? 'bg-blue-400' : order.status?.toLowerCase() === 'pending' ? 'bg-yellow-400' : 'bg-red-400'}`}></span>
-                          {statusText}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="w-16 h-16 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center mb-4">
-              <i className="fas fa-shopping-cart text-gray-400 text-xl"></i>
-            </div>
-            <h3 className="text-xl font-medium text-white mb-2">No orders yet</h3>
-            <p className="text-gray-400 max-w-md mb-6">You haven't placed any orders yet. Browse our affordable plans to get started with Adobe Creative Cloud.</p>
-            <Link 
-              href="/#pricing" 
-              prefetch={false} 
-              className="px-5 py-2.5 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 text-white font-medium rounded-lg hover:shadow-lg transition-shadow"
-            >
-              Browse Plans
-            </Link>
-          </div>
-        )}
-        
-        {orders.length > 0 && (
-          <div className="px-6 py-4 bg-white/5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="text-sm text-gray-400">
-              Showing {orders.length} order{orders.length !== 1 ? 's' : ''}
-            </div>
-            <div className="text-sm text-gray-400">
-              Need help? <a href="/faq" className="text-fuchsia-400 hover:underline">Visit our FAQ</a>
-            </div>
-          </div>
-        )}
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

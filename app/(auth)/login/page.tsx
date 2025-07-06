@@ -72,7 +72,7 @@ export default function LoginPage() {
   const particleCount = typeof window !== 'undefined' && window.innerWidth < 768 ? 8 : 15;
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-6 sm:py-8 overflow-y-auto bg-[#0f111a] relative">
+    <main className="min-h-screen flex items-center justify-center px-4 py-6 sm:py-8 overflow-y-auto relative">
       {/* Background particles - only render on client side */}
       {isClient && (
       <LightweightParticles 

@@ -1,8 +1,8 @@
 ---
-title: 'Adobe Photoshop vs Affinity Photo: Complete Comparison (2025)'
-date: '2025-05-15'
-excerpt: 'Looking for the right photo editing software? Our in-depth comparison of Adobe Photoshop vs Affinity Photo breaks down features, performance, pricing, and workflow considerations to help you make the best choice.'
-featuredImage: '/blog-images/photoshop-vs-affinity.svg'
+title: 'Photoshop vs. Affinity Photo in 2025: Which Is Right for You?'
+date: '2025-03-12'
+excerpt: 'A detailed comparison of Adobe Photoshop and Affinity Photo in 2025, examining performance, features, pricing, and real-world use cases to help you choose the right photo editing software.'
+featuredImage: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # Adobe Photoshop vs Affinity Photo: Complete Comparison (2025)

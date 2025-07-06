@@ -1,8 +1,8 @@
 ---
-title: 'The Future of AI in Adobe Creative Cloud: 2025 Innovations'
-date: '2025-06-12'
-excerpt: 'Explore the groundbreaking AI-powered features reshaping Adobe Creative Cloud in 2025. From intelligent automation to collaborative workflows, see how artificial intelligence is transforming creative possibilities.'
-featuredImage: '/blog-images/ai-future-adobe.svg'
+title: 'The Future of AI in Adobe Creative Cloud: 2025 Innovations and Beyond'
+date: '2025-01-15'
+excerpt: 'Discover how AI is transforming Adobe Creative Cloud in 2025, with advanced automation, creative assistance, and revolutionary workflows that empower creators to produce better content faster.'
+featuredImage: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # The Future of AI in Adobe Creative Cloud: 2025 Innovations

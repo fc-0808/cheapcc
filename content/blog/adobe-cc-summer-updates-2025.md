@@ -2,7 +2,7 @@
 title: "Adobe Creative Cloud Summer 2025 Updates: What's New and Improved"
 date: '2025-06-23'
 excerpt: "Discover the exciting new features and improvements in Adobe's Creative Cloud Summer 2025 update. From enhanced AI capabilities to streamlined collaboration tools, see what's transforming the creative landscape."
-featuredImage: '/blog-images/adobe-summer-2025.svg'
+featuredImage: 'https://images.unsplash.com/photo-1561883088-039e53143d73?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # Adobe Creative Cloud Summer 2025 Updates: What's New and Improved

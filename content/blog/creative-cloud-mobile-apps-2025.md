@@ -1,8 +1,8 @@
 ---
 title: 'Adobe Creative Cloud Mobile Apps in 2025: The Complete Guide'
-date: '2025-07-03'
-excerpt: "Discover how Adobe's mobile app ecosystem has evolved in 2025, transforming tablets and smartphones into powerful creative tools that seamlessly integrate with desktop workflows."
-featuredImage: '/blog-images/ai-future-adobe.svg'
+date: '2025-04-05'
+excerpt: "Discover how Adobe's Creative Cloud mobile apps have evolved in 2025, with powerful on-the-go creativity tools that rival their desktop counterparts. Learn which apps are essential for different creative workflows."
+featuredImage: 'https://images.unsplash.com/photo-1582398626929-4d39e2a35a24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # Adobe Creative Cloud Mobile Apps in 2025: The Complete Guide

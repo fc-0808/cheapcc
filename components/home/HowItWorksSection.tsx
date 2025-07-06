@@ -1,10 +1,13 @@
 "use client";
 import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion, useInView, cubicBezier } from 'framer-motion';
 
 export default function HowItWorksSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
+  
+  // Define custom easing function
+  const customEase = cubicBezier(0.43, 0, 0.23, 0.99);
 
   // Variants for the main container to orchestrate the staggered animation
   const containerVariants = {
@@ -33,6 +36,33 @@ export default function HowItWorksSection() {
     })
   };
 
+  // Animation variants for the connecting lines
+  const desktopLineVariants = {
+    hidden: { width: "0%", opacity: 0 },
+    visible: { 
+      width: "100%", 
+      opacity: 0.5,
+      transition: { 
+        duration: 1.2,
+        ease: customEase,
+        delay: 0.8
+      }
+    }
+  };
+
+  const mobileLineVariants = {
+    hidden: { height: "0%", opacity: 0 },
+    visible: { 
+      height: "70%", 
+      opacity: 0.5,
+      transition: { 
+        duration: 1.5,
+        ease: customEase,
+        delay: 0.8
+      }
+    }
+  };
+
   // Data for the three steps
   const steps = [
     {
@@ -49,7 +79,7 @@ export default function HowItWorksSection() {
     },
     {
       title: "Receive Your Credentials",
-      description: "Get your genuine Adobe account invitation delivered instantly via email.",
+      description: "Get your genuine Adobe account invitation delivered via email.",
       icon: "fas fa-envelope-open-text",
       color: "#ef4444", // red-500
     },
@@ -79,55 +109,165 @@ export default function HowItWorksSection() {
           </p>
         </motion.div>
 
-        {/* Steps Container */}
-        {/*
-          FIX: Added `style={{ transformStyle: 'preserve-3d' }}`
-          This forces the children (steps and line) to respect their z-index within a 3D rendering context,
-          solving the overlap issue caused by the animations.
-        */}
-        <motion.div
-          className="max-w-5xl mx-auto relative"
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          style={{ transformStyle: 'preserve-3d' }}
-        >
-          {/* A more elegant, solid connecting line that feels like a confident path */}
-          <div className="hidden md:block absolute top-12 left-0 w-full h-24 pointer-events-none" style={{ transform: 'translateZ(-10px)' }}>
-            <svg width="100%" height="100%" viewBox="0 0 1200 100" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="how-it-works-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#d946ef" />
-                  <stop offset="50%" stopColor="#ec4899" />
-                  <stop offset="100%" stopColor="#ef4444" />
-                </linearGradient>
-              </defs>
-              <motion.path
-                d="M 200 50 Q 400 -20 600 50 T 1000 50"
-                fill="none"
-                stroke="url(#how-it-works-gradient)"
-                strokeWidth="2"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={isInView ? { pathLength: 1, opacity: 0.4 } : {}}
-                transition={{ duration: 1.5, delay: 0.8, ease: 'easeInOut' }}
-              />
-            </svg>
+        {/* Steps Container with visible connection line */}
+        <div className="max-w-5xl mx-auto relative">
+          {/* Desktop Connection Lines - Animated as two separate segments */}
+          <div className="hidden md:block relative">
+            {/* First segment - connecting step 1 and 2 */}
+            <motion.div 
+              className="absolute"
+              style={{
+                height: '120px',
+                left: '20%', 
+                top: '40px',
+                zIndex: 5,
+                pointerEvents: 'none',
+                width: '30%' // Connect first and second step only
+              }}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              variants={desktopLineVariants}
+            >
+              <motion.div
+                style={{
+                  position: 'absolute',
+                  width: '70%',
+                  height: '2px',
+                  background: 'linear-gradient(90deg, #d946ef, #ec4899)',
+                  top: '40%',
+                  borderRadius: '50%',
+                  transform: 'translateY(-50%)',
+                  boxShadow: '0 0 10px rgba(236, 72, 153, 0.2)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 0.5 } : { opacity: 0 }}
+                transition={{ duration: 0.3, delay: 1.5 }}
+              ></motion.div>
+            </motion.div>
+
+            {/* Second segment - connecting step 2 and 3 */}
+            <motion.div 
+              className="absolute"
+              style={{
+                height: '120px',
+                left: '50%',
+                top: '40px',
+                zIndex: 5,
+                pointerEvents: 'none',
+                width: '25%' // Reduced from 30% to 25% to shorten the line
+              }}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              variants={{
+                hidden: { width: "0%", opacity: 0 },
+                visible: { 
+                  opacity: 0.5,
+                  transition: { 
+                    duration: 1.2,
+                    ease: customEase,
+                    delay: 1.1 // Slightly delayed after the first segment
+                  }
+                }
+              }}
+            >
+              <motion.div
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '2px',
+                  background: 'linear-gradient(90deg, #ec4899, #ef4444)',
+                  top: '40%',
+                  borderRadius: '50%',
+                  transform: 'translateY(-50%)',
+                  boxShadow: '0 0 10px rgba(236, 72, 153, 0.2)',
+                }}
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 0.5 } : { opacity: 0 }}
+                transition={{ duration: 0.3, delay: 1.8 }}
+              ></motion.div>
+            </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 md:gap-16">
+          {/* Mobile Connection Line - Animated with dots for steps */}
+          <div className="md:hidden relative">
+            {/* Main vertical line */}
+            <motion.div 
+              className="absolute"
+              style={{
+                width: '2px',
+                left: '50%',
+                top: '100px',
+                zIndex: 5,
+                background: 'linear-gradient(180deg, #d946ef, #ec4899, #ef4444)',
+                boxShadow: '0 0 10px rgba(236, 72, 153, 0.2)',
+              }}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              variants={mobileLineVariants}
+            ></motion.div>
+            
+            {/* First node dot (connecting step 1 to 2) */}
+            <motion.div
+              className="absolute"
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: '#ec4899',
+                left: 'calc(50% - 3px)',
+                top: '33%',
+                zIndex: 6,
+                boxShadow: '0 0 8px #ec4899'
+              }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+              transition={{ delay: 1.3, duration: 0.3 }}
+            ></motion.div>
+            
+            {/* Second node dot (connecting step 2 to 3) */}
+            <motion.div
+              className="absolute"
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: '#ef4444',
+                left: 'calc(50% - 3px)',
+                top: '66%',
+                zIndex: 6,
+                boxShadow: '0 0 8px #ef4444'
+              }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+              transition={{ delay: 1.6, duration: 0.3 }}
+            ></motion.div>
+          </div>
+          
+          {/* Grid for the steps */}
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-3 gap-12 md:gap-16 relative"
+            style={{ position: 'relative', zIndex: 10 }}
+            variants={containerVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
             {steps.map((step, index) => (
-              // FIX: Restored the z-index here to ensure each card is above the z-0 line.
-              // Also added style to use 3D transforms
               <motion.div
                 key={index}
-                className="flex flex-col items-center text-center relative z-10 p-6"
-                custom={index} // Pass index to variants
+                className="flex flex-col items-center text-center relative p-6"
+                custom={index}
                 variants={stepVariants}
-                style={{ transform: 'translateZ(10px)' }}
+                style={{ zIndex: 20 }} // Higher z-index
               >
                 {/* The celebratory "pop" for the step number/icon */}
                 <motion.div
-                  className="w-24 h-24 flex items-center justify-center rounded-full relative mb-6 border border-white/10 bg-white/5 backdrop-blur-sm"
+                  className="w-24 h-24 flex items-center justify-center rounded-full relative mb-6 border border-white/10 bg-[#121225]" // Solid background color that matches the page background
+                  style={{
+                    position: 'relative',
+                    zIndex: 30, // Very high z-index
+                    background: "rgba(17, 17, 40, 1)", // Solid background color
+                    boxShadow: "0 0 25px rgba(0, 0, 0, 0.4)" // Shadow to create depth
+                  }}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={isInView ? {
                     scale: 1,
@@ -164,13 +304,13 @@ export default function HowItWorksSection() {
                 <h3 className="text-xl font-semibold text-white mb-3">
                   {step.title}
                 </h3>
-                <p className="text-white/80 text-sm font-light tracking-wide">
+                <p className="text-white/80 text-sm font-light tracking-wide hidden sm:block">
                   {step.description}
                 </p>
               </motion.div>
             ))}
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

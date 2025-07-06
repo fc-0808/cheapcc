@@ -2,7 +2,7 @@
 title: 'Top 7 Designer Collaboration Tools in Adobe CC for 2025'
 date: '2025-07-01'
 excerpt: 'Discover the most powerful collaboration features in Adobe Creative Cloud for 2025. Learn how these tools can streamline team workflows, improve communication, and enhance creative output for designers.'
-featuredImage: '/blog-images/reddit-community-feedback-2025.svg'
+featuredImage: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # Top 7 Designer Collaboration Tools in Adobe CC for 2025

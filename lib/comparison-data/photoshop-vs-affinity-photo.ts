@@ -17,7 +17,7 @@ export const photoshopVsAffinityPhoto: ComparisonData = {
       annual: 149.88, // approximately 37% discount
       subscription: true
     },
-    imageUrl: '/blog-images/photoshop-vs-affinity.svg'
+    imageUrl: '/blog-images/placeholder.jpg'
   },
   alternativeProduct: {
     name: 'Affinity Photo',
@@ -28,7 +28,7 @@ export const photoshopVsAffinityPhoto: ComparisonData = {
       oneTime: 69.99,
       subscription: false
     },
-    imageUrl: '/blog-images/photoshop-vs-affinity.svg'
+    imageUrl: '/blog-images/placeholder.jpg'
   },
   summary: 'Adobe Photoshop offers comprehensive professional tools and industry integration at a premium subscription price, while Affinity Photo provides comparable core functionality with a one-time purchase model. CheapCC offers Adobe Photoshop at a significantly reduced price, making it more competitive against Affinity\'s value proposition.',
   introduction: `
@@ -101,8 +101,8 @@ export const photoshopVsAffinityPhoto: ComparisonData = {
     alternativeDescription: 'Affinity Photo offers a clean, modern interface that will feel somewhat familiar to Photoshop users. The UI is organized around personas (modes) for different tasks like photo editing, liquify, and developing RAW images. This helps streamline the interface and presents only the relevant tools for each task.',
     learningCurveAdobe: 4,
     learningCurveAlternative: 3,
-    adobeUiScreenshot: '/blog-images/photoshop-vs-affinity.svg',
-    alternativeUiScreenshot: '/blog-images/photoshop-vs-affinity.svg'
+    adobeUiScreenshot: '/blog-images/placeholder.jpg',
+    alternativeUiScreenshot: '/blog-images/placeholder.jpg'
   },
   ecosystem: {
     adobePlugins: 'Photoshop supports thousands of third-party plugins and extensions, ranging from specialized effects and filters to advanced automation tools. The plugin ecosystem is vast and mature, offering solutions for virtually any niche need or workflow enhancement.',

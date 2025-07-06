@@ -6,6 +6,17 @@ import Script from "next/script";
 import { Suspense } from 'react';
 import Loading from './loading';
 import UnifiedBackground from "@/components/UnifiedBackground";
+import { getFontVariables } from './fonts';
+import SWRProvider from '@/components/SWRProvider';
+import { Analytics } from '@vercel/analytics/next';
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | CheapCC - Affordable Adobe CC Subscriptions',
+    default: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
+  },
+  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 75% off. Instant delivery for all Adobe apps.",
+};
 
 export default function RootLayout({
   children,
@@ -13,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={getFontVariables()}>
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="keywords" content="cheapcc, cheapcc review, cheapcc adobe, adobe cc discount, cheapcc login" />
@@ -127,13 +138,18 @@ export default function RootLayout({
         {/* Critical content rendered first */}
         <Header />
         <Suspense fallback={<Loading />}>
+          <SWRProvider>
           {/* Main Content */}
           <main className="cheapcc-main-content">
             {children}
           </main>
+          </SWRProvider>
         </Suspense>
         {/* Footer rendered after main content */}
         <Footer />
+        
+        {/* Vercel Analytics */}
+        <Analytics />
         
         {/* Font loading and CSS optimization */}
         <Script id="font-and-css-optimization" strategy="afterInteractive">

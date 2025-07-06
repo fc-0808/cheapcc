@@ -507,6 +507,10 @@ export default function CheckoutSection({
 
           {/* Section 3: Order Summary */}
           <h3 className="text-xl font-semibold text-white mb-4">Order Summary</h3>
+          <div className="inline-flex items-center gap-2 py-1.5 px-3 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 mb-4">
+            <i className="fas fa-clock text-fuchsia-400 text-xs"></i>
+            <span className="text-xs font-medium text-fuchsia-400">Limited Time Offer</span>
+          </div>
           <div className="space-y-3 pb-4 border-b border-dashed border-white/10">
             <div className="flex justify-between items-center text-sm"><span className="text-gray-400">Subscription</span><span className="font-medium text-gray-200">{selectedPriceOption.duration}</span></div>
           </div>
@@ -522,8 +526,20 @@ export default function CheckoutSection({
             )}
           </div>
           <div className="space-y-3 text-sm py-4 border-b border-white/10">
-            <div className="flex justify-between items-center"><span className="text-gray-400">Regular Price</span><span className="line-through text-gray-500">${(selectedPriceOption.price * 4).toFixed(2)}</span></div>
-            <div className="flex justify-between items-center"><span className="text-gray-400">Discount</span><span className="font-medium text-green-400">{Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}% OFF</span></div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Regular Price</span>
+              <span className="line-through text-gray-500">
+                ${selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice.toFixed(2) : (selectedPriceOption.price * 4).toFixed(2)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Discount <span className="text-fuchsia-400 text-xs font-medium">(Limited Time)</span></span>
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm">
+                {selectedPriceOption.originalPrice ? 
+                  Math.round((1 - selectedPriceOption.price / selectedPriceOption.originalPrice) * 100) : 
+                  Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}% OFF
+              </div>
+            </div>
           </div>
           <div className="pt-5 flex justify-between items-baseline">
             <span className="text-base font-semibold text-gray-200">Amount Due Today</span>
@@ -769,7 +785,10 @@ export default function CheckoutSection({
       className="w-full max-w-sm bg-white/5 backdrop-blur-md rounded-2xl p-6 shadow-2xl shadow-black/20 border border-white/10"
     >
       <h3 className="text-xl font-semibold text-white mb-1">Order Summary</h3>
-      <br />
+      <div className="inline-flex items-center gap-2 py-1.5 px-3 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 mt-2 mb-4">
+        <i className="fas fa-clock text-fuchsia-400 text-xs"></i>
+        <span className="text-xs font-medium text-fuchsia-400">Limited Time Offer</span>
+      </div>
       <div className="space-y-3 pb-4 border-b border-dashed border-white/10">
         <div className="flex justify-between items-center text-sm"><span className="text-gray-400">Subscription</span><span className="font-medium text-gray-200">{selectedPriceOption.duration}</span></div>
       </div>
@@ -785,8 +804,20 @@ export default function CheckoutSection({
         )}
       </div>
       <div className="space-y-3 text-sm py-4 border-b border-white/10">
-        <div className="flex justify-between items-center"><span className="text-gray-400">Regular Price</span><span className="line-through text-gray-500">${(selectedPriceOption.price * 4).toFixed(2)}</span></div>
-        <div className="flex justify-between items-center"><span className="text-gray-400">Discount</span><span className="font-medium text-green-400">{Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}% OFF</span></div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">Regular Price</span>
+          <span className="line-through text-gray-500">
+            ${selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice.toFixed(2) : (selectedPriceOption.price * 4).toFixed(2)}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">Discount <span className="text-fuchsia-400 text-xs font-medium">(Limited Time)</span></span>
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm">
+            {selectedPriceOption.originalPrice ? 
+              Math.round((1 - selectedPriceOption.price / selectedPriceOption.originalPrice) * 100) : 
+              Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}% OFF
+          </div>
+        </div>
       </div>
       <div className="pt-5 flex justify-between items-baseline">
         <span className="text-base font-semibold text-gray-200">Amount Due Today</span>

@@ -3,6 +3,7 @@ export interface PricingOption {
   name: string;
   duration: string;
   price: number;
+  originalPrice?: number;
   description: string;
   adminOnly?: boolean;
 }
@@ -19,34 +20,39 @@ export const PRICING_OPTIONS: PricingOption[] = [
     name: '14 Days',
     duration: '14 days',
     price: 4.99,
+    originalPrice: 23.99,
     description: 'Adobe Creative Cloud - 14 Days',
   },
   {
     id: '1m',
     name: '1 Month',
     duration: '1 month',
-    price: 14.99,
+    price: 12.99,
+    originalPrice: 54.99,
     description: 'Adobe Creative Cloud - 1 Month',
   },
   {
     id: '3m',
     name: '3 Months',
     duration: '3 months',
-    price: 39.99,
+    price: 29.99,
+    originalPrice: 164.97,
     description: 'Adobe Creative Cloud - 3 Months',
   },
   {
     id: '6m',
     name: '6 Months',
     duration: '6 months',
-    price: 74.99,
+    price: 54.99,
+    originalPrice: 329.94,
     description: 'Adobe Creative Cloud - 6 Months',
   },
   {
     id: '12m',
     name: '12 Months',
     duration: '12 months',
-    price: 124.99,
+    price: 99.99,
+    originalPrice: 599.88,
     description: 'Adobe Creative Cloud - 12 Months',
   },
   // Admin-only test option
@@ -55,6 +61,7 @@ export const PRICING_OPTIONS: PricingOption[] = [
     name: '1 Day',
     duration: '1 day',
     price: 0.5,
+    originalPrice: 1.99,
     description: 'Admin Testing - 1 Day',
     adminOnly: true
   },
@@ -131,6 +138,17 @@ export function getStandardPlanDescription(order: OrderLike): string {
 export function calculateSavings(order: OrderLike): number {
   const orderAmount = order.amount ? parseFloat(order.amount.toString()) : null;
   if (orderAmount === null || isNaN(orderAmount)) return 0;
+  
+  // First try to get the pricing option to use its originalPrice
+  if (order.priceId) {
+    const option = getPricingOptionById(order.priceId);
+    if (option && option.originalPrice) {
+      const savings = option.originalPrice - orderAmount;
+      return Math.max(0, parseFloat(savings.toFixed(2)));
+    }
+  }
+  
+  // Fall back to duration lookup in ADOBE_REGULAR_PRICING
   const duration = getPlanDuration(order);
   const regularPrice = ADOBE_REGULAR_PRICING[duration];
   if (regularPrice) {

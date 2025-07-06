@@ -17,7 +17,7 @@ export const premiereProVsDavinciResolve: ComparisonData = {
       annual: 149.88, // approximately 37% discount
       subscription: true
     },
-    imageUrl: '/blog-images/premiere-vs-davinci.svg'
+    imageUrl: '/blog-images/placeholder.jpg'
   },
   alternativeProduct: {
     name: 'DaVinci Resolve',
@@ -28,7 +28,7 @@ export const premiereProVsDavinciResolve: ComparisonData = {
       oneTime: 299, // DaVinci Resolve Studio one-time purchase
       subscription: false
     },
-    imageUrl: '/blog-images/premiere-vs-davinci.svg'
+    imageUrl: '/blog-images/placeholder.jpg'
   },
   summary: 'Adobe Premiere Pro offers tight Creative Cloud integration and industry-standard editing workflows, while DaVinci Resolve provides superior color grading tools and a generous free version. CheapCC makes Premiere Pro significantly more affordable, changing the value proposition for professional editors.',
   introduction: `
@@ -101,8 +101,8 @@ export const premiereProVsDavinciResolve: ComparisonData = {
     alternativeDescription: 'DaVinci Resolve uses a page-based interface with dedicated workspaces for different parts of the post-production process: Media, Cut, Edit, Fusion, Color, Fairlight, and Deliver. This separation of tasks can be clearer for specific workflows but requires switching between pages rather than panels. The Edit page timeline is powerful but has a slightly steeper learning curve than Premiere Pro.',
     learningCurveAdobe: 3.5,
     learningCurveAlternative: 4,
-    adobeUiScreenshot: '/blog-images/premiere-vs-davinci.svg',
-    alternativeUiScreenshot: '/blog-images/premiere-vs-davinci.svg'
+    adobeUiScreenshot: '/blog-images/placeholder.jpg',
+    alternativeUiScreenshot: '/blog-images/placeholder.jpg'
   },
   ecosystem: {
     adobePlugins: 'Premiere Pro supports numerous third-party plugins, transitions, and effects packs. The integration with other Adobe Creative Cloud applications like After Effects, Photoshop, Audition, and Media Encoder creates an unmatched ecosystem for creative professionals. This seamless interoperability is a major advantage for complex workflows.',

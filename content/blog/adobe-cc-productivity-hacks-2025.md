@@ -2,7 +2,7 @@
 title: '10 Essential Adobe Creative Cloud Productivity Hacks for 2025'
 date: '2025-06-16'
 excerpt: 'Boost your creative workflow with these time-saving Adobe CC productivity hacks for 2025. Master the latest shortcuts, automation techniques, and collaboration tools to work smarter, not harder.'
-featuredImage: '/blog-images/productivity-hacks-2025.svg'
+featuredImage: 'https://images.unsplash.com/photo-1561070791-36c11767b26a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # 10 Essential Adobe Creative Cloud Productivity Hacks for 2025

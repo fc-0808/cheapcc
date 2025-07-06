@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Script from 'next/script';
-import { motion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
+// We're importing only the specific types we need
+import type { Variants } from 'framer-motion';
 
 export default function HeroSection() {
   const handleScrollToPricing = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -37,14 +39,22 @@ export default function HeroSection() {
           animate="visible"
         >
           <div className="relative max-w-4xl mx-auto">
-            {/* Mobile & Tablet View */}
+            {/* Mobile View */}
             <div className="md:hidden">
+              <motion.div variants={itemVariants} className="mb-4">
+                <motion.div 
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 15px rgba(255, 51, 102, 0.6)' }}
+                  className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-black/20 backdrop-blur-sm border border-[#ff3366]/50 text-[#ff3366] text-xs font-medium shadow-[0_0_10px_rgba(255,51,102,0.5)]"
+                >
+                  <i className="fas fa-tags text-xs" aria-hidden="true" /> Limited Time Offer: Save up to 83%
+                </motion.div>
+              </motion.div>
               <motion.h1 id="hero-heading-mobile" variants={itemVariants} className="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-4" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.3)' }} >
                 <span className="inline">Your <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">Adobe CC.</span></span>
                 <span className="block">, For Less.</span>
               </motion.h1>
               <motion.p variants={itemVariants} className="text-white/80 max-w-md mx-auto mb-8 text-base sm:text-lg font-light tracking-wide">
-                Genuine Adobe CC. Up to 75% Off.
+                Genuine Adobe CC. Up to 83% Off.
               </motion.p>
               <motion.div variants={itemVariants} className="w-full mb-8">
                 <motion.a 
@@ -68,7 +78,7 @@ export default function HeroSection() {
                   whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(255, 51, 102, 0.8)' }}
                   className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-black/20 backdrop-blur-sm border border-[#ff3366]/50 text-[#ff3366] text-sm font-medium shadow-[0_0_15px_rgba(255,51,102,0.6)] transition-shadow duration-300"
                 >
-                  <i className="fas fa-tags" aria-hidden="true" /> Save up to 75% vs Official Pricing
+                  <i className="fas fa-tags" aria-hidden="true" /> Limited Time Offer: Save up to 83% vs Official Pricing
                 </motion.div>
               </motion.div>
 

@@ -2,7 +2,7 @@
 title: 'Community Voices: What Reddit is Saying About Adobe CC Alternatives in 2025'
 date: '2025-06-18'
 excerpt: 'A deep dive into Reddit discussions about Adobe Creative Cloud pricing, alternatives, and user sentiments in 2025'
-featuredImage: '/blog-images/reddit-community-feedback-2025.svg'
+featuredImage: 'https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80'
 ---
 
 # Community Voices: What Reddit is Saying About Adobe CC Alternatives in 2025

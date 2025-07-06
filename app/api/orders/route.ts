@@ -10,6 +10,8 @@ import {
 import { PRICING_OPTIONS } from '@/utils/products';
 import { CreateOrderSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
+import { createClient } from '@/utils/supabase/supabase-server';
+import { limiter } from '@/utils/rate-limiter';
 
 // Base environment settings from environment variables
 let clientId = process.env.PAYPAL_CLIENT_ID || '';
@@ -135,6 +137,91 @@ try {
 }
 
 const ordersController = new OrdersController(paypalClient);
+
+// Define cache TTL - 60 seconds
+const CACHE_TTL = 60;
+
+export async function GET(request: Request) {
+  try {
+    // Apply rate limiting
+    const identifier = request.url;
+    const { success, limit, remaining } = await limiter.limit(identifier);
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'Retry-After': '60',
+          }
+        }
+      );
+    }
+    
+    // Get supabase client
+    const supabase = await createClient();
+    
+    // Check auth
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { 
+          status: 401,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+          }
+        }
+      );
+    }
+    
+    // Get orders for this user
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('email', user.email || '')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching orders:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch orders' },
+        { 
+          status: 500,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+          }
+        }
+      );
+    }
+    
+    // Return the orders with cache headers
+    return NextResponse.json(
+      orders || [],
+      { 
+        status: 200,
+        headers: {
+          'X-RateLimit-Limit': limit.toString(),
+          'X-RateLimit-Remaining': remaining.toString(),
+          'Cache-Control': `s-maxage=${CACHE_TTL}, stale-while-revalidate`,
+        }
+      }
+    );
+    
+  } catch (error) {
+    console.error('Unexpected error in orders API:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   const requestStartTime = Date.now();
