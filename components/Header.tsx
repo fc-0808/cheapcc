@@ -5,6 +5,22 @@ import { createClient } from "@/utils/supabase/supabase-client";
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
+
+// Dynamically import MobileMenu to reduce initial load size
+const MobileMenu = dynamic(() => import('./MobileMenu'), {
+  ssr: false,
+  loading: () => (
+    <div className="p-6 backdrop-blur-lg rounded-t-2xl animate-pulse">
+      <div className="h-1 w-12 bg-white/25 rounded-full mx-auto mb-8"></div>
+      <div className="space-y-4">
+        <div className="h-12 bg-white/10 rounded-xl"></div>
+        <div className="h-12 bg-white/10 rounded-xl"></div>
+        <div className="h-12 bg-white/10 rounded-xl"></div>
+      </div>
+    </div>
+  )
+});
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,12 +30,18 @@ export default function Header() {
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const [headerVisible, setHeaderVisible] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchThreshold = 50;
   
   // Check if current path is dashboard or profile
   const isDashboardOrProfile = pathname?.includes('/dashboard') || pathname?.includes('/profile');
@@ -50,17 +72,31 @@ export default function Header() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position to change mobile menu icon color
+  // Track scroll position to change mobile menu icon color and hide/show header
   useEffect(() => {
     const handleScroll = () => {
-      // Estimate hero section height - adjust this value based on your hero section
+      // For mobile menu icon color
       const heroHeight = window.innerHeight * 0.8; 
+      setScrolledPastHero(window.scrollY > heroHeight);
       
-      if (window.scrollY > heroHeight) {
-        setScrolledPastHero(true);
+      // For hiding/showing header on scroll
+      const currentScrollPos = window.scrollY;
+      const scrollingDown = currentScrollPos > prevScrollPos;
+      const scrollDelta = Math.abs(currentScrollPos - prevScrollPos);
+      
+      // Only apply header hiding effect on mobile screens
+      if (window.innerWidth < 768) {
+        if (scrollingDown && currentScrollPos > 60 && scrollDelta > 5) {
+          setHeaderVisible(false);
+        } else if (!scrollingDown && scrollDelta > 5) {
+          setHeaderVisible(true);
+        }
       } else {
-        setScrolledPastHero(false);
+        // Always show header on desktop
+        setHeaderVisible(true);
       }
+      
+      setPrevScrollPos(currentScrollPos);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -71,7 +107,7 @@ export default function Header() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [prevScrollPos]);
 
   // Effect for auth state: Add pathname as a dependency to re-run when redirected to dashboard
   useEffect(() => {
@@ -196,6 +232,50 @@ export default function Header() {
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
   }, [pathname]);
+  
+  // Add touch event handlers for the mobile menu
+  useEffect(() => {
+    // Add body class when mobile menu is open to prevent scrolling
+    if (isMobileMenuOpen) {
+      document.body.classList.add('mobile-menu-open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.classList.remove('mobile-menu-open');
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+  
+  // Handle touch events for gesture navigation on mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    // Calculate horizontal swipe distance
+    const deltaX = touchEndX - touchStartX.current;
+    const deltaY = touchEndY - touchStartY.current;
+    
+    // Only detect horizontal swipes (not vertical)
+    if (Math.abs(deltaX) > touchThreshold && Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Right to left swipe - open menu if not already open
+      if (deltaX < 0 && !isMobileMenuOpen) {
+        toggleMobileMenu();
+      }
+      // Left to right swipe - close menu if open
+      else if (deltaX > 0 && isMobileMenuOpen) {
+        toggleMobileMenu();
+      }
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -241,12 +321,16 @@ export default function Header() {
 
   return (
     <header 
+      ref={headerRef}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       className={`fixed top-0 z-50 py-3 mx-3 my-4 rounded-[20px] transition-all duration-300 ease-in-out left-0 right-0 md:left-20 md:right-20 lg:left-80 lg:right-80 ${visibilityClasses}`}
       style={{
         background: 'transparent',
         backdropFilter: "blur(3px)",
         boxShadow: "none",
         borderBottom: "none",
+        transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between relative z-10">
@@ -265,16 +349,23 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Mobile menu toggle button - more sophisticated */}
+        {/* Mobile menu toggle button - enhanced for mobile touch experience */}
         <div className="md:hidden">
           <button
             id="mobile-menu-toggle"
-            onClick={toggleMobileMenu}
-            className="p-2 rounded-lg bg-white/5 text-white/90 border border-white/10 backdrop-blur-sm shadow-lg hover:bg-white/10 transition-all duration-300"
+            onClick={() => {
+              // Add haptic feedback for better mobile UX
+              if (window.navigator && 'vibrate' in window.navigator) {
+                window.navigator.vibrate(5);
+              }
+              toggleMobileMenu();
+            }}
+            className="p-3 rounded-xl bg-white/5 text-white/90 border border-white/10 backdrop-blur-sm shadow-lg hover:bg-white/10 active:bg-white/15 active:scale-95 transition-all duration-200"
             aria-label="Toggle mobile menu"
             aria-expanded={isMobileMenuOpen}
             style={{
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05) inset"
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05) inset",
+              WebkitTapHighlightColor: "transparent" // Remove tap highlight on mobile
             }}
           >
             <div className={`transition-transform duration-300 ${isMobileMenuOpen ? 'rotate-90' : 'rotate-0'}`}>
@@ -468,12 +559,16 @@ export default function Header() {
         </div>
       </div>
       
-      {/* Mobile dropdown menu - updated sophisticated style */}
+      {/* Mobile dropdown menu - enhanced for mobile UX */}
       {isMobileMenuOpen && isMounted && (
         <div 
           id="mobile-menu" 
           ref={mobileMenuRef} 
-          className="md:hidden mt-3 px-4 transition-all duration-300"
+          className="md:hidden fixed inset-x-0 bottom-0 z-50 px-4 transition-all duration-300 animate-fadeInDropdown"
+          style={{
+            marginTop: 0,
+            maxHeight: '85vh',
+          }}
         >
           <div 
             className="pt-2 pb-3 space-y-1 backdrop-blur-md rounded-xl overflow-hidden relative"

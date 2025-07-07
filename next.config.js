@@ -21,6 +21,33 @@ const nextConfig = {
 					},
 				],
 			},
+			// Mobile optimization headers
+			{
+				source: '/:path*',
+				headers: [
+					{
+						key: 'X-Content-Type-Options',
+						value: 'nosniff',
+					},
+					{
+						key: 'X-XSS-Protection',
+						value: '1; mode=block',
+					},
+					{
+						key: 'Referrer-Policy',
+						value: 'strict-origin-when-cross-origin',
+					},
+					{
+						key: 'Permissions-Policy',
+						value: 'accelerometer=*, camera=*, geolocation=*, gyroscope=*, magnetometer=*, microphone=*, payment=*, usb=*',
+					},
+					// Optimize mobile caching with stale-while-revalidate
+					{
+						key: 'Cache-Control',
+						value: 'public, max-age=3600, stale-while-revalidate=86400',
+					},
+				],
+			},
 		]
 	},
 	env: {
@@ -43,10 +70,11 @@ const nextConfig = {
 		minimumCacheTTL: 60 * 60 * 24 * 7, // Cache images for a week
 	},
 	experimental: {
-		outputFileTracing: true,
 		optimizeCss: true,
 		// Enable optimized package imports to reduce bundle size
 		optimizePackageImports: ['framer-motion', 'date-fns', 'lodash', 'three', 'react-google-recaptcha'],
+		// Improved mobile performance features
+		scrollRestoration: true,
 	},
 	typescript: {
 		ignoreBuildErrors: true,
@@ -61,6 +89,13 @@ const nextConfig = {
 		if (config.optimization && config.optimization.minimizer) {
 			config.optimization.minimizer = config.optimization.minimizer.filter((minimizer) => !minimizer.constructor.name.includes('CssMinimizerPlugin'))
 		}
+
+		// Add support for touch events and gestures
+		config.resolve.fallback = {
+			...config.resolve.fallback,
+			hammerjs: require.resolve('hammerjs'),
+		}
+
 		return config
 	},
 }

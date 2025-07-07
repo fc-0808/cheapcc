@@ -26,12 +26,40 @@ export default function RootLayout({
   return (
     <html lang="en" className={getFontVariables()}>
       <head>
+        {/* Primary Favicon - SVG for modern browsers */}
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        
+        {/* Alternative Favicon - ICO for IE and older browsers */}
+        <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+        
+        {/* Apple Touch Icon */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        
+        {/* Standard Favicons */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        
+        {/* Web App Manifest */}
+        <link rel="manifest" href="/site.webmanifest" />
+        
+        {/* Safari Pinned Tab Icon */}
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#2c2d5a" />
+        
+        {/* Microsoft Tile Color */}
+        <meta name="msapplication-TileColor" content="#2c2d5a" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        
+        {/* Theme Color */}
+        <meta name="theme-color" content="#2c2d5a" />
+        
         <meta name="keywords" content="cheapcc, cheapcc review, cheapcc adobe, adobe cc discount, cheapcc login" />
         
         {/* Performance Optimizations */}
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
-        <meta name="theme-color" content="#0f111a" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
+        <meta name="theme-color" content="#2c2d5a" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: dark)" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         
         {/* Resource Hints - Preconnect to critical domains */}
         <link rel="preconnect" href="https://www.paypal.com" />

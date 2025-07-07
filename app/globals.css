@@ -3810,3 +3810,273 @@ section#pricing [data-id] {
   visibility: visible !important;
   opacity: 1 !important;
 }
+
+/* Mobile UX Enhancements */
+@media (max-width: 640px) {
+  /* Enhanced safe area insets for modern mobile devices */
+  body {
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+  }
+
+  /* Larger touch targets for mobile */
+  button, 
+  a,
+  .clickable-item,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Improved form controls for mobile */
+  input, 
+  select, 
+  textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  /* Enhanced list items spacing */
+  li {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+  
+  /* Reduce motion for better performance */
+  .mobile-reduced-motion {
+    animation-duration: 0.1s !important;
+    transition-duration: 0.1s !important;
+  }
+
+  /* Sticky bottom navigation enhancements */
+  .sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 20;
+    border-top: 1px solid rgba(229, 231, 235, 0.8);
+  }
+
+  /* Bottom sheets for mobile modals */
+  .mobile-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(0);
+    transition: transform 0.3s ease-in-out;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 50;
+  }
+
+  .mobile-bottom-sheet.hidden {
+    transform: translateY(100%);
+  }
+}
+
+/* Optimized pull-to-refresh animation */
+@keyframes pull-to-refresh-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pull-to-refresh-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 51, 102, 0.3);
+  border-radius: 50%;
+  border-top-color: #ff3366;
+  animation: pull-to-refresh-spin 1s ease-in-out infinite;
+}
+
+/* Enhanced mobile card UI */
+@media (max-width: 640px) {
+  .mobile-card {
+    border-radius: 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Mobile breadcrumbs */
+  .mobile-breadcrumbs {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .mobile-breadcrumbs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+}
+
+/* Mobile Swipeable Card Styles */
+@media (max-width: 768px) {
+  /* Base swipeable card styles */
+  .swipeable-card {
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .swipeable-card-content {
+    position: relative;
+    z-index: 10;
+    background-color: #fff;
+    transition: transform 0.3s cubic-bezier(0.2, 0.85, 0.4, 1.275);
+    will-change: transform;
+    border-radius: inherit;
+  }
+  
+  /* Action area styling */
+  .swipe-actions {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  
+  .swipe-actions-left {
+    left: 0;
+  }
+  
+  .swipe-actions-right {
+    right: 0;
+  }
+  
+  /* Individual action button styling */
+  .swipe-action {
+    height: 100%;
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: white;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+  
+  /* Action button color variations */
+  .swipe-action-delete {
+    background-color: #ef4444;
+  }
+  
+  .swipe-action-edit {
+    background-color: #3b82f6;
+  }
+  
+  .swipe-action-archive {
+    background-color: #8b5cf6;
+  }
+  
+  .swipe-action-favorite {
+    background-color: #f59e0b;
+  }
+  
+  /* Feedback indicators */
+  .swipe-indicator {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .swipeable-card-swiped .swipe-indicator {
+    opacity: 1;
+  }
+  
+  /* Haptic feedback styles */
+  @supports (-webkit-touch-callout: none) {
+    .haptic-feedback {
+      z-index: -1; /* Hide but keep in the DOM */
+      position: absolute;
+    }
+  }
+  
+  /* Active state styling */
+  .swipeable-card-active .swipeable-card-content {
+    transition: none; /* Remove transition during active swiping */
+  }
+  
+  /* Animations for actions */
+  @keyframes swipeActionReveal {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  .swipe-action-icon {
+    animation: swipeActionReveal 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  
+  /* Touch area enhancements */
+  .swipeable-card-touch-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    display: none; /* Hidden by default, shown during swipe */
+  }
+  
+  /* Optional: Subtle drag handle indicator */
+  .swipe-drag-handle {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 36px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 5;
+  }
+  
+  .swipe-drag-handle-left {
+    left: 8px;
+  }
+  
+  .swipe-drag-handle-right {
+    right: 8px;
+  }
+  
+  /* Progress indicator for completing actions */
+  .swipe-progress {
+    position: absolute;
+    top: 0;
+    height: 3px;
+    background: linear-gradient(to right, rgba(255,255,255,0.3), rgba(255,255,255,0.8));
+    transition: width 0.2s ease;
+    z-index: 15;
+  }
+  
+  .swipe-progress-left {
+    left: 0;
+  }
+  
+  .swipe-progress-right {
+    right: 0;
+  }
+}
