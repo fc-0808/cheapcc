@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Favicon Minimal Display</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				max-width: 800px;
+				margin: 30px auto;
+				padding: 20px;
+				background-color: #f5f5f5;
+			}
+			h1 {
+				text-align: center;
+				margin-bottom: 30px;
+			}
+			.icon-row {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 30px;
+				margin-bottom: 40px;
+			}
+			.icon {
+				text-align: center;
+				background-color: white;
+				padding: 20px;
+				border-radius: 5px;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+			}
+			.icon img {
+				margin-bottom: 10px;
+				border: 1px dashed #eee;
+				padding: 10px;
+			}
+			.note {
+				text-align: center;
+				margin-top: 30px;
+				padding: 10px;
+				background-color: #e6f3ff;
+				border-radius: 5px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Favicon Viewer</h1>
+
+		<div class="icon-row">
+			<div class="icon">
+				<img src="favicon-16x16.png" alt="16x16 Favicon" width="16" height="16" />
+				<div>16x16 PNG</div>
+			</div>
+
+			<div class="icon">
+				<img src="favicon-32x32.png" alt="32x32 Favicon" width="32" height="32" />
+				<div>32x32 PNG</div>
+			</div>
+
+			<div class="icon">
+				<img src="favicon.svg" alt="SVG Favicon" width="48" height="48" />
+				<div>SVG</div>
+			</div>
+		</div>
+
+		<div class="icon-row">
+			<div class="icon">
+				<img src="apple-touch-icon.png" alt="Apple Touch Icon" width="64" height="64" />
+				<div>Apple Touch Icon</div>
+			</div>
+
+			<div class="icon">
+				<img src="android-chrome-192x192.png" alt="Android Chrome 192x192" width="96" height="96" />
+				<div>Android 192x192</div>
+			</div>
+		</div>
+
+		<div class="note">To download: right-click on an image and select "Save image as..."</div>
+	</body>
+</html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Simple Favicon Display</title>
+		<style>
+			body {
+				font-family: system-ui, sans-serif;
+				max-width: 1000px;
+				margin: 0 auto;
+				padding: 20px;
+				line-height: 1.5;
+			}
+			h1 {
+				text-align: center;
+				margin-bottom: 30px;
+			}
+			.favicons {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 30px;
+				justify-content: center;
+				margin-bottom: 40px;
+			}
+			.favicon {
+				text-align: center;
+			}
+			.favicon img {
+				border: 1px solid #eee;
+				padding: 20px;
+				background-color: white;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+				margin-bottom: 10px;
+				object-fit: contain;
+			}
+			.favicon p {
+				margin: 5px 0;
+			}
+			.filename {
+				font-family: monospace;
+				color: #555;
+			}
+			.note {
+				text-align: center;
+				font-size: 16px;
+				margin-top: 30px;
+				padding: 10px;
+				background-color: #f8f8f8;
+				border-radius: 5px;
+			}
+			.icon-container {
+				width: 192px;
+				height: 192px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: white;
+				border: 1px solid #eee;
+				padding: 20px;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+				margin-bottom: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Website Favicons</h1>
+
+		<div class="favicons">
+			<div class="favicon">
+				<div class="icon-container">
+					<img src="favicon-16x16.png" alt="Favicon 16x16" width="16" height="16" />
+				</div>
+				<p>16x16 PNG</p>
+				<p class="filename">/favicon-16x16.png</p>
+			</div>
+
+			<div class="favicon">
+				<div class="icon-container">
+					<img src="favicon-32x32.png" alt="Favicon 32x32" width="32" height="32" />
+				</div>
+				<p>32x32 PNG</p>
+				<p class="filename">/favicon-32x32.png</p>
+			</div>
+
+			<div class="favicon">
+				<div class="icon-container">
+					<img src="apple-touch-icon.png" alt="Apple Touch Icon" width="120" height="120" />
+				</div>
+				<p>Apple Touch Icon</p>
+				<p class="filename">/apple-touch-icon.png</p>
+			</div>
+		</div>
+
+		<div class="favicons">
+			<div class="favicon">
+				<div class="icon-container">
+					<img src="android-chrome-192x192.png" alt="Android Chrome 192x192" width="192" height="192" />
+				</div>
+				<p>Android Chrome 192x192</p>
+				<p class="filename">/android-chrome-192x192.png</p>
+			</div>
+
+			<div class="favicon">
+				<div class="icon-container">
+					<img src="favicon.svg" alt="SVG Favicon" width="150" height="150" />
+				</div>
+				<p>SVG Favicon</p>
+				<p class="filename">/favicon.svg</p>
+			</div>
+		</div>
+
+		<div class="note">To download any favicon, right-click on the image and select "Save image as..."</div>
+	</body>
+</html>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Favicon Viewer</title>
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+				line-height: 1.6;
+				margin: 0;
+				padding: 0;
+				background-color: #f5f5f5;
+				color: #333;
+			}
+			.container {
+				max-width: 800px;
+				margin: 2rem auto;
+				padding: 2rem;
+				background-color: white;
+				border-radius: 8px;
+				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+			}
+			h1 {
+				text-align: center;
+				margin-bottom: 2rem;
+				color: #2c3e50;
+			}
+			.preview-area {
+				text-align: center;
+				padding: 2rem;
+				background-color: #f9f9f9;
+				border-radius: 8px;
+				margin-bottom: 2rem;
+			}
+			.preview-area img {
+				display: block;
+				margin: 0 auto 1rem;
+			}
+			.controls {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 1.5rem;
+				justify-content: center;
+				margin-bottom: 1.5rem;
+			}
+			.control-group {
+				min-width: 200px;
+			}
+			.control-group h3 {
+				margin-top: 0;
+				margin-bottom: 0.75rem;
+				font-size: 1rem;
+			}
+			.button-group {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+			}
+			button {
+				padding: 0.5rem 0.75rem;
+				background-color: #e2e8f0;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 0.875rem;
+			}
+			button.active {
+				background-color: #3498db;
+				color: white;
+			}
+			button:hover:not(.active) {
+				background-color: #cbd5e0;
+			}
+			.download-options {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 1rem;
+				justify-content: center;
+			}
+			.download-btn {
+				display: block;
+				min-width: 180px;
+				margin: 0.5rem;
+				padding: 0.75rem 1rem;
+				background-color: #2ecc71;
+				color: white;
+				text-decoration: none;
+				border-radius: 4px;
+				text-align: center;
+				font-weight: 500;
+			}
+			.download-btn:hover {
+				background-color: #27ae60;
+			}
+			.download-btn.alt {
+				background-color: #3498db;
+			}
+			.download-btn.alt:hover {
+				background-color: #2980b9;
+			}
+			.quick-links {
+				margin-top: 2rem;
+				padding-top: 1.5rem;
+				border-top: 1px solid #e2e8f0;
+				text-align: center;
+			}
+			.quick-links h2 {
+				margin-top: 0;
+				font-size: 1.25rem;
+			}
+			.links-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+				gap: 1rem;
+				margin-top: 1rem;
+			}
+			.link-card {
+				padding: 1rem;
+				background-color: #f8fafc;
+				border-radius: 4px;
+			}
+			.link-card h3 {
+				margin-top: 0;
+				margin-bottom: 0.5rem;
+				font-size: 0.875rem;
+			}
+			.link-card a {
+				color: #3498db;
+				text-decoration: none;
+			}
+			.link-card a:hover {
+				text-decoration: underline;
+			}
+			.status {
+				margin-top: 1rem;
+				padding: 0.5rem;
+				border-radius: 4px;
+				background-color: #f8f9fa;
+				font-size: 0.875rem;
+			}
+			.debug-info {
+				margin-top: 2rem;
+				padding: 1rem;
+				background-color: #f1f5f9;
+				border-radius: 4px;
+				font-family: monospace;
+				font-size: 0.875rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Favicon Viewer & Downloader</h1>
+
+			<div class="preview-area">
+				<img id="favicon-preview" src="/api/download/favicon?format=png&size=32" alt="Favicon Preview" width="32" height="32" />
+				<div id="preview-info">32x32 PNG</div>
+			</div>
+
+			<div class="controls">
+				<div class="control-group">
+					<h3>Size</h3>
+					<div class="button-group" id="size-buttons">
+						<button class="active" data-size="16">16x16</button>
+						<button data-size="32">32x32</button>
+						<button data-size="64">64x64</button>
+						<button data-size="128">128x128</button>
+						<button data-size="256">256x256</button>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<h3>Format</h3>
+					<div class="button-group" id="format-buttons">
+						<button class="active" data-format="png">PNG</button>
+						<button data-format="jpg">JPG</button>
+						<button data-format="svg">SVG</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="download-options">
+				<a href="#" class="download-btn" id="download-btn" onclick="downloadFavicon(); return false;">Download Favicon</a>
+				<a href="#" class="download-btn alt" id="view-btn" target="_blank">View in New Tab</a>
+			</div>
+
+			<div class="status" id="status-message"></div>
+
+			<div class="quick-links">
+				<h2>Direct Download Links</h2>
+				<div class="links-grid">
+					<div class="link-card">
+						<h3>PNG Format</h3>
+						<a href="/api/download/favicon?format=png&size=32" download="favicon-32x32.png" onclick="forceDownload(this); return false;">32x32 PNG</a>
+					</div>
+					<div class="link-card">
+						<h3>JPG Format</h3>
+						<a href="/api/download/favicon?format=jpg&size=32" download="favicon-32x32.jpg" onclick="forceDownload(this); return false;">32x32 JPG</a>
+					</div>
+					<div class="link-card">
+						<h3>SVG Format</h3>
+						<a href="/api/download/favicon?format=svg" download="favicon.svg" onclick="forceDownload(this); return false;">Original SVG</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Debug Info -->
+			<div class="debug-info" id="debug-info">
+				<div>Debug information will appear here.</div>
+			</div>
+		</div>
+
+		<script>
+			// Variables to track current selections
+			let currentSize = 32
+			let currentFormat = 'png'
+
+			// DOM elements
+			const previewImg = document.getElementById('favicon-preview')
+			const previewInfo = document.getElementById('preview-info')
+			const downloadBtn = document.getElementById('download-btn')
+			const viewBtn = document.getElementById('view-btn')
+			const sizeButtons = document.getElementById('size-buttons').querySelectorAll('button')
+			const formatButtons = document.getElementById('format-buttons').querySelectorAll('button')
+			const statusMessage = document.getElementById('status-message')
+			const debugInfo = document.getElementById('debug-info')
+
+			// Update preview and download link
+			function updateFavicon() {
+				const previewUrl = `/api/download/favicon?format=${currentFormat}&size=${currentSize}`
+				previewImg.src = previewUrl
+				previewImg.width = currentSize > 64 ? 64 : currentSize
+				previewImg.height = currentSize > 64 ? 64 : currentSize
+				previewInfo.textContent = `${currentSize}x${currentSize} ${currentFormat.toUpperCase()}`
+
+				downloadBtn.href = previewUrl
+				downloadBtn.setAttribute('download', `favicon-${currentSize}x${currentSize}.${currentFormat}`)
+				viewBtn.href = previewUrl
+
+				// Update debug info
+				debugInfo.innerHTML = `
+        <div>Current URL: ${previewUrl}</div>
+        <div>Format: ${currentFormat}</div>
+        <div>Size: ${currentSize}x${currentSize}</div>
+      `
+			}
+
+			// Handle size button clicks
+			sizeButtons.forEach((button) => {
+				button.addEventListener('click', () => {
+					// Remove active class from all size buttons
+					sizeButtons.forEach((btn) => btn.classList.remove('active'))
+
+					// Add active class to clicked button
+					button.classList.add('active')
+
+					// Update current size
+					currentSize = parseInt(button.dataset.size, 10)
+
+					// Update favicon
+					updateFavicon()
+				})
+			})
+
+			// Handle format button clicks
+			formatButtons.forEach((button) => {
+				button.addEventListener('click', () => {
+					// Remove active class from all format buttons
+					formatButtons.forEach((btn) => btn.classList.remove('active'))
+
+					// Add active class to clicked button
+					button.classList.add('active')
+
+					// Update current format
+					currentFormat = button.dataset.format
+
+					// Update favicon
+					updateFavicon()
+				})
+			})
+
+			// Force download using fetch API
+			function downloadFavicon() {
+				const url = `/api/download/favicon?format=${currentFormat}&size=${currentSize}`
+				const filename = `favicon-${currentSize}x${currentSize}.${currentFormat}`
+
+				statusMessage.textContent = 'Starting download...'
+
+				fetch(url)
+					.then((response) => {
+						if (!response.ok) {
+							throw new Error(`Error: ${response.status} ${response.statusText}`)
+						}
+						return response.blob()
+					})
+					.then((blob) => {
+						const url = window.URL.createObjectURL(blob)
+						const a = document.createElement('a')
+						a.style.display = 'none'
+						a.href = url
+						a.download = filename
+						document.body.appendChild(a)
+						a.click()
+						window.URL.revokeObjectURL(url)
+						statusMessage.textContent = `Download complete: ${filename}`
+					})
+					.catch((error) => {
+						console.error('Download failed:', error)
+						statusMessage.textContent = `Download failed: ${error.message}`
+					})
+			}
+
+			// Force download using fetch for any link
+			function forceDownload(link) {
+				const url = link.href
+				const filename = link.download
+
+				statusMessage.textContent = `Starting download: ${filename}...`
+
+				fetch(url)
+					.then((response) => {
+						if (!response.ok) {
+							throw new Error(`Error: ${response.status} ${response.statusText}`)
+						}
+						return response.blob()
+					})
+					.then((blob) => {
+						const url = window.URL.createObjectURL(blob)
+						const a = document.createElement('a')
+						a.style.display = 'none'
+						a.href = url
+						a.download = filename
+						document.body.appendChild(a)
+						a.click()
+						window.URL.revokeObjectURL(url)
+						statusMessage.textContent = `Download complete: ${filename}`
+					})
+					.catch((error) => {
+						console.error('Download failed:', error)
+						statusMessage.textContent = `Download failed: ${error.message}`
+					})
+			}
+
+			// Initialize with default values
+			updateFavicon()
+		</script>
+	</body>
+</html>

@@ -50,7 +50,7 @@ export default function HeroSection() {
                 </motion.div>
               </motion.div>
               <motion.h1 id="hero-heading-mobile" variants={itemVariants} className="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-4" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.3)' }} >
-                <span className="inline">Your <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">Adobe CC.</span></span>
+                <span className="inline">Your <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">Adobe CC</span></span>
                 <span className="block">, For Less.</span>
               </motion.h1>
               <motion.p variants={itemVariants} className="text-white/80 max-w-md mx-auto mb-8 text-base sm:text-lg font-light tracking-wide">
@@ -83,10 +83,10 @@ export default function HeroSection() {
               </motion.div>
 
               <motion.h1 id="hero-heading-desktop" variants={itemVariants} className="text-center text-6xl font-extrabold text-white leading-tight mb-6" style={{ textShadow: '0 5px 25px rgba(0,0,0,0.4)' }}>
-                Unlock major savings on <br />
-                <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">
-                  Adobe Creative Cloud
-                </span>
+                Unlock <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">
+                  major savings
+                </span> on <br />
+                Adobe Creative Cloud
               </motion.h1>
               <motion.p variants={itemVariants} className="text-white/70 max-w-2xl mx-auto mb-10 text-lg font-light">
                 CheapCC provides the full Adobe Creative Cloud suite for less.
