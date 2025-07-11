@@ -47,7 +47,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 
 export default function Home() {
   const router = useRouter();
-  const [selectedPrice, setSelectedPrice] = useState<string>('14d');
+  const [selectedPrice, setSelectedPrice] = useState<string>('1m');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [sdkReady, setSdkReady] = useState<boolean>(false);
   const [name, setName] = useState<string>('');

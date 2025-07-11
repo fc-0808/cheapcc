@@ -16,14 +16,6 @@ export const PRODUCT = {
 
 export const PRICING_OPTIONS: PricingOption[] = [
   {
-    id: '14d',
-    name: '14 Days',
-    duration: '14 days',
-    price: 4.99,
-    originalPrice: 23.99,
-    description: 'Adobe Creative Cloud - 14 Days',
-  },
-  {
     id: '1m',
     name: '1 Month',
     duration: '1 month',
