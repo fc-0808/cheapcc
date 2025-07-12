@@ -564,18 +564,20 @@ export default function Header() {
         <div 
           id="mobile-menu" 
           ref={mobileMenuRef} 
-          className="md:hidden fixed inset-x-0 bottom-0 z-50 px-4 transition-all duration-300 animate-fadeInDropdown"
+          className="md:hidden fixed inset-x-0 top-20 z-50 px-4 transition-all duration-300 animate-fadeInDropdown"
           style={{
             marginTop: 0,
-            maxHeight: '85vh',
+            maxHeight: 'calc(100vh - 5rem)',
+            height: 'auto',
+            overflowY: 'auto',
           }}
         >
           <div 
             className="pt-2 pb-3 space-y-1 backdrop-blur-md rounded-xl overflow-hidden relative"
             style={{
-              background: "rgba(17, 17, 40, 0.7)",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1) inset",
-              border: "1px solid rgba(255, 255, 255, 0.08)"
+              background: "rgba(17, 17, 40, 0.9)",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15) inset",
+              border: "1px solid rgba(255, 255, 255, 0.12)"
             }}
           >
             {/* Subtle gradient overlay */}
@@ -595,23 +597,33 @@ export default function Header() {
                 </div>
               ) : user ? (
                 <>
+                  {/* User profile card with improved styling */}
                   <div className="py-3 border-b border-white/10 mb-3">
                     <div
                       className="block text-sm font-medium truncate py-3 px-4 rounded-lg relative overflow-hidden"
                       style={{
-                        background: "linear-gradient(135deg, rgba(192, 38, 211, 0.2) 0%, rgba(219, 39, 119, 0.2) 100%)",
-                        boxShadow: "0 4px 12px rgba(192, 38, 211, 0.15)"
+                        background: "linear-gradient(135deg, rgba(192, 38, 211, 0.25) 0%, rgba(219, 39, 119, 0.25) 100%)",
+                        boxShadow: "0 8px 16px rgba(192, 38, 211, 0.15)"
                       }}
                     >
+                      {/* Background glow effect */}
+                      <div 
+                        className="absolute top-0 right-0 w-32 h-32 rounded-full bg-fuchsia-500/20 blur-2xl opacity-30 transform -translate-y-1/2 translate-x-1/3"
+                        style={{
+                          animation: "pulse 4s ease-in-out infinite alternate"
+                        }}
+                        aria-hidden="true"
+                      ></div>
+                      
                       <div className="flex items-center relative z-10">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg mr-3">
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 mr-3" aria-hidden="true">
                           <i className="fas fa-user-circle"></i>
                         </div>
                         <div>
-                          <div className="text-white/90 font-medium">
+                          <div className="text-white font-semibold">
                             {userName || (user?.email ? user.email.split('@')[0] : 'User')}
                           </div>
-                          <div className="text-white/60 text-xs truncate mt-0.5">
+                          <div className="text-white/70 text-xs truncate mt-0.5">
                             {user?.email}
                           </div>
                         </div>
@@ -631,7 +643,7 @@ export default function Header() {
                         {item.title === 'Log Out' ? (
                           <button
                             onClick={action}
-                            className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                            className="w-full text-left flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-all duration-300"
                           >
                             <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
                               background: "rgba(236, 72, 153, 0.15)",
@@ -646,7 +658,7 @@ export default function Header() {
                             href={item.path}
                             prefetch={false}
                             onClick={handleNavLinkClick}
-                            className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300 ${
+                            className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-all duration-300 ${
                               pathname?.startsWith(item.path) ? 'bg-white/10' : ''
                             }`}
                           >
@@ -677,7 +689,7 @@ export default function Header() {
                         href="/login"
                         prefetch={false}
                         onClick={handleNavLinkClick}
-                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-white/90 border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
+                        className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-white border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
                       >
                         <i className="fas fa-sign-in-alt text-fuchsia-400"></i>
                         <span>Log In</span>
@@ -740,16 +752,23 @@ export default function Header() {
                 
                 <Link 
                   href="mailto:support@cheapcc.online"
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-all duration-300"
+                  onClick={() => {
+                    if (window.navigator && 'vibrate' in window.navigator) {
+                      window.navigator.vibrate(5);
+                    }
+                  }}
                 >
                   <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
                     background: "rgba(156, 163, 175, 0.15)",
                     boxShadow: "0 2px 5px rgba(156, 163, 175, 0.1)"
                   }}>
-                    <i className="fas fa-envelope text-gray-400"></i>
+                    <i className="fas fa-envelope text-gray-400" aria-hidden="true"></i>
                   </span>
-                  Support
+                  <span>Support</span>
                 </Link>
+                
+                {/* Remove FAQ link here */}
               </div>
             </div>
           </div>
