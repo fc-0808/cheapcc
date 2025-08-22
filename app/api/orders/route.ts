@@ -11,7 +11,6 @@ import { PRICING_OPTIONS } from '@/utils/products';
 import { CreateOrderSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 import { createClient } from '@/utils/supabase/supabase-server';
-import { limiter } from '@/utils/rate-limiter';
 
 // Base environment settings from environment variables
 let clientId = process.env.PAYPAL_CLIENT_ID || '';
@@ -141,22 +140,20 @@ const ordersController = new OrdersController(paypalClient);
 // Define cache TTL - 60 seconds
 const CACHE_TTL = 60;
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     // Apply rate limiting
-    const identifier = request.url;
-    const { success, limit, remaining } = await limiter.limit(identifier);
+    const { limited, retryAfter } = await checkRateLimit(request, limiters.orderCreation);
     
-    if (!success) {
+    if (limited) {
+      const headers: Record<string, string> = {
+        'Retry-After': retryAfter ? retryAfter.toString() : '60',
+      };
       return NextResponse.json(
         { error: 'Too many requests' },
         { 
           status: 429,
-          headers: {
-            'X-RateLimit-Limit': limit.toString(),
-            'X-RateLimit-Remaining': remaining.toString(),
-            'Retry-After': '60',
-          }
+          headers
         }
       );
     }
@@ -171,11 +168,7 @@ export async function GET(request: Request) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { 
-          status: 401,
-          headers: {
-            'X-RateLimit-Limit': limit.toString(),
-            'X-RateLimit-Remaining': remaining.toString(),
-          }
+          status: 401
         }
       );
     }
@@ -192,11 +185,7 @@ export async function GET(request: Request) {
       return NextResponse.json(
         { error: 'Failed to fetch orders' },
         { 
-          status: 500,
-          headers: {
-            'X-RateLimit-Limit': limit.toString(),
-            'X-RateLimit-Remaining': remaining.toString(),
-          }
+          status: 500
         }
       );
     }
@@ -207,8 +196,6 @@ export async function GET(request: Request) {
       { 
         status: 200,
         headers: {
-          'X-RateLimit-Limit': limit.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
           'Cache-Control': `s-maxage=${CACHE_TTL}, stale-while-revalidate`,
         }
       }
