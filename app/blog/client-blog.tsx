@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import type { Post } from '@/lib/blog';
+import Breadcrumb from '@/components/Breadcrumb';
 
 interface ClientBlogProps {
   posts: Omit<Post, 'contentHtml' | 'wordCount' | 'readingTime'>[];
@@ -51,7 +52,7 @@ export default function ClientBlog({ posts }: ClientBlogProps) {
   };
   
   return (
-    <main className="min-h-screen py-20 relative overflow-hidden">
+    <main className="min-h-screen relative">
       {/* Background particles */}
       {particles.map((particle, index) => (
         <motion.div
@@ -93,7 +94,14 @@ export default function ClientBlog({ posts }: ClientBlogProps) {
         }}
       />
       
+      {/* Breadcrumb positioned below the fixed header */}
+      <div className="pt-20 relative z-40">
+        <Breadcrumb items={[]} currentPage="Blog" />
+      </div>
+      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div className="py-12">
         <motion.header 
           className="mb-14 text-center"
           initial={{ opacity: 0, y: 30 }}
@@ -467,6 +475,7 @@ export default function ClientBlog({ posts }: ClientBlogProps) {
             </motion.div>
           </motion.div>
         )}
+        </div>
       </div>
     </main>
   );

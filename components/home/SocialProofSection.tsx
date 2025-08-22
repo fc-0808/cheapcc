@@ -183,7 +183,7 @@ export default function SocialProofSection() {
   return (
     <section 
       ref={sectionRef}
-      className="py-16 md:py-28 relative overflow-hidden"
+      className="hidden md:block py-16 md:py-28 relative overflow-hidden"
     >
       <div className="container relative z-10 mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-6xl mx-auto">

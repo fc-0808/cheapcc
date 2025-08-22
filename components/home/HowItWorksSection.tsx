@@ -88,7 +88,7 @@ export default function HowItWorksSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-20 md:py-32 overflow-hidden"
+      className="hidden md:block relative py-20 md:py-32 overflow-hidden"
     >
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

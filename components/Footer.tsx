@@ -1,8 +1,23 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 
 const Footer: React.FC = () => {
+  // State for managing collapsed/expanded sections on mobile
+  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
+    quickLinks: false,
+    legal: false,
+    contact: false
+  });
+
+  // Toggle function for sections
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   return (
     <footer 
       className="relative py-20 sm:py-28 -mt-20 sm:-mt-28"
@@ -72,13 +87,29 @@ const Footer: React.FC = () => {
           {/* Quick Links Section */}
           <div className="footer-section relative">
             <div className="absolute left-0 top-0 h-12 w-px bg-gradient-to-b from-transparent via-pink-500/30 to-transparent hidden lg:block"></div>
-            <h3 
-              className="text-base sm:text-lg font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
-            >
-              Quick Links
-            </h3>
             
-            <ul className="footer-links space-y-4">
+            {/* Mobile clickable header with arrow */}
+            <div 
+              className="flex items-center justify-between cursor-pointer sm:cursor-default"
+              onClick={() => toggleSection('quickLinks')}
+            >
+              <h3 
+                className="text-base sm:text-lg font-semibold mb-6 sm:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
+              >
+                Quick Links
+              </h3>
+              <div className="sm:hidden mb-6">
+                <i 
+                  className={`fas fa-chevron-down text-gray-400 transition-transform duration-300 ${
+                    expandedSections.quickLinks ? 'rotate-180' : ''
+                  }`}
+                ></i>
+              </div>
+            </div>
+            
+            <ul className={`footer-links space-y-4 ${
+              expandedSections.quickLinks ? 'block' : 'hidden'
+            } sm:block`}>
               <li>
                 <Link href="/" prefetch={false} className="footer-link text-gray-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-fuchsia-500 hover:via-pink-500 hover:to-red-500 transition-colors duration-300 flex items-center group">
                   <div 
@@ -128,13 +159,29 @@ const Footer: React.FC = () => {
           {/* Legal Section */}
           <div className="footer-section relative">
             <div className="absolute left-0 top-0 h-12 w-px bg-gradient-to-b from-transparent via-pink-500/30 to-transparent hidden lg:block"></div>
-            <h3 
-              className="text-base sm:text-lg font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
-            >
-            Legal
-            </h3>
             
-            <ul className="footer-links space-y-4">
+            {/* Mobile clickable header with arrow */}
+            <div 
+              className="flex items-center justify-between cursor-pointer sm:cursor-default"
+              onClick={() => toggleSection('legal')}
+            >
+              <h3 
+                className="text-base sm:text-lg font-semibold mb-6 sm:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
+              >
+                Legal
+              </h3>
+              <div className="sm:hidden mb-6">
+                <i 
+                  className={`fas fa-chevron-down text-gray-400 transition-transform duration-300 ${
+                    expandedSections.legal ? 'rotate-180' : ''
+                  }`}
+                ></i>
+              </div>
+            </div>
+            
+            <ul className={`footer-links space-y-4 ${
+              expandedSections.legal ? 'block' : 'hidden'
+            } sm:block`}>
               <li>
                 <Link href="/terms" prefetch={false} className="footer-link text-gray-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-fuchsia-500 hover:via-pink-500 hover:to-red-500 transition-colors duration-300 flex items-center group">
                   <div 
@@ -173,13 +220,29 @@ const Footer: React.FC = () => {
           {/* Contact Us Section */}
           <div className="footer-section relative">
             <div className="absolute left-0 top-0 h-12 w-px bg-gradient-to-b from-transparent via-pink-500/30 to-transparent hidden lg:block"></div>
-            <h3 
-              className="text-base sm:text-lg font-semibold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
-            >
-            Contact Us
-            </h3>
             
-            <ul className="footer-links space-y-4">
+            {/* Mobile clickable header with arrow */}
+            <div 
+              className="flex items-center justify-between cursor-pointer sm:cursor-default"
+              onClick={() => toggleSection('contact')}
+            >
+              <h3 
+                className="text-base sm:text-lg font-semibold mb-6 sm:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
+              >
+                Contact Us
+              </h3>
+              <div className="sm:hidden mb-6">
+                <i 
+                  className={`fas fa-chevron-down text-gray-400 transition-transform duration-300 ${
+                    expandedSections.contact ? 'rotate-180' : ''
+                  }`}
+                ></i>
+              </div>
+            </div>
+            
+            <ul className={`footer-links space-y-4 ${
+              expandedSections.contact ? 'block' : 'hidden'
+            } sm:block`}>
               <li>
                 <a href="mailto:support@cheapcc.online" className="footer-link text-gray-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-fuchsia-500 hover:via-pink-500 hover:to-red-500 transition-colors duration-300 flex items-center group">
                   <div 

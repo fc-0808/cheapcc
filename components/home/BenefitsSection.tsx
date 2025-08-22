@@ -143,7 +143,7 @@ export default function BenefitsSection() {
   return (
     <section 
       ref={sectionRef}
-      className="relative overflow-hidden py-20 md:py-32"
+      className="hidden md:block relative overflow-hidden py-20 md:py-32"
     >
       <div className="container relative z-10 mx-auto px-4">
         <motion.div 

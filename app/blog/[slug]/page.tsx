@@ -1,6 +1,7 @@
 import { getPostData } from '@/lib/blog';
 import { Metadata } from 'next';
 import ClientPost from './client-post';
+import Script from 'next/script';
 
 // Generate metadata for each blog post
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
@@ -55,6 +56,80 @@ export async function generateStaticParams() {
 }
 
 export default async function Post({ params }: { params: { slug: string } }) {
-  const postData = await getPostData(params.slug);
-  return <ClientPost postData={postData} />;
+  const resolvedParams = await params;
+  const postData = await getPostData(resolvedParams.slug);
+  
+  // Generate Article schema for the blog post
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": postData.title,
+    "description": postData.excerpt,
+    "image": postData.featuredImage || "https://cheapcc.online/og-image.jpg",
+    "author": {
+      "@type": "Organization",
+      "name": "CheapCC",
+      "url": "https://cheapcc.online"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "CheapCC",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://cheapcc.online/favicon.svg"
+      }
+    },
+    "datePublished": postData.date,
+    "dateModified": postData.date,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://cheapcc.online/blog/${resolvedParams.slug}`
+    },
+    "wordCount": postData.wordCount,
+    "timeRequired": `PT${postData.readingTime}M`,
+    "articleSection": "Adobe Creative Cloud",
+    "keywords": `adobe creative cloud, ${postData.title.toLowerCase()}, adobe cc tutorials, cheapcc`
+  };
+
+  // Generate breadcrumb schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://cheapcc.online"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://cheapcc.online/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": postData.title,
+        "item": `https://cheapcc.online/blog/${resolvedParams.slug}`
+      }
+    ]
+  };
+
+  return (
+    <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <Script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <ClientPost postData={postData} />
+    </>
+  );
 }

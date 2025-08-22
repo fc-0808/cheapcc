@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
-  description: 'CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 75% off. Get instant delivery for all Adobe apps, including Photoshop, Illustrator, and Premiere Pro.',
+  description: '🚀 Save 75% on Adobe Creative Cloud! Get instant access to Photoshop, Illustrator, Premiere Pro & all CC apps. Genuine subscriptions, immediate delivery. Join 10,000+ satisfied customers!',
   keywords: 'cheapcc, cheapcc adobe, adobe cc discount, buy adobe creative cloud, adobe photoshop cheap, adobe cc cheap',
   metadataBase: new URL('https://cheapcc.online'),
   authors: [
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     canonical: 'https://cheapcc.online'
   },
   openGraph: {
-    title: 'CheapCC - Affordable Adobe Creative Cloud Subscriptions',
-    description: 'CheapCC offers genuine Adobe Creative Cloud subscriptions up to 75% off. All apps included with full functionality.',
+    title: 'CheapCC - Save 75% on Adobe Creative Cloud Subscriptions',
+    description: '🎨 Get genuine Adobe Creative Cloud for 75% less! Instant access to all CC apps. Trusted by 10,000+ creatives worldwide.',
     url: 'https://cheapcc.online',
     siteName: 'CheapCC',
     locale: 'en_US',
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CheapCC - Affordable Adobe Creative Cloud',
-    description: 'CheapCC offers genuine Adobe Creative Cloud subscriptions up to 75% off. All apps included with full functionality.',
+    title: 'CheapCC - Save 75% on Adobe Creative Cloud',
+    description: '💡 Genuine Adobe CC subscriptions at 75% off! Instant delivery, all apps included. Join thousands of satisfied creatives!',
     creator: '@cheapccofficial',
     images: ['https://cheapcc.online/twitter-image.jpg'],
   },
