@@ -15,6 +15,7 @@ interface ClientTawkToChatProps {
   showOnMobile?: boolean;
   colorScheme?: 'primary' | 'gradient' | 'accent' | 'dark' | 'vibrant' | 'custom';
   customAttributes?: Record<string, any>;
+  respectDashboardSettings?: boolean;
 }
 
 export default function ClientTawkToChat({
@@ -26,7 +27,8 @@ export default function ClientTawkToChat({
   customAttributes = {
     website: 'CheapCC',
     source: 'website'
-  }
+  },
+  respectDashboardSettings = true
 }: ClientTawkToChatProps) {
   return (
     <TawkToChat 
@@ -36,6 +38,7 @@ export default function ClientTawkToChat({
       showOnMobile={showOnMobile}
       colorScheme={colorScheme}
       customAttributes={customAttributes}
+      respectDashboardSettings={respectDashboardSettings}
     />
   );
 }

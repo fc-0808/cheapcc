@@ -57,6 +57,8 @@ interface TawkToChatProps {
     userMessage?: string;
     userText?: string;
   };
+  /** Whether to respect dashboard visibility settings (true) or force widget to show (false) */
+  respectDashboardSettings?: boolean;
 }
 
 const TawkToChat: React.FC<TawkToChatProps> = ({
@@ -69,6 +71,7 @@ const TawkToChat: React.FC<TawkToChatProps> = ({
   onStatusChange,
   colorScheme = 'primary',
   customColors,
+  respectDashboardSettings = true,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -205,72 +208,47 @@ const TawkToChat: React.FC<TawkToChatProps> = ({
         // Initialize Tawk_API with error protection
         window.Tawk_API = window.Tawk_API || {};
         
-        // Set up onLoad callback with error handling
-        window.Tawk_API.onLoad = () => {
-          try {
-            console.log('Tawk.to onLoad callback triggered');
-            setIsLoaded(true);
-            window.Tawk_LoadedSuccessfully = true;
-            
-            // Set custom attributes if provided
-            if (customAttributes && window.Tawk_API?.setAttributes) {
-              try {
-                window.Tawk_API.setAttributes(customAttributes);
-                console.log('Tawk.to attributes set:', customAttributes);
-              } catch (attrError) {
-                console.warn('Error setting Tawk.to attributes:', attrError);
-              }
-            }
-            
-            // Handle mobile visibility - only hide if explicitly requested
-            if (isMobile && !showOnMobile && window.Tawk_API?.hideWidget) {
-              try {
-                window.Tawk_API.hideWidget();
-                console.log('Tawk.to widget hidden on mobile');
-              } catch (hideError) {
-                console.warn('Error hiding Tawk.to widget:', hideError);
-              }
-            } else {
-              // Ensure widget is visible
-              if (window.Tawk_API?.showWidget) {
-                try {
-                  window.Tawk_API.showWidget();
-                  console.log('Tawk.to widget explicitly shown');
-                } catch (showError) {
-                  console.warn('Error showing Tawk.to widget:', showError);
-                }
-              }
-            }
+                 // Set up onLoad callback with minimal interference
+         window.Tawk_API.onLoad = () => {
+           try {
+             setIsLoaded(true);
+             window.Tawk_LoadedSuccessfully = true;
+             
+             // Set custom attributes if provided
+             if (customAttributes && window.Tawk_API?.setAttributes) {
+               try {
+                 window.Tawk_API.setAttributes(customAttributes);
+               } catch (attrError) {
+                 console.warn('Error setting Tawk.to attributes:', attrError);
+               }
+             }
+             
+             // Handle mobile visibility - only hide if explicitly requested
+             if (isMobile && !showOnMobile && window.Tawk_API?.hideWidget) {
+               try {
+                 window.Tawk_API.hideWidget();
+               } catch (hideError) {
+                 console.warn('Error hiding Tawk.to widget:', hideError);
+               }
+             }
             
             // Apply color scheme if available
             if (activeColors) {
               try {
                 applyColorScheme();
-                console.log('Tawk.to color scheme applied');
               } catch (styleError) {
                 console.warn('Error applying Tawk.to color scheme:', styleError);
               }
             }
 
-            // Call custom onLoad callback or default logging
+            // Call custom onLoad callback
             if (onLoad) {
               try {
                 onLoad();
               } catch (callbackError) {
                 console.warn('Error in Tawk.to onLoad callback:', callbackError);
               }
-            } else {
-              console.log('Tawk.to chat loaded with CheapCC brand colors - ready for use');
             }
-            
-            // Additional debug info
-            console.log('Tawk.to widget status:', {
-              isLoaded: true,
-              isMobile,
-              showOnMobile,
-              hasAttributes: !!customAttributes,
-              hasColorScheme: !!activeColors
-            });
             
           } catch (loadError) {
             console.error('Error in Tawk.to onLoad handler:', loadError);
@@ -278,18 +256,16 @@ const TawkToChat: React.FC<TawkToChatProps> = ({
           }
         };
         
-        // Set up onStatusChange callback with error handling
-        window.Tawk_API.onStatusChange = (status: string) => {
-          try {
-            if (onStatusChange) {
-              onStatusChange(status);
-            } else {
-              console.log('Tawk.to status changed:', status);
-            }
-          } catch (statusError) {
-            console.warn('Error in Tawk.to onStatusChange:', statusError);
-          }
-        };
+                 // Set up onStatusChange callback with error handling
+         window.Tawk_API.onStatusChange = (status: string) => {
+           try {
+             if (onStatusChange) {
+               onStatusChange(status);
+             }
+           } catch (statusError) {
+             console.warn('Error in Tawk.to onStatusChange:', statusError);
+           }
+         };
 
         // Set up error handler
         window.Tawk_API.onError = (error: any) => {
@@ -318,11 +294,10 @@ const TawkToChat: React.FC<TawkToChatProps> = ({
       var Tawk_API = Tawk_API || {};
       var Tawk_LoadStart = new Date();
       
-      // Set widget to visible explicitly
-      Tawk_API.showWidget = Tawk_API.showWidget || function() {};
+      // Initialize Tawk_API without forcing visibility
+      // Removed explicit showWidget initialization to respect dashboard settings
       
-      // Add debug logging
-      console.log('Initializing Tawk.to with PropertyID: ${propertyId}, WidgetID: ${widgetId}');
+      // Initializing Tawk.to widget (reduced logging to respect dashboard settings)
       
       // Add global error handler for Tawk.to
       window.addEventListener('error', function(event) {
@@ -353,7 +328,6 @@ const TawkToChat: React.FC<TawkToChatProps> = ({
         };
         
         s1.onload = function() {
-          console.log('Tawk.to script element loaded successfully');
           window.Tawk_LoadedSuccessfully = true;
         };
         
@@ -364,45 +338,20 @@ const TawkToChat: React.FC<TawkToChatProps> = ({
         }
       })();
       
-      // Force widget to show after a delay if it doesn't show automatically
+      // Respect dashboard settings - only set basic attributes
       setTimeout(function() {
-        if (window.Tawk_API) {
+        if (window.Tawk_API && typeof window.Tawk_API.setAttributes === 'function') {
           try {
-            console.log('Ensuring Tawk.to widget is visible');
-            
-            // Multiple attempts to show the widget
-            if (typeof window.Tawk_API.showWidget === 'function') {
-              window.Tawk_API.showWidget();
-            }
-            
-            // Also try to maximize if available
-            if (typeof window.Tawk_API.maximize === 'function') {
-              window.Tawk_API.maximize();
-            }
-            
-            // Set visibility attribute
-            if (typeof window.Tawk_API.setAttributes === 'function') {
-              window.Tawk_API.setAttributes({
-                name: 'CheapCC User',
-                email: '',
-                hash: ''
-              });
-            }
-            
+            window.Tawk_API.setAttributes({
+              name: 'CheapCC User',
+              email: '',
+              hash: ''
+            });
           } catch (e) {
-            console.warn('Could not force show Tawk.to widget:', e);
+            console.warn('Could not set Tawk.to attributes:', e);
           }
         }
-      }, 3000);
-      
-      // Additional delayed check
-      setTimeout(function() {
-        console.log('Final Tawk.to status check:', {
-          API: typeof window.Tawk_API,
-          LoadedSuccessfully: window.Tawk_LoadedSuccessfully,
-          DOMElements: document.querySelectorAll('[id*="tawk"], [class*="tawk"]').length
-        });
-      }, 8000);
+      }, 2000);
       
     } catch (error) {
       console.error('Error initializing Tawk.to script:', error);
@@ -474,35 +423,7 @@ const TawkToChat: React.FC<TawkToChatProps> = ({
         }
       `}</style>
       
-      {/* Debug script to monitor Tawk.to initialization */}
-      <Script id="tawk-debug-monitor" strategy="afterInteractive">
-        {`
-          // Monitor Tawk.to initialization every 2 seconds for debugging
-          let debugCheckCount = 0;
-          const debugInterval = setInterval(() => {
-            debugCheckCount++;
-            console.log('Tawk.to Debug Check #' + debugCheckCount + ':', {
-              TawkAPI: typeof window.Tawk_API,
-              TawkLoadStart: !!window.Tawk_LoadStart,
-              TawkLoadedSuccessfully: window.Tawk_LoadedSuccessfully,
-              DOMElements: document.querySelectorAll('[id*="tawk"], [class*="tawk"]').length,
-              VisibleWidget: document.querySelector('#tawkchat-container, #tawkchat-minified-container') ? 'Found' : 'Not found'
-            });
-            
-            // Stop checking after 30 seconds (15 checks)
-            if (debugCheckCount >= 15) {
-              clearInterval(debugInterval);
-              console.log('Tawk.to debug monitoring stopped after 30 seconds');
-            }
-            
-            // If we find the widget, we can stop early
-            if (document.querySelector('#tawkchat-container, #tawkchat-minified-container')) {
-              console.log('Tawk.to widget found! Stopping debug monitoring.');
-              clearInterval(debugInterval);
-            }
-          }, 2000);
-        `}
-      </Script>
+      {/* Removed debug monitoring to avoid interference with widget behavior */}
     </>
   );
 };
