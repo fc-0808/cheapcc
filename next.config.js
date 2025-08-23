@@ -41,6 +41,12 @@ const nextConfig = {
 						key: 'Permissions-Policy',
 						value: 'accelerometer=*, camera=*, geolocation=*, gyroscope=*, magnetometer=*, microphone=*, payment=*, usb=*',
 					},
+					// Content Security Policy for Tawk.to, Stripe, PayPal, and Vercel Analyticsclear
+					{
+						key: 'Content-Security-Policy',
+						value:
+							"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to https://www.googletagmanager.com https://cdnjs.cloudflare.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://embed.tawk.to https://*.tawk.to; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to wss://*.tawk.to https://api.paypal.com https://www.sandbox.paypal.com https://api.stripe.com https://vitals.vercel-insights.com; frame-src 'self' https://embed.tawk.to https://tawk.to https://*.tawk.to https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com; media-src 'self' https://embed.tawk.to https://*.tawk.to; object-src 'none'; base-uri 'self';",
+					},
 					// Optimize mobile caching with stale-while-revalidate
 					{
 						key: 'Cache-Control',

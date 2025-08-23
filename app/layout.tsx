@@ -9,6 +9,7 @@ import UnifiedBackground from "@/components/UnifiedBackground";
 import { getFontVariables } from './fonts';
 import SWRProvider from '@/components/SWRProvider';
 import { Analytics } from '@vercel/analytics/next';
+import ClientTawkToChat from '@/components/ClientTawkToChat';
 
 export const metadata: Metadata = {
   title: {
@@ -58,6 +59,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
         <meta name="theme-color" content="#2c2d5a" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#1a1a2e" media="(prefers-color-scheme: dark)" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         
@@ -68,6 +70,40 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         
+        {/* Tawk.to Resource Hints */}
+        <link rel="preconnect" href="https://embed.tawk.to" />
+        <link rel="dns-prefetch" href="https://tawk.to" />
+        <link rel="dns-prefetch" href="https://va.tawk.to" />
+        
+        {/* Global error handler for Tawk.to */}
+        <Script id="tawk-global-error-handler" strategy="beforeInteractive">
+          {`
+            window.addEventListener('error', function(event) {
+              // Check if error is from Tawk.to scripts
+              if (event.filename && event.filename.includes('tawk.to')) {
+                console.warn('Tawk.to error handled globally:', {
+                  message: event.message,
+                  filename: event.filename,
+                  lineno: event.lineno,
+                  colno: event.colno
+                });
+                // Prevent error from bubbling up and breaking the page
+                event.preventDefault();
+                return true;
+              }
+            });
+            
+            // Handle unhandled promise rejections from Tawk.to
+            window.addEventListener('unhandledrejection', function(event) {
+              if (event.reason && event.reason.toString().includes('tawk.to')) {
+                console.warn('Tawk.to promise rejection handled globally:', event.reason);
+                event.preventDefault();
+                return true;
+              }
+            });
+          `}
+        </Script>
+        
         {/* Preload critical assets */}
         <link rel="preload" href="/favicon.svg" as="image" type="image/svg+xml" />
         
@@ -77,6 +113,7 @@ export default function RootLayout({
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
           as="style"
           crossOrigin="anonymous"
+          integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw=="
         />
         <link 
           rel="stylesheet" 
@@ -178,6 +215,9 @@ export default function RootLayout({
         
         {/* Vercel Analytics */}
         <Analytics />
+        
+        {/* Tawk.to Chat Widget - Client-side only */}
+        <ClientTawkToChat />
         
         {/* Font loading and CSS optimization */}
         <Script id="font-and-css-optimization" strategy="afterInteractive">
