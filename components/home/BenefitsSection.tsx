@@ -27,6 +27,8 @@ export default function BenefitsSection() {
   const [isClient, setIsClient] = useState(false);
   // State to store particles data
   const [benefitParticles, setBenefitParticles] = useState<{[benefitId: string]: Particle[]}>({});
+
+
   
   // Floating animation for cards
   const floatY = useMotionValue(0);
@@ -307,7 +309,7 @@ export default function BenefitsSection() {
                           <stop offset="100%" stopColor={benefit.color} stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <motion.ellipse 
+                      <ellipse 
                         cx="50" 
                         cy="50" 
                         rx="40" 
@@ -315,16 +317,7 @@ export default function BenefitsSection() {
                         fill="none" 
                         stroke={`url(#orbital-gradient-${index})`} 
                         strokeWidth="1"
-                        animate={{ 
-                          rx: [40, 35, 40],
-                          ry: [25, 30, 25],
-                          opacity: [1, 0.7, 1]
-                        }}
-                        transition={{ 
-                          duration: 8, 
-                          repeat: Infinity, 
-                          ease: "easeInOut" 
-                        }}
+                        className="animate-pulse"
                       />
                     </svg>
                   </motion.div>
