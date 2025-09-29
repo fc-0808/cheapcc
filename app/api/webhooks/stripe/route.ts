@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Stripe } from 'stripe';
 import { createServiceClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
-import { logWebhookEnvironment, getWebhookEnvironment } from '@/utils/ngrokUtils';
+import { logWebhookEnvironment, getWebhookEnvironment } from '../../../../utils/ngrokUtils';
 import {
   calculateSavings,
   getStandardPlanDescription,
