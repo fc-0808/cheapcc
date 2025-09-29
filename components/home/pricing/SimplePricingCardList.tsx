@@ -1,15 +1,16 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useInView, Variants } from 'framer-motion';
-import { PricingOption } from '@/utils/products';
+import { PricingOption, getPriceForActivationType, getSelfActivationFee } from '@/utils/products';
 
 interface SimplePricingCardListProps {
   pricingOptions: PricingOption[];
   selectedPrice: string;
   onSelectPrice: (priceId: string) => void;
+  selectedActivationType?: 'pre-activated' | 'self-activation';
 }
 
-export default function SimplePricingCardList({ pricingOptions, selectedPrice, onSelectPrice }: SimplePricingCardListProps) {
+export default function SimplePricingCardList({ pricingOptions, selectedPrice, onSelectPrice, selectedActivationType = 'pre-activated' }: SimplePricingCardListProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -236,13 +237,19 @@ export default function SimplePricingCardList({ pricingOptions, selectedPrice, o
                     ${option.originalPrice.toFixed(2)}
                   </div>
                 )}
-                <div className="text-3xl font-bold text-white">
-                  ${option.price.toFixed(2)}
-                </div>
+                <motion.div 
+                  className="text-3xl font-bold text-white"
+                  key={`${option.id}-${selectedActivationType}`}
+                  initial={{ scale: 0.9, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  ${getPriceForActivationType(option, selectedActivationType).toFixed(2)}
+                </motion.div>
                 {option.originalPrice && (
                   <div className="absolute -right-2 -top-1 transform rotate-3">
                     <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm discount-badge">
-                      {Math.round((1 - option.price / option.originalPrice) * 100)}% OFF
+                      {Math.round((1 - getPriceForActivationType(option, selectedActivationType) / option.originalPrice) * 100)}% OFF
                     </div>
                   </div>
                 )}

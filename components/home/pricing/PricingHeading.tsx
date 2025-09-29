@@ -2,13 +2,20 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useInView } from 'framer-motion';
+import ActivationTypeSelector from './ActivationTypeSelector';
+import EmailInputField from './EmailInputField';
 
 interface PricingHeadingProps {
   isAdmin?: boolean;
   adminError?: string | null;
+  selectedActivationType?: 'pre-activated' | 'self-activation';
+  onActivationTypeChange?: (type: 'pre-activated' | 'self-activation') => void;
+  email?: string;
+  setEmail?: (email: string) => void;
+  isUserSignedIn?: boolean;
 }
 
-export default function PricingHeading({ isAdmin, adminError }: PricingHeadingProps) {
+export default function PricingHeading({ isAdmin, adminError, selectedActivationType, onActivationTypeChange, email, setEmail, isUserSignedIn }: PricingHeadingProps) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleInView = useInView(titleRef, { once: false, margin: "-100px 0px" });
   
@@ -54,6 +61,33 @@ export default function PricingHeading({ isAdmin, adminError }: PricingHeadingPr
       >
         Choose the plan that works for you. All plans include the complete Adobe CC suite.
       </motion.p>
+      
+      {/* Activation Type Selector */}
+      {selectedActivationType && onActivationTypeChange && (
+        <ActivationTypeSelector
+          selectedType={selectedActivationType}
+          onTypeChange={onActivationTypeChange}
+        />
+      )}
+
+      {/* Email Input Field - Only for Self-Activation */}
+      {email !== undefined && setEmail && selectedActivationType === 'self-activation' && (
+        <motion.div 
+          className="max-w-lg mx-auto mb-8 relative z-10"
+          initial={{ opacity: 0, height: 0, y: -20 }}
+          animate={{ opacity: 1, height: 'auto', y: 0 }}
+          exit={{ opacity: 0, height: 0, y: -20 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
+          <EmailInputField
+            email={email}
+            setEmail={setEmail}
+            isUserSignedIn={isUserSignedIn || false}
+            isSelfActivation={true}
+          />
+        </motion.div>
+      )}
+      
       {adminError && (
         <motion.div 
           className="mt-2 text-sm text-red-300 bg-red-900 bg-opacity-50 p-2 rounded-md mx-auto max-w-md"

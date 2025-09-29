@@ -234,8 +234,8 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#0f111a] flex items-center justify-center p-4 sm:p-6 lg:p-8 pt-24">
       <div className="w-full max-w-2xl">
         <div className="mb-6 flex items-center justify-center flex-col">
-          <h1 className="text-3xl font-bold text-white mb-1 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">Account Settings</h1>
-          <p className="text-gray-400 text-sm">Manage your profile and preferences</p>
+          <h1 className="text-3xl font-bold text-white mb-1 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text md:Unbeatable Adobe CC Valuept-20">Account Settings</h1>
+          <p className="text-gray-400 text-sm pt-2">Manage your profile and preferences</p>
         </div>
         
         <div className="space-y-5">

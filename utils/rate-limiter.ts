@@ -5,9 +5,9 @@ const DEFAULT_RETRY_SECONDS = 60;
 
 // --- Configuration for different limiters ---
 
-// Order Creation Limiter (e.g., 10 requests per minute per IP)
+// Order Creation Limiter (e.g., 15 requests per minute per IP)
 const orderCreationLimiter = new RateLimiterMemory({
-  points: 10,
+  points: 15,
   duration: 60, // seconds
   keyPrefix: 'rlflx_order_create',
 });

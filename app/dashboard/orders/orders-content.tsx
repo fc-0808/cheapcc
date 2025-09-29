@@ -10,22 +10,22 @@ import { getPlanDuration, formatCurrency, isActiveSubscription } from '@/utils/p
 
 interface Order {
   id: string;
-  user_id: string;
-  payment_method: string;
+  paypal_order_id?: string;
+  stripe_payment_intent_id?: string;
+  name: string;
+  email: string;
   status: string;
+  amount: number;
+  currency: string;
+  description: string;
+  savings: number;
+  expiry_date: string | null;
+  original_status: string;
+  payment_processor: string;
+  activation_type: string;
+  adobe_email?: string;
   created_at: string;
   updated_at: string;
-  email_sent: boolean;
-  adobe_id: string;
-  adobe_password: string;
-  adobe_password_hint: string;
-  subscription_type: string;
-  subscription_start: string | null;
-  subscription_end: string | null;
-  payment_intent_id?: string;
-  payment_id?: string;
-  amount: number;
-  invoice_id?: string;
 }
 
 interface OrdersContentProps {
@@ -71,6 +71,28 @@ export default function OrdersContent({ user }: OrdersContentProps) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     return diffDays > 0 ? diffDays : 0;
+  };
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+    }).format(amount);
+  };
+
+  const getOrderId = (order: Order) => {
+    return order.paypal_order_id || order.stripe_payment_intent_id || order.id.slice(0, 8);
+  };
+
+  const getPaymentMethodIcon = (processor: string) => {
+    switch (processor.toLowerCase()) {
+      case 'paypal':
+        return 'fab fa-paypal';
+      case 'stripe':
+        return 'fab fa-stripe';
+      default:
+        return 'fas fa-credit-card';
+    }
   };
 
   const formatDate = (dateString: string | null) => {
@@ -137,16 +159,20 @@ export default function OrdersContent({ user }: OrdersContentProps) {
         <table className="data-table w-full">
           <thead>
             <tr>
-              <th>Type</th>
-              <th>Status</th>
-              <th className="hidden sm:table-cell">Created</th>
-              <th className="hidden sm:table-cell">Expires</th>
-              <th className="hidden md:table-cell">Time Left</th>
+              <th className="text-left">Order ID</th>
+              <th className="text-left">Customer</th>
+              <th className="text-left">Product</th>
+              <th className="text-center">Amount</th>
+              <th className="text-center">Status</th>
+              <th className="text-center hidden lg:table-cell">Payment</th>
+              <th className="text-center hidden md:table-cell">Created</th>
+              <th className="text-center hidden md:table-cell">Expires</th>
+              <th className="text-center hidden lg:table-cell">Time Left</th>
             </tr>
           </thead>
           <tbody>
             {sortedOrders.map((order) => {
-              const daysLeft = calculateDaysLeft(order.subscription_end);
+              const daysLeft = calculateDaysLeft(order.expiry_date);
               let daysLeftClass = "good";
               
               if (daysLeft !== null) {
@@ -158,27 +184,55 @@ export default function OrdersContent({ user }: OrdersContentProps) {
               }
 
               return (
-                <tr key={order.id}>
-                  <td>
-                    <span className="font-medium">{order.subscription_type || 'Adobe CC'}</span>
+                <tr key={order.id} className="hover:bg-white/5 transition-colors">
+                  <td className="font-mono text-sm">
+                    <span className="text-blue-400">#{getOrderId(order)}</span>
                   </td>
                   <td>
-                    <span className={`status-badge ${order.status}`}>{order.status}</span>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-white">{order.name}</span>
+                      <span className="text-xs text-gray-400">{order.email}</span>
+                    </div>
                   </td>
-                  <td className="hidden sm:table-cell">
-                    <span className="text-gray-300">{formatDate(order.created_at)}</span>
+                  <td>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{order.description}</span>
+                      <span className="text-xs text-green-400">
+                        <i className="fas fa-tag mr-1"></i>
+                        Save ${order.savings}
+                      </span>
+                    </div>
                   </td>
-                  <td className="hidden sm:table-cell">
-                    <span className="text-gray-300">{formatDate(order.subscription_end)}</span>
+                  <td className="text-center">
+                    <span className="font-semibold text-green-400">
+                      {formatCurrency(order.amount, order.currency)}
+                    </span>
                   </td>
-                  <td className="hidden md:table-cell">
+                  <td className="text-center">
+                    <span className={`status-badge ${order.status.toLowerCase()}`}>
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="text-center hidden lg:table-cell">
+                    <div className="flex items-center justify-center">
+                      <i className={`${getPaymentMethodIcon(order.payment_processor)} text-lg mr-2`}></i>
+                      <span className="text-sm capitalize">{order.payment_processor}</span>
+                    </div>
+                  </td>
+                  <td className="text-center hidden md:table-cell">
+                    <span className="text-gray-300 text-sm">{formatDate(order.created_at)}</span>
+                  </td>
+                  <td className="text-center hidden md:table-cell">
+                    <span className="text-gray-300 text-sm">{formatDate(order.expiry_date)}</span>
+                  </td>
+                  <td className="text-center hidden lg:table-cell">
                     {daysLeft !== null ? (
-                      <span className={`days-left-indicator ${daysLeftClass}`}>
-                        <i className={`fas ${daysLeftClass === "critical" ? "fa-exclamation-circle" : daysLeftClass === "warning" ? "fa-clock" : "fa-calendar-check"} mr-2`}></i>
-                        {daysLeft} days
+                      <span className={`days-left-indicator ${daysLeftClass} text-sm`}>
+                        <i className={`fas ${daysLeftClass === "critical" ? "fa-exclamation-circle" : daysLeftClass === "warning" ? "fa-clock" : "fa-calendar-check"} mr-1`}></i>
+                        {daysLeft}d
                       </span>
                     ) : (
-                      <span>-</span>
+                      <span className="text-gray-500">-</span>
                     )}
                   </td>
                 </tr>

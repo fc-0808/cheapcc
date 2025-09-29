@@ -6,6 +6,8 @@ export interface PricingOption {
   originalPrice?: number;
   description: string;
   adminOnly?: boolean;
+  activationType?: 'pre-activated' | 'self-activation';
+  selfActivationPrice?: number;
 }
 
 export const PRODUCT = {
@@ -20,6 +22,7 @@ export const PRICING_OPTIONS: PricingOption[] = [
     name: '1 Month',
     duration: '1 month',
     price: 12.99,
+    selfActivationPrice: 15.98, // 12.99 + 2.99
     originalPrice: 54.99,
     description: 'Adobe Creative Cloud - 1 Month',
   },
@@ -28,6 +31,7 @@ export const PRICING_OPTIONS: PricingOption[] = [
     name: '3 Months',
     duration: '3 months',
     price: 29.99,
+    selfActivationPrice: 36.98, // 29.99 + 6.99
     originalPrice: 164.97,
     description: 'Adobe Creative Cloud - 3 Months',
   },
@@ -36,6 +40,7 @@ export const PRICING_OPTIONS: PricingOption[] = [
     name: '6 Months',
     duration: '6 months',
     price: 54.99,
+    selfActivationPrice: 67.98, // 54.99 + 12.99
     originalPrice: 329.94,
     description: 'Adobe Creative Cloud - 6 Months',
   },
@@ -44,6 +49,7 @@ export const PRICING_OPTIONS: PricingOption[] = [
     name: '12 Months',
     duration: '12 months',
     price: 99.99,
+    selfActivationPrice: 119.98, // 99.99 + 19.99
     originalPrice: 599.88,
     description: 'Adobe Creative Cloud - 12 Months',
   },
@@ -191,4 +197,21 @@ export function formatCurrency(amount: number | null | undefined): string {
     return '$0.00';
   }
   return `$${parseFloat(amount.toString()).toFixed(2)}`;
+}
+
+export function getPriceForActivationType(option: PricingOption, activationType: 'pre-activated' | 'self-activation'): number {
+  if (activationType === 'self-activation' && option.selfActivationPrice) {
+    return option.selfActivationPrice;
+  }
+  return option.price;
+}
+
+export function getSelfActivationFee(duration: string): number {
+  const fees: { [key: string]: number } = {
+    '1 month': 2.99,
+    '3 months': 6.99,
+    '6 months': 12.99,
+    '12 months': 19.99,
+  };
+  return fees[duration] || 0;
 } 

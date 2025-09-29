@@ -31,3 +31,8 @@ export function createClient() {
     return supabaseClient;
   }
 }
+
+// Function to clear the client cache (useful for logout)
+export function clearClientCache() {
+  supabaseClient = null;
+}

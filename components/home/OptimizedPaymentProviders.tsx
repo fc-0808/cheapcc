@@ -10,17 +10,7 @@ const PayPalFallback = () => (
 );
 
 // Dynamically import payment provider components only when needed on client side
-const PayPalProvider = lazy(() => {
-  // Only import on client side to prevent SSR issues
-  if (!isClient()) {
-    return Promise.resolve({ default: ({ children }: { children: React.ReactNode }) => <>{children}</> });
-  }
-  return import('./PayPalContext').then(mod => ({ 
-    default: ({ children }: { children: React.ReactNode }) => (
-      <mod.PayPalProvider>{children}</mod.PayPalProvider>
-    )
-  }));
-});
+const PayPalContextWrapper = lazy(() => import('./PayPalContextWrapper'));
 
 interface OptimizedPaymentProvidersProps {
   children: React.ReactNode;
@@ -52,9 +42,9 @@ export default function OptimizedPaymentProviders({ children }: OptimizedPayment
     <StripePaymentProvider>
       {paypalReady ? (
         <Suspense fallback={<PayPalFallback />}>
-          <PayPalProvider>
+          <PayPalContextWrapper>
             {children}
-          </PayPalProvider>
+          </PayPalContextWrapper>
         </Suspense>
       ) : (
         // Initial mounting state - just render children without PayPal provider

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
 import { createServiceClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
+import { logWebhookEnvironment, getWebhookEnvironment } from '@/utils/ngrokUtils';
 import {
   calculateSavings,
   getStandardPlanDescription,
@@ -36,14 +37,38 @@ export async function POST(request: NextRequest) {
   let rawBody = "NotYetRead"; // Initialize rawBody
   let supabase; // Declare supabase client variable
 
+  // Get request URL info for environment detection
+  const url = new URL(request.url);
+  const isNgrokEnvironment = url.hostname.includes('ngrok');
+  const isVercelProduction = url.hostname.includes('vercel.app') || url.hostname.includes('cheapcc.com');
+  
+  // Log environment detection
+  logWebhookEnvironment('PayPal webhook');
+  console.log(`🌍 PayPal Webhook Environment:`, {
+    hostname: url.hostname,
+    isNgrok: isNgrokEnvironment,
+    isVercelProd: isVercelProduction,
+    paypalMode: process.env.PAYPAL_API_MODE,
+    nodeEnv: process.env.NODE_ENV
+  });
+
   console.info(JSON.stringify({
       message: `Received PayPal webhook. Starting processing...`,
       ip: clientIp,
       receivedAt: new Date().toISOString(),
+      environment: isNgrokEnvironment ? 'ngrok' : (isVercelProduction ? 'production' : 'localhost'),
       source: "app/api/webhooks/paypal/route.ts POST (Entry)"
   }, null, 2));
 
   try {
+    // SMART ENVIRONMENT HANDLING
+    // If this is a production Vercel environment receiving a sandbox webhook, 
+    // gracefully reject it to prevent the FAILURE status in PayPal dashboard
+    if (isVercelProduction && process.env.PAYPAL_API_MODE === 'live') {
+      // We'll check if this is a sandbox webhook after parsing the body
+      console.log('🔍 Production environment detected, will check for sandbox webhook after parsing');
+    }
+
     const supabaseUrlPresent = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKeyPresent = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrlPresent || !supabaseServiceKeyPresent) {
@@ -64,13 +89,42 @@ export async function POST(request: NextRequest) {
                               tempParsedBody.resource.supplementary_data?.related_ids?.order_id ||
                               orderIdForLogging;
     }
+
+    // Check for cross-environment webhook delivery
+    if (isVercelProduction && process.env.PAYPAL_API_MODE === 'live') {
+      // Check if this is a sandbox webhook by examining the webhook data
+      const isSandboxWebhook = tempParsedBody.resource?.links?.some((link: any) => 
+        link.href?.includes('sandbox.paypal.com')
+      ) || false;
+      
+      if (isSandboxWebhook) {
+        console.warn('⚠️ Production environment rejecting sandbox webhook gracefully');
+        console.log('💡 This prevents FAILURE status in PayPal dashboard when testing');
+        return NextResponse.json({ 
+          message: 'Sandbox webhook not processed in production environment',
+          environment: 'production',
+          webhook_source: 'sandbox'
+        }, { status: 200 }); // Return 200 to prevent PayPal FAILURE status
+      }
+    }
     
     const initialLog = {
         message: `Verified entry checks, proceeding with signature verification.`,
         eventType, paypalEventId, orderIdAttempt: orderIdForLogging,
-        ip: clientIp, receivedAt: new Date(webhookStartTime).toISOString(), source: "app/api/webhooks/paypal/route.ts POST (MainLogicStart)"
+        ip: clientIp, receivedAt: new Date(webhookStartTime).toISOString(), 
+        environment: isNgrokEnvironment ? 'ngrok' : (isVercelProduction ? 'production' : 'localhost'),
+        source: "app/api/webhooks/paypal/route.ts POST (MainLogicStart)"
     };
     console.info(JSON.stringify(initialLog, null, 2));
+
+    // Enhanced webhook processing logging
+    console.log('='.repeat(80));
+    console.log('------ HANDLING PAYPAL WEBHOOK ------');
+    console.log(`Event Type: ${eventType}`);
+    console.log(`PayPal Event ID: ${paypalEventId}`);
+    console.log(`Order ID: ${orderIdForLogging}`);
+    console.log(`Processing Environment: ${isNgrokEnvironment ? 'ngrok' : (isVercelProduction ? 'production' : 'localhost')}`);
+    console.log('='.repeat(80));
 
     const isValid = await verifyPayPalWebhookSignature(rawBody, request.headers);
 
@@ -135,14 +189,17 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
     console.info(JSON.stringify({ ...logBase, message: `Processing.`, currentOrderStatus: status }, null, 2));
 
     let name = '', email = '', paypalDescription = '', priceId = null;
-    let amount = null, currency = null;
+    let amount = null, currency = null, activationType = 'pre-activated';
 
     if (resource.purchase_units && resource.purchase_units[0]) {
         const purchaseUnit = resource.purchase_units[0];
         paypalDescription = purchaseUnit.description || '';
         const customIdData = safeJsonParse(purchaseUnit.custom_id);
         if (customIdData) {
-        name = customIdData.name || ''; email = customIdData.email || ''; priceId = customIdData.priceId || null;
+          name = customIdData.name || ''; 
+          email = customIdData.email || ''; 
+          priceId = customIdData.priceId || null;
+          activationType = customIdData.activationType || 'pre-activated';
         }
         if (purchaseUnit.amount) {
         amount = purchaseUnit.amount.value || null; currency = purchaseUnit.amount.currency_code || null;
@@ -177,6 +234,8 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
     const upsertPayload = {
         paypal_order_id: orderId, name, email, status: newStatus, amount, currency,
         description: standardDescription, savings, expiry_date: expiryDate ? expiryDate.toISOString() : null,
+        activation_type: activationType,
+        adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
         
         // --- UPDATED COLUMNS ---
         payment_processor: 'paypal',
@@ -208,13 +267,19 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
     console.info(JSON.stringify({ ...logBase, message: `Processing.`, paymentCaptureStatus: paymentStatus }, null, 2));
 
     let name = '', email = '', paypalDescription = '', priceId = null;
-    let amount = null, currency = null;
+    let amount = null, currency = null, activationType = 'pre-activated', adobeEmail = null;
 
     const purchaseUnit = resource.supplementary_data?.purchase_units?.[0] || resource.purchase_units?.[0];
     if (purchaseUnit) {
         paypalDescription = purchaseUnit.description || '';
         const customIdData = safeJsonParse(purchaseUnit.custom_id || resource.custom_id);
-        if (customIdData) { name = customIdData.name || ''; email = customIdData.email || ''; priceId = customIdData.priceId || null; }
+        if (customIdData) { 
+          name = customIdData.name || ''; 
+          email = customIdData.email || ''; 
+          priceId = customIdData.priceId || null; 
+          activationType = customIdData.activationType || 'pre-activated';
+          adobeEmail = customIdData.adobeEmail || null; // Extract Adobe email for self-activation
+        }
         if (purchaseUnit.amount) {
         amount = purchaseUnit.amount.value || null; currency = purchaseUnit.amount.currency_code || null;
         }
@@ -256,6 +321,7 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
               status: 'ACTIVE', description: finalDescription, savings: finalSavings,
               expiry_date: finalExpiryDate ? finalExpiryDate.toISOString() : null,
               updated_at: now.toISOString(),
+              adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
               
               // --- UPDATED COLUMNS ---
               payment_data: webhookData,
@@ -281,6 +347,8 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
         const { error: insertError } = await supabaseClient.from('orders').insert([{
             paypal_order_id: orderId, name, email, status: 'ACTIVE', amount, currency,
             description: finalDescription, savings: finalSavings, expiry_date: finalExpiryDate ? finalExpiryDate.toISOString() : null,
+            activation_type: activationType,
+            adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
             
             // --- UPDATED COLUMNS ---
             payment_data: webhookData,

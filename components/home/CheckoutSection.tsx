@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { PRICING_OPTIONS } from '@/utils/products';
+import { PRICING_OPTIONS, getPriceForActivationType, getSelfActivationFee } from '@/utils/products';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { format } from 'date-fns';
 import { motion, useInView, Variants, AnimatePresence, PanInfo } from 'framer-motion';
@@ -103,12 +103,15 @@ interface CheckoutSectionProps {
   onPayPalError?: () => void;
   renderPayPalButton?: () => void;
   clientSecret: string | null;
+  selectedActivationType?: 'pre-activated' | 'self-activation';
+  adobeEmail?: string;
   createPayPalOrderWithRetry?: (
     selectedPrice: string, 
     name: string, 
     email: string, 
     maxRetries?: number
   ) => Promise<string>;
+  onRefreshPaymentIntent?: () => void;
 }
 
 const isValidEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -117,7 +120,8 @@ export default function CheckoutSection({
   selectedPrice, isUserSignedIn, name, setName, email, setEmail, canPay,
   paymentStatus, setPaymentStatus, checkoutFormError, setCheckoutFormError,
   paypalButtonContainerRef, sdkReady, onPayPalLoad, onPayPalError,
-  renderPayPalButton, clientSecret, createPayPalOrderWithRetry,
+  renderPayPalButton, clientSecret, selectedActivationType, adobeEmail,
+  createPayPalOrderWithRetry, onRefreshPaymentIntent,
 }: CheckoutSectionProps) {
 
   // --- Refs and Hooks ---
@@ -249,7 +253,14 @@ export default function CheckoutSection({
       });
 
       if (error) {
-        setCheckoutFormError(error.message || "An unexpected error occurred.");
+        // Handle specific Stripe errors
+        if (error.code === 'payment_intent_unexpected_state' || 
+            error.message?.includes('No such payment_intent') ||
+            error.message?.includes('payment_intent')) {
+          setCheckoutFormError('Payment session expired. Please refresh the page and try again.');
+        } else {
+          setCheckoutFormError(error.message || "An unexpected error occurred.");
+        }
         setPaymentStatus('error');
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         // Payment successful, show success message by setting status
@@ -276,6 +287,16 @@ export default function CheckoutSection({
     PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[1],
     [selectedPrice]
   );
+
+  const finalPrice = useMemo(() => 
+    getPriceForActivationType(selectedPriceOption, selectedActivationType || 'pre-activated'),
+    [selectedPriceOption, selectedActivationType]
+  );
+
+  // Professional guidance for missing Adobe email
+  const isAdobeEmailRequired = selectedActivationType === 'self-activation';
+  const isAdobeEmailMissing = isAdobeEmailRequired && (!adobeEmail || !isValidEmail(adobeEmail));
+  const showAdobeEmailGuidance = isAdobeEmailMissing;
   
   const containerVariants: Variants = useMemo(() => ({ 
     hidden: { opacity: 0 }, 
@@ -404,6 +425,122 @@ export default function CheckoutSection({
                   ))}
                 </div>
 
+                {/* Enterprise-grade guidance for missing Adobe email */}
+                {showAdobeEmailGuidance && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                    animate={{ 
+                      opacity: 1, 
+                      y: 0, 
+                      scale: 1
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 25,
+                      duration: 0.6
+                    }}
+                    className="relative z-[60] mb-8 overflow-hidden"
+                  >
+                    {/* Animated background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-orange-400/20 to-red-400/30 rounded-2xl blur-xl transform scale-105"></div>
+                    
+                    {/* Main alert container */}
+                    <div className="relative bg-gradient-to-br from-gray-900/95 via-gray-800/90 to-gray-900/95 backdrop-blur-xl border border-amber-400/40 rounded-2xl p-6 shadow-2xl">
+                      {/* Subtle top border accent */}
+                      <div className="absolute top-0 left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+                      
+                      <div className="flex items-start gap-5">
+                        {/* Enhanced icon with animation */}
+                        <div className="relative flex-shrink-0">
+                          <motion.div 
+                            className="w-12 h-12 bg-gradient-to-br from-amber-500/40 to-orange-500/40 rounded-xl flex items-center justify-center ring-1 ring-amber-400/30 shadow-lg"
+                            animate={{ 
+                              scale: [1, 1.05, 1],
+                              rotate: [0, 2, -2, 0]
+                            }}
+                            transition={{ 
+                              duration: 3, 
+                              repeat: Infinity, 
+                              ease: "easeInOut" 
+                            }}
+                          >
+                            <i className="fab fa-adobe text-amber-300 text-xl"></i>
+                          </motion.div>
+                          
+                          {/* Pulse indicator */}
+                          <motion.div
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full"
+                            animate={{
+                              scale: [1, 1.3, 1],
+                              opacity: [1, 0.7, 1]
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          />
+                        </div>
+                        
+                        <div className="flex-1 space-y-4">
+                          {/* Professional header */}
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-white font-semibold text-lg">
+                                Adobe Account Required
+                              </h3>
+                              <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-xs font-medium rounded-full border border-amber-400/30">
+                                Action Needed
+                              </span>
+                            </div>
+                            <p className="text-amber-200/80 text-xs font-medium tracking-wide uppercase">
+                              Self-Activation Setup
+                            </p>
+                          </div>
+                          
+                          {/* Enhanced description */}
+                          <div className="space-y-3">
+                            <p className="text-gray-200 text-sm leading-relaxed">
+                              To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Self-Activation</span>, 
+                              please provide your Adobe Creative Cloud account email address in the pricing section above.
+                            </p>
+                            
+                            <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-400/20 rounded-lg">
+                              <i className="fas fa-info-circle text-amber-400 text-sm mt-0.5 flex-shrink-0"></i>
+                              <p className="text-amber-100/90 text-xs leading-relaxed">
+                                <span className="font-medium">Why is this needed?</span> We'll add the subscription directly to your existing Adobe account, 
+                                preserving all your settings, files, and preferences.
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Professional CTA buttons */}
+                          <div className="flex items-center gap-3 pt-2">
+                            <button
+                              onClick={() => {
+                                const pricingSection = document.querySelector('#pricing');
+                                if (pricingSection) {
+                                  pricingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                              }}
+                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl hover:shadow-amber-500/25 transition-all duration-300 group transform hover:scale-105"
+                            >
+                              <i className="fas fa-arrow-up group-hover:transform group-hover:-translate-y-0.5 transition-transform duration-200"></i>
+                              <span>Complete Setup</span>
+                            </button>
+                            
+                            <div className="flex items-center gap-1 text-gray-400 text-xs">
+                              <i className="fas fa-clock"></i>
+                              <span>Takes 30 seconds</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
                 <AnimatePresence mode="wait">
                   <motion.div key={activeTab} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.2 }}>                 
                     {activeTab === 'stripe' ? (
@@ -497,7 +634,23 @@ export default function CheckoutSection({
                     )}
                   </motion.div>
                 </AnimatePresence>
-                {checkoutFormError && <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center text-sm text-red-300 gap-2"><i className="fas fa-exclamation-circle text-red-400"></i>{checkoutFormError}</div>}
+                {checkoutFormError && (
+                  <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center text-sm text-red-300 gap-2">
+                    <i className="fas fa-exclamation-circle text-red-400"></i>
+                    <span className="flex-1">{checkoutFormError}</span>
+                    {checkoutFormError.includes('Payment session expired') && onRefreshPaymentIntent && (
+                      <button
+                        onClick={() => {
+                          setCheckoutFormError(null);
+                          onRefreshPaymentIntent();
+                        }}
+                        className="ml-2 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded text-xs font-medium transition-colors"
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -544,10 +697,28 @@ export default function CheckoutSection({
           <div className="pt-5 flex justify-between items-baseline">
             <span className="text-base font-semibold text-gray-200">Amount Due Today</span>
             <div className="flex items-baseline">
-              <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500">${selectedPriceOption.price.toFixed(2)}</span>
+              <motion.span 
+                key={`${selectedPrice}-${selectedActivationType}`}
+                className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
+                initial={{ scale: 0.9, opacity: 0.7 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                ${finalPrice.toFixed(2)}
+              </motion.span>
               <span className="ml-1 text-xs text-gray-400">USD</span>
             </div>
           </div>
+          {selectedActivationType === 'self-activation' && selectedPriceOption.selfActivationPrice && (
+            <motion.div 
+              className="mt-2 text-xs text-pink-300 text-right"
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              Includes ${getSelfActivationFee(selectedPriceOption.duration).toFixed(2)} activation fee
+            </motion.div>
+          )}
         </motion.div>
       </div>
     );
@@ -578,7 +749,9 @@ export default function CheckoutSection({
     onPayPalLoad,
     onPayPalError,
     selectedPrice,
-    createPayPalOrderWithRetry
+    createPayPalOrderWithRetry,
+    finalPrice,
+    selectedActivationType
   ]);
 
   // Desktop view components
@@ -658,6 +831,122 @@ export default function CheckoutSection({
               </button>
           ))}
         </div>
+
+        {/* Enterprise-grade guidance for missing Adobe email */}
+        {showAdobeEmailGuidance && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ 
+              opacity: 1, 
+              y: 0, 
+              scale: 1
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 25,
+              duration: 0.6
+            }}
+            className="relative z-[60] mb-8 overflow-hidden"
+          >
+            {/* Animated background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-orange-400/20 to-red-400/30 rounded-2xl blur-xl transform scale-105"></div>
+            
+            {/* Main alert container */}
+            <div className="relative bg-gradient-to-br from-gray-900/95 via-gray-800/90 to-gray-900/95 backdrop-blur-xl border border-amber-400/40 rounded-2xl p-6 shadow-2xl">
+              {/* Subtle top border accent */}
+              <div className="absolute top-0 left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
+              
+              <div className="flex items-start gap-5">
+                {/* Enhanced icon with animation */}
+                <div className="relative flex-shrink-0">
+                  <motion.div 
+                    className="w-12 h-12 bg-gradient-to-br from-amber-500/40 to-orange-500/40 rounded-xl flex items-center justify-center ring-1 ring-amber-400/30 shadow-lg"
+                    animate={{ 
+                      scale: [1, 1.05, 1],
+                      rotate: [0, 2, -2, 0]
+                    }}
+                    transition={{ 
+                      duration: 3, 
+                      repeat: Infinity, 
+                      ease: "easeInOut" 
+                    }}
+                  >
+                    <i className="fab fa-adobe text-amber-300 text-xl"></i>
+                  </motion.div>
+                  
+                  {/* Pulse indicator */}
+                  <motion.div
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full"
+                    animate={{
+                      scale: [1, 1.3, 1],
+                      opacity: [1, 0.7, 1]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  />
+                </div>
+                
+                <div className="flex-1 space-y-4">
+                  {/* Professional header */}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-white font-semibold text-lg">
+                        Adobe Account Required
+                      </h3>
+                      <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-xs font-medium rounded-full border border-amber-400/30">
+                        Action Needed
+                      </span>
+                    </div>
+                    <p className="text-amber-200/80 text-xs font-medium tracking-wide uppercase">
+                      Self-Activation Setup
+                    </p>
+                  </div>
+                  
+                  {/* Enhanced description */}
+                  <div className="space-y-3">
+                    <p className="text-gray-200 text-sm leading-relaxed">
+                      To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Self-Activation</span>, 
+                      please provide your Adobe Creative Cloud account email address in the pricing section above.
+                    </p>
+                    
+                    <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-400/20 rounded-lg">
+                      <i className="fas fa-info-circle text-amber-400 text-sm mt-0.5 flex-shrink-0"></i>
+                      <p className="text-amber-100/90 text-xs leading-relaxed">
+                        <span className="font-medium">Why is this needed?</span> We'll add the subscription directly to your existing Adobe account, 
+                        preserving all your settings, files, and preferences.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Professional CTA buttons */}
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={() => {
+                        const pricingSection = document.querySelector('#pricing');
+                        if (pricingSection) {
+                          pricingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                      }}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl hover:shadow-amber-500/25 transition-all duration-300 group transform hover:scale-105"
+                    >
+                      <i className="fas fa-arrow-up group-hover:transform group-hover:-translate-y-0.5 transition-transform duration-200"></i>
+                      <span>Complete Setup</span>
+                    </button>
+                    
+                    <div className="flex items-center gap-1 text-gray-400 text-xs">
+                      <i className="fas fa-clock"></i>
+                      <span>Takes 30 seconds</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <AnimatePresence mode="wait">
           <motion.div key={activeTab} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -751,7 +1040,23 @@ export default function CheckoutSection({
           </motion.div>
         </AnimatePresence>
       </div>
-      {checkoutFormError && <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center text-sm text-red-300 gap-2"><i className="fas fa-exclamation-circle text-red-400"></i>{checkoutFormError}</div>}
+      {checkoutFormError && (
+        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center text-sm text-red-300 gap-2">
+          <i className="fas fa-exclamation-circle text-red-400"></i>
+          <span className="flex-1">{checkoutFormError}</span>
+          {checkoutFormError.includes('Payment session expired') && onRefreshPaymentIntent && (
+            <button
+              onClick={() => {
+                setCheckoutFormError(null);
+                onRefreshPaymentIntent();
+              }}
+              className="ml-2 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded text-xs font-medium transition-colors"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      )}
     </motion.div>
   ), [
     itemVariants, 
@@ -822,15 +1127,36 @@ export default function CheckoutSection({
       <div className="pt-5 flex justify-between items-baseline">
         <span className="text-base font-semibold text-gray-200">Amount Due Today</span>
         <div className="flex items-baseline">
-          <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500">${selectedPriceOption.price.toFixed(2)}</span>
+          <motion.span 
+            key={`${selectedPrice}-${selectedActivationType}`}
+            className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
+            initial={{ scale: 0.9, opacity: 0.7 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            ${finalPrice.toFixed(2)}
+          </motion.span>
           <span className="ml-1 text-xs text-gray-400">USD</span>
         </div>
       </div>
+      {selectedActivationType === 'self-activation' && selectedPriceOption.selfActivationPrice && (
+        <motion.div 
+          className="mt-2 text-xs text-pink-300 text-right"
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          Includes ${getSelfActivationFee(selectedPriceOption.duration).toFixed(2)} activation fee
+        </motion.div>
+      )}
     </motion.div>
   ), [
     itemVariants, 
     selectedPriceOption, 
-    timeInfo
+    timeInfo,
+    finalPrice,
+    selectedActivationType,
+    selectedPrice
   ]);
 
   return (

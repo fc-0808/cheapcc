@@ -3,10 +3,14 @@
 import React from 'react';
 import { PayPalProvider } from './PayPalContext';
 
-export default function PayPalContextWrapper({ children }: { children: React.ReactNode }) {
+interface PayPalContextWrapperProps {
+  children: React.ReactNode;
+}
+
+export default function PayPalContextWrapper({ children }: PayPalContextWrapperProps) {
   return (
     <PayPalProvider>
       {children}
     </PayPalProvider>
   );
-} 
+}

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/utils/supabase/supabase-client";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { createClient, clearClientCache } from "@/utils/supabase/supabase-client";
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+// import { logout as serverLogout } from '@/app/(auth)/logout/actions';
 
 // Dynamically import MobileMenu to reduce initial load size
 const MobileMenu = dynamic(() => import('./MobileMenu'), {
@@ -30,11 +31,11 @@ export default function Header() {
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
-  const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [headerVisible, setHeaderVisible] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const prevScrollPosRef = useRef(0);
   const router = useRouter();
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
@@ -72,33 +73,34 @@ export default function Header() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Track scroll position to change mobile menu icon color and hide/show header
-  useEffect(() => {
-    const handleScroll = () => {
-      // For mobile menu icon color
-      const heroHeight = window.innerHeight * 0.8; 
-      setScrolledPastHero(window.scrollY > heroHeight);
-      
-      // For hiding/showing header on scroll
-      const currentScrollPos = window.scrollY;
-      const scrollingDown = currentScrollPos > prevScrollPos;
-      const scrollDelta = Math.abs(currentScrollPos - prevScrollPos);
-      
-      // Only apply header hiding effect on mobile screens
-      if (window.innerWidth < 768) {
-        if (scrollingDown && currentScrollPos > 60 && scrollDelta > 5) {
-          setHeaderVisible(false);
-        } else if (!scrollingDown && scrollDelta > 5) {
-          setHeaderVisible(true);
-        }
-      } else {
-        // Always show header on desktop
+  // Memoized scroll handler to prevent infinite re-renders
+  const handleScroll = useCallback(() => {
+    // For mobile menu icon color
+    const heroHeight = window.innerHeight * 0.8; 
+    setScrolledPastHero(window.scrollY > heroHeight);
+    
+    // For hiding/showing header on scroll
+    const currentScrollPos = window.scrollY;
+    const scrollingDown = currentScrollPos > prevScrollPosRef.current;
+    const scrollDelta = Math.abs(currentScrollPos - prevScrollPosRef.current);
+    
+    // Only apply header hiding effect on mobile screens
+    if (window.innerWidth < 768) {
+      if (scrollingDown && currentScrollPos > 60 && scrollDelta > 5) {
+        setHeaderVisible(false);
+      } else if (!scrollingDown && scrollDelta > 5) {
         setHeaderVisible(true);
       }
-      
-      setPrevScrollPos(currentScrollPos);
-    };
+    } else {
+      // Always show header on desktop
+      setHeaderVisible(true);
+    }
+    
+    prevScrollPosRef.current = currentScrollPos;
+  }, []);
 
+  // Track scroll position to change mobile menu icon color and hide/show header
+  useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     
     // Initial check
@@ -107,7 +109,7 @@ export default function Header() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [prevScrollPos]);
+  }, [handleScroll]);
 
   // Effect for auth state: Add pathname as a dependency to re-run when redirected to dashboard
   useEffect(() => {
@@ -280,19 +282,60 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       const supabase = createClient();
-      await supabase.auth.signOut();
       
-      // Update local state
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error signing out:', error);
+        // If client-side logout fails, try server-side logout via API
+        try {
+          const response = await fetch('/logout', { method: 'POST' });
+          if (!response.ok) {
+            throw new Error('API logout failed');
+          }
+        } catch (apiError) {
+          console.error('API logout failed:', apiError);
+          // Last resort: just redirect
+          window.location.href = '/';
+        }
+        return;
+      }
+      
+      // Update local state immediately
       setUser(null);
       setUserName('');
       setAuthChecked(true);
       setIsDropdownOpen(false);
       setIsMobileMenuOpen(false);
       
+      // Clear any local storage items that might contain auth data
+      if (typeof window !== 'undefined') {
+        // Clear all Supabase-related localStorage items
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('sb-') || key.includes('supabase')) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        // Clear sessionStorage as well
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.startsWith('sb-') || key.includes('supabase')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      }
+      
+      // Clear the Supabase client cache to ensure fresh state
+      clearClientCache();
+      
       // Force a hard navigation to refresh the auth state completely
+      // This ensures the server-side middleware picks up the cleared session
       window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
+      // If all else fails, just redirect
+      window.location.href = '/';
     }
   };
 

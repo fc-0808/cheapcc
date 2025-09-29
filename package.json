@@ -7,13 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "setup-mcp": "node setup-env.js",
+    "verify-mcp": "node verify-mcp.js"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.3.1",
+    "@modelcontextprotocol/sdk": "^1.18.2",
     "@paypal/paypal-server-sdk": "^1.0.0",
     "@stripe/react-stripe-js": "^2.9.0",
     "@stripe/stripe-js": "^4.10.0",
+    "@supabase/mcp-utils": "^0.2.2",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/typography": "^0.5.16",
@@ -29,6 +33,7 @@
     "gray-matter": "^4.0.3",
     "hammerjs": "^2.0.8",
     "lodash": "^4.17.21",
+    "mcp-supabase": "^0.1.0",
     "motion": "^12.20.1",
     "next": "^15.3.3",
     "ogl": "^1.0.11",

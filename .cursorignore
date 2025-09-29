@@ -1,0 +1,2 @@
+# Allow .env.local to be visible in Cursor (override .gitignore)
+!.env.local

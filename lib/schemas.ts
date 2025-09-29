@@ -64,6 +64,8 @@ export const CreateOrderSchema = z.object({
   priceId: z.string().refine(val => VALID_PRICE_IDS.includes(val), { message: "Invalid pricing option selected." }),
   name: z.string().min(1, { message: "Name is required for the order." }).max(100),
   email: z.string().email({ message: "A valid email is required for the order." }),
+  activationType: z.enum(['pre-activated', 'self-activation']).optional().default('pre-activated'),
+  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional(),
 });
 export type CreateOrderPayload = z.infer<typeof CreateOrderSchema>;
 
@@ -79,7 +81,9 @@ export const CreatePaymentIntentSchema = z.object({
   priceId: z.string().refine(val => VALID_PRICE_IDS.includes(val), { message: "Invalid pricing option selected." }),
   name: z.string().min(1, { message: "Name is required for the order." }).max(100),
   email: z.string().email({ message: "A valid email is required for the order." }),
-  idempotencyKey: z.string().min(1, { message: "Idempotency key is required." })
+  idempotencyKey: z.string().min(1, { message: "Idempotency key is required." }),
+  activationType: z.enum(['pre-activated', 'self-activation']).optional().default('pre-activated'),
+  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional(),
 });
 export type CreatePaymentIntentPayload = z.infer<typeof CreatePaymentIntentSchema>;
 

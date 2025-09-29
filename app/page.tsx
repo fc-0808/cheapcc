@@ -48,11 +48,22 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function Home() {
   const router = useRouter();
   const [selectedPrice, setSelectedPrice] = useState<string>('1m');
+  const [selectedActivationType, setSelectedActivationType] = useState<'pre-activated' | 'self-activation'>('pre-activated');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [sdkReady, setSdkReady] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
+  const [email, setEmail] = useState<string>(''); // Payment/billing email
+  const [adobeEmail, setAdobeEmail] = useState<string>(''); // Adobe account email for self-activation
   const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
+  
+  // Handle activation type change and clear Adobe email if switching to pre-activated
+  const handleActivationTypeChange = useCallback((type: 'pre-activated' | 'self-activation') => {
+    setSelectedActivationType(type);
+    // Clear Adobe email when switching to pre-activated (not needed for pre-activated accounts)
+    if (type === 'pre-activated' && !isUserSignedIn) {
+      setAdobeEmail('');
+    }
+  }, [isUserSignedIn]);
   const [canPay, setCanPay] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   
@@ -72,50 +83,96 @@ export default function Home() {
   const checkoutRef = useRef<HTMLDivElement>(null);
   const [checkoutVisible, setCheckoutVisible] = useState(false);
 
+  // Cache for payment intent requests to prevent duplicates
+  const paymentIntentCacheRef = useRef<Map<string, string>>(new Map());
+
+  // Function to refresh payment intent by clearing cache and triggering new creation
+  const refreshPaymentIntent = useCallback(() => {
+    // Clear all cached payment intents
+    paymentIntentCacheRef.current.clear();
+    // Clear current client secret to trigger new payment intent creation
+    setClientSecret(null);
+    setPaymentStatus('idle');
+    setCheckoutFormError(null);
+  }, []);
+
   // Update refs when values change
   useEffect(() => { nameRef.current = name; }, [name]);
   useEffect(() => { emailRef.current = email; }, [email]);
   useEffect(() => { selectedPriceRef.current = selectedPrice; }, [selectedPrice]);
 
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
-  const isFormValid = name.trim() !== '' && isValidEmail(email);
+  const isFormValid = name.trim() !== '' && isValidEmail(email) && 
+    (selectedActivationType === 'pre-activated' || (selectedActivationType === 'self-activation' && isValidEmail(adobeEmail)));
   
-  // Initialize Stripe payment intent when form is valid
+  // Initialize Stripe payment intent when form is valid with debouncing
   useEffect(() => {
     if (!isFormValid) {
       setClientSecret(null);
       return;
     }
 
-    const fetchPaymentIntent = async () => {
-      setPaymentStatus('loading');
-      try {
-        const idempotencyKey = uuidv4();
+    // Debounce the payment intent creation to prevent rate limiting
+    const timeoutId = setTimeout(() => {
+      const fetchPaymentIntent = async () => {
+        // Create a cache key based on form state
+        // Always use payment email for the order, Adobe email is passed separately
+        const emailForOrder = email;
+        const cacheKey = `${selectedPrice}-${name}-${emailForOrder}-${selectedActivationType}-${adobeEmail || ''}`;
+        
+        // Check if we already have a client secret for this exact form state
+        const cachedClientSecret = paymentIntentCacheRef.current.get(cacheKey);
+        if (cachedClientSecret) {
+          setClientSecret(cachedClientSecret);
+          setPaymentStatus('idle');
+          return;
+        }
+
+        setPaymentStatus('loading');
+        try {
+          const idempotencyKey = uuidv4();
+          
         const response = await fetch('/api/stripe/payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             priceId: selectedPrice,
             name,
-            email,
+            email: emailForOrder,
             idempotencyKey,
+            activationType: selectedActivationType,
+            adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null,
           }),
         });
         const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to initialize payment.');
+          // If it's a validation error or rate limit, show the specific error
+          if (response.status === 400 || response.status === 429) {
+            throw new Error(data.error || 'Failed to initialize payment.');
+          }
+          // For other errors, try to be more helpful
+          throw new Error(data.error || 'Payment service temporarily unavailable. Please try again.');
         }
+        
+        // Cache the client secret for this form state
+        paymentIntentCacheRef.current.set(cacheKey, data.clientSecret);
         setClientSecret(data.clientSecret);
         setPaymentStatus('idle');
-      } catch (error: any) {
-        console.error('Error creating payment intent:', error);
-        setCheckoutFormError(error.message);
-        setPaymentStatus('error');
-      }
-    };
-    
-    fetchPaymentIntent();
-  }, [selectedPrice, name, email, isFormValid]);
+        } catch (error: any) {
+          console.error('Error creating payment intent:', error);
+          // Clear the cache for this form state so we can try again
+          paymentIntentCacheRef.current.delete(cacheKey);
+          setCheckoutFormError(error.message);
+          setPaymentStatus('error');
+        }
+      };
+      
+      fetchPaymentIntent();
+    }, 500); // 500ms debounce delay
+
+    // Cleanup timeout on dependency change
+    return () => clearTimeout(timeoutId);
+  }, [selectedPrice, name, email, adobeEmail, selectedActivationType]); // Removed isFormValid from dependencies
   
   // Memoize renderPayPalButton with useCallback
   const renderPayPalButton = useCallback(() => {
@@ -137,7 +194,7 @@ export default function Home() {
   const createPayPalOrderWithRetry = useCallback(async (
     selectedPrice: string, 
     name: string, 
-    email: string, 
+    paymentEmail: string, 
     maxRetries = 3
   ) => {
     let retryCount = 0;
@@ -145,10 +202,19 @@ export default function Home() {
 
     while (retryCount <= maxRetries) {
       try {
+        // Always use payment email for the order, Adobe email is passed separately
+        const emailForOrder = paymentEmail;
+        
         const response = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ priceId: selectedPrice, name, email })
+          body: JSON.stringify({ 
+            priceId: selectedPrice, 
+            name, 
+            email: emailForOrder, 
+            activationType: selectedActivationType,
+            adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null
+          })
         });
 
         const data = await response.json();
@@ -186,7 +252,7 @@ export default function Home() {
     }
     
     throw new Error('Failed to create PayPal order after multiple attempts');
-  }, []);
+  }, [selectedActivationType, adobeEmail]);
   
   // Component initialization - use safer approach for PayPal
   useEffect(() => {
@@ -243,7 +309,8 @@ export default function Home() {
       if (user) {
         setIsUserSignedIn(true);
         const userEmail = user.email || '';
-        setEmail(userEmail);
+        setEmail(userEmail); // Set payment email
+        setAdobeEmail(userEmail); // Also set Adobe email for convenience
         let userName = user.user_metadata?.name || '';
         if (!userName) {
           const { data: profileData } = await supabase
@@ -348,6 +415,11 @@ export default function Home() {
           setSelectedPrice={setSelectedPrice}
           selectedPriceRef={selectedPriceRef}
           userEmail={email}
+          selectedActivationType={selectedActivationType}
+          onActivationTypeChange={handleActivationTypeChange}
+          email={adobeEmail}
+          setEmail={setAdobeEmail}
+          isUserSignedIn={isUserSignedIn}
         />
         
         <HowItWorksSection />
@@ -375,7 +447,10 @@ export default function Home() {
                 onPayPalError={handlePayPalError}
                 renderPayPalButton={renderPayPalButton}
                 clientSecret={clientSecret}
+                selectedActivationType={selectedActivationType}
+                adobeEmail={adobeEmail}
                 createPayPalOrderWithRetry={createPayPalOrderWithRetry}
+                onRefreshPaymentIntent={refreshPaymentIntent}
             />
           </Elements>
         </div>

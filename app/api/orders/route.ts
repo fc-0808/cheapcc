@@ -7,7 +7,7 @@ import {
   Order,
   CheckoutPaymentIntent
 } from '@paypal/paypal-server-sdk';
-import { PRICING_OPTIONS } from '@/utils/products';
+import { PRICING_OPTIONS, getPriceForActivationType } from '@/utils/products';
 import { CreateOrderSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 import { createClient } from '@/utils/supabase/supabase-server';
@@ -284,7 +284,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { priceId, name, email } = validationResult.data;
+    const { priceId, name, email, activationType, adobeEmail } = validationResult.data;
     priceIdSubmitted = priceId;
     emailSubmitted = email;
 
@@ -312,16 +312,18 @@ export async function POST(request: NextRequest) {
       source: "app/api/orders/route.ts POST"
     }, null, 2));
 
+    const finalPrice = getPriceForActivationType(selectedOption, activationType || 'pre-activated');
+    
     const paypalRequestBody = {
       intent: CheckoutPaymentIntent.Capture,
       purchaseUnits: [
         {
           amount: {
             currencyCode: 'USD',
-            value: selectedOption.price.toFixed(2),
+            value: finalPrice.toFixed(2),
           },
           description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
-          customId: JSON.stringify({ name, email, priceId }),
+          customId: JSON.stringify({ name, email, priceId, activationType, adobeEmail: adobeEmail || null }),
       },
       ],
     };
@@ -391,7 +393,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       id: orderData.id,
       status: orderData.status,
-      price: selectedOption.price,
+      price: finalPrice,
       duration: selectedOption.duration,
     });
 

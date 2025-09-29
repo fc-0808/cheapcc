@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Stripe } from 'stripe';
-import { PRICING_OPTIONS } from '@/utils/products';
+import { PRICING_OPTIONS, getPriceForActivationType } from '@/utils/products';
 import { CreatePaymentIntentSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation failed.', issues: validationResult.error.format() }, { status: 400 });
     }
 
-    const { priceId, name, email, idempotencyKey } = validationResult.data;
+    const { priceId, name, email, idempotencyKey, activationType, adobeEmail } = validationResult.data;
     const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
 
     if (!selectedOption) {
@@ -71,8 +71,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid pricing option selected.' }, { status: 400 });
     }
 
+    // Calculate final price based on activation type
+    const finalPrice = getPriceForActivationType(selectedOption, activationType || 'pre-activated');
+    
     // Convert price to cents
-    const amountInCents = Math.round(selectedOption.price * 100);
+    const amountInCents = Math.round(finalPrice * 100);
 
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
@@ -88,6 +91,8 @@ export async function POST(request: NextRequest) {
         userName: name,
         userEmail: email,
         productDescription: selectedOption.description,
+        activationType: activationType,
+        adobeEmail: adobeEmail || null
       },
       receipt_email: email, // Send receipt emails automatically
       // Set a description that appears on the customer's statement

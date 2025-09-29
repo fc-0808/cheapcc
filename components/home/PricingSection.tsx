@@ -36,11 +36,16 @@ interface PricingSectionProps {
   setSelectedPrice: (priceId: string) => void;
   selectedPriceRef: { current: string };
   userEmail?: string | null;
+  selectedActivationType?: 'pre-activated' | 'self-activation';
+  onActivationTypeChange?: (type: 'pre-activated' | 'self-activation') => void;
+  email?: string;
+  setEmail?: (email: string) => void;
+  isUserSignedIn?: boolean;
 }
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
-export default function PricingSection({ selectedPrice, setSelectedPrice, selectedPriceRef, userEmail }: PricingSectionProps) {
+export default function PricingSection({ selectedPrice, setSelectedPrice, selectedPriceRef, userEmail, selectedActivationType, onActivationTypeChange, email, setEmail, isUserSignedIn }: PricingSectionProps) {
   const pricingRef = useRef<HTMLDivElement>(null);
   const [adminError, setAdminError] = React.useState<string | null>(null);
   
@@ -120,7 +125,15 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
       <PricingSchema pricingOptions={PRICING_OPTIONS} />
       <section className="relative py-20 md:py-32 overflow-visible w-full" id="pricing" ref={pricingRef}>
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
-          <PricingHeading isAdmin={isAdmin} adminError={adminError} />
+          <PricingHeading 
+            isAdmin={isAdmin} 
+            adminError={adminError}
+            selectedActivationType={selectedActivationType}
+            onActivationTypeChange={onActivationTypeChange}
+            email={email}
+            setEmail={setEmail}
+            isUserSignedIn={isUserSignedIn}
+          />
         </div>
 
         <div className="w-full overflow-visible">
@@ -129,7 +142,8 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
               <SimplePricingCardList 
                 pricingOptions={sortedPricingOptions} 
                 selectedPrice={selectedPrice} 
-                onSelectPrice={handlePlanSelect} 
+                onSelectPrice={handlePlanSelect}
+                selectedActivationType={selectedActivationType}
               />
             ) : (
               <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 text-center py-10">
