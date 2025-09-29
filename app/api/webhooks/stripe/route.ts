@@ -4,7 +4,54 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Stripe } from 'stripe';
 import { createServiceClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
-import { logWebhookEnvironment, getWebhookEnvironment } from '../../../../utils/ngrokUtils';
+// Inline ngrok utility functions to avoid build issues
+function isNgrokEnvironment(): boolean {
+  if (typeof window !== 'undefined') {
+    return window.location.hostname.includes('ngrok');
+  }
+  
+  // Server-side check
+  return !!(process.env.NGROK_URL && process.env.NODE_ENV === 'development');
+}
+
+function getWebhookEnvironment(): {
+  isNgrok: boolean;
+  isProduction: boolean;
+  isDevelopment: boolean;
+  environment: string;
+} {
+  const isNgrok = isNgrokEnvironment();
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isProduction = !isDevelopment;
+  
+  let environment = 'unknown';
+  if (isNgrok && isDevelopment) {
+    environment = 'ngrok-development';
+  } else if (isDevelopment) {
+    environment = 'localhost-development';
+  } else if (isProduction) {
+    environment = 'production';
+  }
+  
+  return {
+    isNgrok,
+    isProduction,
+    isDevelopment,
+    environment
+  };
+}
+
+function logWebhookEnvironment(context: string = 'webhook'): void {
+  const env = getWebhookEnvironment();
+  console.log(`🌍 ${context.toUpperCase()} Environment Detection:`, {
+    environment: env.environment,
+    isNgrok: env.isNgrok,
+    isDevelopment: env.isDevelopment,
+    isProduction: env.isProduction,
+    ngrokUrl: process.env.NGROK_URL || 'not set',
+    nodeEnv: process.env.NODE_ENV
+  });
+}
 import {
   calculateSavings,
   getStandardPlanDescription,
