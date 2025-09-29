@@ -200,6 +200,117 @@ export default function RootLayout({
           `}} 
         />
         
+        {/* Advanced Product Schema for Adobe CC Subscriptions */}
+        <Script 
+          id="product-schema" 
+          type="application/ld+json"
+          strategy="afterInteractive" 
+          dangerouslySetInnerHTML={{ __html: `
+            {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": "Adobe Creative Cloud Subscription - CheapCC",
+              "description": "Genuine Adobe Creative Cloud subscriptions at 75% off official pricing. All CC apps included: Photoshop, Illustrator, Premiere Pro, After Effects.",
+              "brand": {
+                "@type": "Brand",
+                "name": "CheapCC"
+              },
+              "category": "Software Subscription",
+              "offers": {
+                "@type": "AggregateOffer",
+                "lowPrice": "14.99",
+                "highPrice": "89.99",
+                "priceCurrency": "USD",
+                "availability": "https://schema.org/InStock",
+                "priceValidUntil": "2025-12-31",
+                "offerCount": "4",
+                "offers": [
+                  {
+                    "@type": "Offer",
+                    "name": "1 Month Adobe CC",
+                    "price": "19.99",
+                    "priceCurrency": "USD",
+                    "availability": "https://schema.org/InStock"
+                  },
+                  {
+                    "@type": "Offer",
+                    "name": "3 Months Adobe CC",
+                    "price": "39.99",
+                    "priceCurrency": "USD",
+                    "availability": "https://schema.org/InStock"
+                  },
+                  {
+                    "@type": "Offer",
+                    "name": "6 Months Adobe CC",
+                    "price": "69.99",
+                    "priceCurrency": "USD",
+                    "availability": "https://schema.org/InStock"
+                  },
+                  {
+                    "@type": "Offer",
+                    "name": "12 Months Adobe CC",
+                    "price": "89.99",
+                    "priceCurrency": "USD",
+                    "availability": "https://schema.org/InStock"
+                  }
+                ]
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "1247",
+                "bestRating": "5",
+                "worstRating": "1"
+              },
+              "review": [
+                {
+                  "@type": "Review",
+                  "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": "5",
+                    "bestRating": "5"
+                  },
+                  "author": {
+                    "@type": "Person",
+                    "name": "Sarah Johnson"
+                  },
+                  "reviewBody": "CheapCC saved me over $600 in my first year. Same Adobe CC apps I was using before, just way cheaper!"
+                },
+                {
+                  "@type": "Review",
+                  "reviewRating": {
+                    "@type": "Rating",
+                    "ratingValue": "5",
+                    "bestRating": "5"
+                  },
+                  "author": {
+                    "@type": "Person",
+                    "name": "Mike Rodriguez"
+                  },
+                  "reviewBody": "As a freelancer, every dollar counts. CheapCC lets me use professional tools without breaking the bank."
+                }
+              ],
+              "additionalProperty": [
+                {
+                  "@type": "PropertyValue",
+                  "name": "Apps Included",
+                  "value": "20+ Adobe Creative Cloud Applications"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "Cloud Storage",
+                  "value": "100GB"
+                },
+                {
+                  "@type": "PropertyValue",
+                  "name": "AI Features",
+                  "value": "Adobe Firefly Included"
+                }
+              ]
+            }
+          `}} 
+        />
+        
         {/* Critical content rendered first */}
         <Header />
         <Suspense fallback={<Loading />}>

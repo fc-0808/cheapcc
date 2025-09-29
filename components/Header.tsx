@@ -419,8 +419,8 @@ export default function Header() {
         
         {/* Desktop navigation - more subtle */}
         <div className="hidden md:flex md:items-center md:space-x-8">
-          {/* Blog link for desktop */}
-          <div>
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-6">
             <Link 
               href="/blog" 
               prefetch={false}
@@ -432,6 +432,26 @@ export default function Header() {
               {isBlogPage && (
                 <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70" />
               )}
+            </Link>
+            
+            <Link 
+              href="/adobe-alternatives" 
+              prefetch={false}
+              className={`${navLinkClasses} relative group text-white/90 hover:text-white`}
+              onClick={handleNavLinkClick}
+            >
+              <span className="relative z-10">Alternatives</span>
+              <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
+            </Link>
+            
+            <Link 
+              href="/adobe-pricing-calculator" 
+              prefetch={false}
+              className={`${navLinkClasses} relative group text-white/90 hover:text-white`}
+              onClick={handleNavLinkClick}
+            >
+              <span className="relative z-10">Calculator</span>
+              <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
             </Link>
           </div>
           

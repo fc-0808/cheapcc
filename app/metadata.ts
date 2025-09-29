@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
-  description: '🚀 Save 75% on Adobe Creative Cloud! Get instant access to Photoshop, Illustrator, Premiere Pro & all CC apps. Genuine subscriptions, immediate delivery. Join 10,000+ satisfied customers!',
-  keywords: 'cheapcc, cheapcc adobe, adobe cc discount, buy adobe creative cloud, adobe photoshop cheap, adobe cc cheap',
+  title: 'CheapCC - Save 75% on Adobe Creative Cloud | Genuine CC Subscriptions',
+  description: '💰 Get genuine Adobe Creative Cloud for 75% LESS than official pricing! All CC apps included: Photoshop, Illustrator, Premiere Pro, After Effects. Instant delivery, 10,000+ satisfied customers.',
+  keywords: 'adobe cc pricing, adobe creative cloud cost, adobe subscription, cheapcc, adobe cc discount, adobe alternatives, how much is adobe creative cloud, adobe student discount, cancel adobe subscription',
   metadataBase: new URL('https://cheapcc.online'),
   authors: [
     {
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     canonical: 'https://cheapcc.online'
   },
   openGraph: {
-    title: 'CheapCC - Save 75% on Adobe Creative Cloud Subscriptions',
-    description: '🎨 Get genuine Adobe Creative Cloud for 75% less! Instant access to all CC apps. Trusted by 10,000+ creatives worldwide.',
+    title: 'Save 75% on Adobe Creative Cloud - CheapCC Alternative',
+    description: '💰 Why pay $79.99/month for Adobe CC when you can get it for $14.99? Same apps, same features, 75% less cost. Join 10,000+ creatives who switched to CheapCC.',
     url: 'https://cheapcc.online',
     siteName: 'CheapCC',
     locale: 'en_US',
@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CheapCC - Save 75% on Adobe Creative Cloud',
-    description: '💡 Genuine Adobe CC subscriptions at 75% off! Instant delivery, all apps included. Join thousands of satisfied creatives!',
+    title: 'Adobe Creative Cloud for 75% Less - CheapCC',
+    description: '💰 Adobe CC: Official $79.99/mo vs CheapCC $14.99/mo. Same Photoshop, Illustrator, Premiere Pro. Why pay more?',
     creator: '@cheapccofficial',
     images: ['https://cheapcc.online/twitter-image.jpg'],
   },
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'google-site-verification-code', // Replace with your verification code when ready
+    google: 'cheapcc-adobe-alternative-verification-2025', // Add your actual GSC verification code here
   },
   viewport: {
     width: 'device-width',
