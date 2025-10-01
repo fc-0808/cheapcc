@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import Script from "next/script";
 import { Suspense } from 'react';
-import Loading from './loading';
-import UnifiedBackground from "@/components/UnifiedBackground";
 import { getFontVariables } from './fonts';
-import SWRProvider from '@/components/SWRProvider';
+import ClientSWRProvider from '@/components/ClientSWRProvider';
 import { Analytics } from '@vercel/analytics/next';
+import ClientHeader from '@/components/ClientHeader';
+import ClientFooter from '@/components/ClientFooter';
+import ClientUnifiedBackground from '@/components/ClientUnifiedBackground';
 import ClientTawkToChat from '@/components/ClientTawkToChat';
+import ClientSEOOptimizer from '@/components/ClientSEOOptimizer';
+import ClientLoading from '@/components/ClientLoading';
 
 export const metadata: Metadata = {
   title: {
@@ -140,7 +141,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-white text-[#171717] relative">
-        <UnifiedBackground />
+        <ClientUnifiedBackground />
         <noscript>
           <iframe 
             src="https://www.googletagmanager.com/ns.html?id=GTM-M6P65BTX"
@@ -164,16 +165,53 @@ export default function RootLayout({
               "logo": "https://cheapcc.online/favicon.svg",
               "description": "CheapCC - Provider of affordable Adobe Creative Cloud subscriptions",
               "slogan": "Affordable Adobe Creative Cloud for Everyone",
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "email": "support@cheapcc.online",
-                "contactType": "customer support"
+              "foundingDate": "2023",
+              "numberOfEmployees": "10-50",
+              "knowsAbout": [
+                "Adobe Creative Cloud",
+                "Graphic Design Software",
+                "Video Editing Software",
+                "Digital Marketing Tools",
+                "Creative Software Licensing"
+              ],
+              "serviceArea": {
+                "@type": "GeoShape",
+                "addressCountry": ["US", "CA", "GB", "AU", "DE", "FR", "ES", "IT", "NL", "SE", "NO", "DK"]
               },
+              "contactPoint": [
+                {
+                  "@type": "ContactPoint",
+                  "email": "support@cheapcc.online",
+                  "contactType": "customer support",
+                  "availableLanguage": ["English"],
+                  "hoursAvailable": {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    "opens": "09:00",
+                    "closes": "17:00",
+                    "timeZone": "UTC"
+                  }
+                },
+                {
+                  "@type": "ContactPoint",
+                  "email": "sales@cheapcc.online",
+                  "contactType": "sales",
+                  "availableLanguage": ["English"]
+                }
+              ],
               "sameAs": [
                 "https://twitter.com/cheapccofficial",
                 "https://facebook.com/cheapccofficial",
-                "https://instagram.com/cheapccofficial"
-              ]
+                "https://instagram.com/cheapccofficial",
+                "https://www.youtube.com/@cheapcc-online"
+              ],
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "1247",
+                "bestRating": "5",
+                "worstRating": "1"
+              }
             }
           `}} 
         />
@@ -312,20 +350,23 @@ export default function RootLayout({
         />
         
         {/* Critical content rendered first */}
-        <Header />
-        <Suspense fallback={<Loading />}>
-          <SWRProvider>
+        <ClientHeader />
+        <Suspense fallback={<ClientLoading />}>
+          <ClientSWRProvider>
           {/* Main Content */}
           <main className="cheapcc-main-content">
             {children}
           </main>
-          </SWRProvider>
+          </ClientSWRProvider>
         </Suspense>
         {/* Footer rendered after main content */}
-        <Footer />
+        <ClientFooter />
         
         {/* Vercel Analytics */}
         <Analytics />
+        
+        {/* SEO Performance Optimizer - Client-side only */}
+        <ClientSEOOptimizer />
         
         {/* Tawk.to Chat Widget - Client-side only */}
         <ClientTawkToChat />

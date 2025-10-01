@@ -70,7 +70,7 @@ export default function PricingHeading({ isAdmin, adminError, selectedActivation
         />
       )}
 
-      {/* Email Input Field - Only for Self-Activation */}
+      {/* Email Input Field - Only for Use Your Email */}
       {email !== undefined && setEmail && selectedActivationType === 'self-activation' && (
         <motion.div 
           className="max-w-lg mx-auto mb-8 relative z-10"

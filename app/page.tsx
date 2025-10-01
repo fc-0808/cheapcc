@@ -18,6 +18,7 @@ import BenefitsSection from "@/components/home/BenefitsSection";
 import PricingSection from "@/components/home/PricingSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import LoginPopup from "@/components/home/LoginPopup";
+import SEOInternalLinks from "@/components/SEOInternalLinks";
 
 // Dynamically import heavy components
 const CheckoutSection = dynamic(() => import("@/components/home/CheckoutSection"), {
@@ -456,6 +457,27 @@ export default function Home() {
         </div>
         
         <HomeFAQSection />
+        
+        {/* Strategic Internal Links Section */}
+        <section className="py-16 md:py-20 bg-gradient-to-b from-transparent to-black/20">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Explore More <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">Adobe Solutions</span>
+              </h2>
+              <p className="text-white/80 max-w-2xl mx-auto">
+                Discover comprehensive guides, comparisons, and tools to help you make the most of Adobe Creative Cloud
+              </p>
+            </div>
+            <SEOInternalLinks 
+              currentPage="/"
+              maxLinks={6}
+              layout="grid"
+              showDescription={true}
+              className="max-w-6xl mx-auto"
+            />
+          </div>
+        </section>
       </OptimizedPaymentProviders>
     </main>
   );

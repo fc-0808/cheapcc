@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://cheapcc.online/og-image.jpg',
+        url: 'https://cheapcc.online/og-image.svg',
         width: 1200,
         height: 630,
         alt: 'CheapCC - Adobe CC Discount',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     title: 'Adobe Creative Cloud for 75% Less - CheapCC',
     description: '💰 Adobe CC: Official $79.99/mo vs CheapCC $14.99/mo. Same Photoshop, Illustrator, Premiere Pro. Why pay more?',
     creator: '@cheapccofficial',
-    images: ['https://cheapcc.online/twitter-image.jpg'],
+    images: ['https://cheapcc.online/twitter-image.svg'],
   },
   robots: {
     index: true,

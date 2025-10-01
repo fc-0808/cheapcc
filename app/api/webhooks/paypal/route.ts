@@ -419,7 +419,7 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
 
     if (finalEmailForNotification && finalNameForNotification) {
         try {
-        await sendConfirmationEmail(finalEmailForNotification, finalNameForNotification, orderId, isGuestCheckout);
+        await sendConfirmationEmail(finalEmailForNotification, finalNameForNotification, orderId, isGuestCheckout, activationType, adobeEmail);
         console.info(JSON.stringify({ ...logBase, message: `Confirmation email initiated.`, to: finalEmailForNotification, isGuest: isGuestCheckout }, null, 2));
         } catch (emailError: any) {
         console.error(JSON.stringify({ ...logBase, message: `Failed to send confirmation email.`, to: finalEmailForNotification, emailErrorName: emailError.name, emailErrorMessage: emailError.message }, null, 2));

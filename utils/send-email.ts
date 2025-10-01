@@ -1,6 +1,8 @@
 import { Resend } from 'resend';
 import { EmailTemplate } from '@/components/EmailTemplate';
+import { SelfActivationEmailTemplate } from '@/components/SelfActivationEmailTemplate';
 import { WelcomeEmailTemplate } from '@/components/WelcomeEmailTemplate';
+import { CustomerOwnedEmailAnnouncementTemplate } from '@/components/CustomerOwnedEmailAnnouncementTemplate';
 import React from 'react';
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -14,11 +16,18 @@ if (!resendApiKey) {
 }
 const resend = new Resend(resendApiKey);
 
-export async function sendConfirmationEmail(to: string, name: string, orderId: string, isGuest: boolean = false) {
+export async function sendConfirmationEmail(
+  to: string, 
+  name: string, 
+  orderId: string, 
+  isGuest: boolean = false, 
+  activationType?: string,
+  adobeEmail?: string
+) {
   if (!resendApiKey) {
     console.error(JSON.stringify({
       message: "Cannot send confirmation email: RESEND_API_KEY is not configured.",
-      to, orderId, name, isGuest,
+      to, orderId, name, isGuest, activationType, adobeEmail,
       source: "sendConfirmationEmail"
     }, null, 2));
     // Optionally, you might want to throw an error or return a specific status
@@ -27,11 +36,18 @@ export async function sendConfirmationEmail(to: string, name: string, orderId: s
   }
 
   try {
+    // Choose the appropriate template based on activation type
+    const isSelfActivation = activationType === 'self-activation';
+    const templateComponent = isSelfActivation ? SelfActivationEmailTemplate : EmailTemplate;
+    const templateProps = isSelfActivation 
+      ? { name, orderId, isGuest, adobeEmail }
+      : { name, orderId, isGuest };
+
     const emailData = {
       from: 'CheapCC Support <support@cheapcc.online>', // Ensure this email is verified with Resend
       to,
       subject: 'Your CheapCC Order Confirmation',
-      react: React.createElement(EmailTemplate, { name, orderId, isGuest }),
+      react: React.createElement(templateComponent, templateProps),
     };
 
     const result = await resend.emails.send(emailData);
@@ -39,7 +55,7 @@ export async function sendConfirmationEmail(to: string, name: string, orderId: s
     if (result.error) {
         console.error(JSON.stringify({
             message: "Resend API returned an error for confirmation email.",
-            to, orderId, name, isGuest,
+            to, orderId, name, isGuest, activationType, adobeEmail,
             resendErrorName: result.error.name,
             resendErrorMessage: result.error.message,
             // resendErrorObject: result.error, // Could be verbose
@@ -50,7 +66,7 @@ export async function sendConfirmationEmail(to: string, name: string, orderId: s
 
     console.info(JSON.stringify({
         message: "Confirmation email sent successfully via Resend.",
-        to, orderId, name, isGuest,
+        to, orderId, name, isGuest, activationType, adobeEmail,
         resendId: result.data?.id,
         source: "sendConfirmationEmail",
     }, null, 2));
@@ -59,7 +75,7 @@ export async function sendConfirmationEmail(to: string, name: string, orderId: s
   } catch (error: any) {
     console.error(JSON.stringify({
         message: "Failed to send confirmation email due to an unexpected error.",
-        to, orderId, name, isGuest,
+        to, orderId, name, isGuest, activationType, adobeEmail,
         errorMessage: error.message,
         errorStack: error.stack,
         errorName: error.name,
@@ -263,5 +279,57 @@ export async function updateUserMarketingPreference(email: string, name: string,
       source: "updateUserMarketingPreference (catch block)",
     }, null, 2));
     return { success: false, error: error.message };
+  }
+}
+
+export async function sendCustomerOwnedEmailAnnouncement(to: string, name: string) {
+  if (!resendApiKey) {
+    console.error(JSON.stringify({
+      message: "Cannot send customer announcement email: RESEND_API_KEY is not configured.",
+      to, name,
+      source: "sendCustomerOwnedEmailAnnouncement"
+    }, null, 2));
+    return { data: null, error: { name: "ConfigurationError", message: "Resend API key not configured." } };
+  }
+
+  try {
+    const emailData = {
+      from: 'CheapCC Support <support@cheapcc.online>',
+      to,
+      subject: '🎉 New Feature: Use Your Own Adobe Account with CheapCC',
+      react: React.createElement(CustomerOwnedEmailAnnouncementTemplate, { name }),
+    };
+
+    const result = await resend.emails.send(emailData);
+
+    if (result.error) {
+        console.error(JSON.stringify({
+            message: "Resend API returned an error for customer announcement email.",
+            to, name,
+            resendErrorName: result.error.name,
+            resendErrorMessage: result.error.message,
+            source: "sendCustomerOwnedEmailAnnouncement",
+        }, null, 2));
+        return result;
+    }
+
+    console.info(JSON.stringify({
+        message: "Customer announcement email sent successfully via Resend.",
+        to, name,
+        resendId: result.data?.id,
+        source: "sendCustomerOwnedEmailAnnouncement",
+    }, null, 2));
+    return result;
+
+  } catch (error: any) {
+    console.error(JSON.stringify({
+        message: "Failed to send customer announcement email due to an unexpected error.",
+        to, name,
+        errorMessage: error.message,
+        errorStack: error.stack,
+        errorName: error.name,
+        source: "sendCustomerOwnedEmailAnnouncement (catch block)",
+    }, null, 2));
+    return { data: null, error: { name: error.name || "UnhandledException", message: error.message } };
   }
 }

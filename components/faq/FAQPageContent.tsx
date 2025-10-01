@@ -26,10 +26,31 @@ const FAQS = [
     a: "Yes, absolutely. You will receive genuine Adobe Creative Cloud accounts with full access to all Creative Cloud applications and services. The subscriptions include regular updates, cloud storage, and all the features you would get from purchasing directly from Adobe, but at a much lower price.",
     category: "account",
   },
+  {
+    q: "What does 'Your Email Activation' mean and how does it work?",
+    a: "When you choose 'Your Email Activation', your existing Adobe email account will be added to an educational organization that provides access to Adobe Creative Cloud at discounted rates. This means you'll keep using your current Adobe email address, but gain access to educational pricing through our organizational partnership. Your account will be upgraded with full Creative Cloud access while maintaining your existing Adobe ID and any personal settings or files you may have.",
+    category: "account",
+  },
+  {
+    q: "Can I use these accounts on multiple devices?",
+    a: "Yes, Adobe Creative Cloud allows you to install and use the applications on up to 2 devices simultaneously with a single subscription. You can activate and deactivate devices as needed through your Adobe account settings, giving you flexibility to use your subscription across your desktop, laptop, or other devices.",
+    category: "account",
+  },
+  {
+    q: "Can I upgrade or downgrade my subscription plan?",
+    a: "Since these are discounted Adobe Creative Cloud accounts, plan changes need to be handled through our support team. Contact us at support@cheapcc.online with your current order details and desired plan change. We'll work with you to find the best solution, which may involve purchasing a new subscription at our discounted rates.",
+    category: "account",
+  },
+  {
+    q: "Can I cancel my subscription anytime?",
+    a: "Our subscriptions are sold for specific time periods (1 month, 6 months, or 1 year) and are one-time purchases rather than recurring subscriptions. There are no automatic renewals or cancellation fees. When your subscription period ends, you can choose to purchase a new subscription if you wish to continue using Adobe Creative Cloud.",
+    category: "account",
+  },
+  
   // Payment
   {
     q: "What payment methods do you accept?",
-    a: "We currently accept payments through PayPal, which allows you to pay using your PayPal balance, linked bank account, or credit/debit card. This ensures your payment information is secure and protected.",
+    a: "We currently accept payments through PayPal and credit/debit card with Stripe, which allows you to pay using your PayPal balance, linked bank account, or credit/debit card with Stripe. This ensures your payment information is secure and protected.",
     category: "payment",
   },
   {
@@ -39,9 +60,20 @@ const FAQS = [
   },
   {
     q: "What is your refund policy?",
-    a: "We offer a 7-day money-back guarantee if you are unable to access the Adobe Creative Cloud services with the credentials provided. If you encounter any issues, please contact our support team at support@cheapcc.online with your order details, and we'll assist you promptly.",
+    a: "We offer a 3-day money-back guarantee if you are unable to access the Adobe Creative Cloud services with the credentials provided. If you encounter any issues, please contact our support team at support@cheapcc.online with your order details, and we'll assist you promptly.",
     category: "payment",
   },
+  {
+    q: "Is my personal information and payment data secure?",
+    a: "Absolutely. We use industry-standard SSL encryption to protect all data transmission. Payment processing is handled through secure, PCI-compliant payment processors (PayPal and Stripe), so we never store your payment information on our servers. Your privacy and security are our top priorities.",
+    category: "payment",
+  },
+  {
+    q: "Do you offer bulk discounts for teams or businesses?",
+    a: "Yes, we offer additional discounts for bulk purchases of 5 or more subscriptions. Contact our sales team at support@cheapcc.online with your requirements, and we'll provide you with a custom quote. Bulk purchases are perfect for creative agencies, design teams, educational institutions, and businesses.",
+    category: "payment",
+  },
+  
   // Services
   {
     q: "How does cheapcc.online offer such low prices?",
@@ -54,10 +86,26 @@ const FAQS = [
     category: "services",
   },
   {
+    q: "Do I get access to all Adobe Creative Cloud apps?",
+    a: "Yes, our Adobe Creative Cloud subscriptions include access to the complete suite of Adobe applications including Photoshop, Illustrator, InDesign, Premiere Pro, After Effects, Lightroom, XD, Acrobat Pro, and many more. You also get 100GB of cloud storage and access to Adobe Fonts and Adobe Stock (with limitations based on your plan).",
+    category: "services",
+  },
+  {
     q: "Which Adobe apps are included in the subscription?",
     a: "Our subscriptions include the complete Adobe Creative Cloud suite with all apps, including Photoshop, Illustrator, InDesign, Premiere Pro, After Effects, Lightroom, Dreamweaver, and many more. You'll have access to the same apps and services as with an official Adobe Creative Cloud All Apps subscription.",
     category: "services",
   },
+  {
+    q: "Are there any restrictions on commercial use?",
+    a: "No, these are full Adobe Creative Cloud subscriptions with complete commercial usage rights. You can use all applications for personal projects, client work, commercial designs, and business purposes just as you would with a subscription purchased directly from Adobe. There are no limitations on commercial use.",
+    category: "services",
+  },
+  {
+    q: "How do updates and new features work?",
+    a: "Your Adobe Creative Cloud subscription includes automatic updates and access to new features as they're released by Adobe. The Creative Cloud desktop app will notify you of available updates, and you can install them just like with any regular Adobe subscription. You'll always have access to the latest versions of all applications.",
+    category: "services",
+  },
+  
   // Support
   {
     q: "How can I contact customer support?",
@@ -72,6 +120,16 @@ const FAQS = [
   {
     q: "How do I check the status of my order?",
     a: "You can check the status of your order by logging into your dashboard on our website. All your orders and their current status will be displayed there. If you haven't received access to your dashboard, please contact support with your order confirmation email.",
+    category: "support",
+  },
+  {
+    q: "What happens if my Adobe account stops working?",
+    a: "In the rare event that your Adobe account experiences issues, we provide full support to resolve the problem quickly. We offer replacement accounts when necessary and have a dedicated support team available to assist you. Most issues are resolved within 24 hours, and we stand behind our service with our money-back guarantee.",
+    category: "support",
+  },
+  {
+    q: "What if I need help with Adobe software itself?",
+    a: "While we provide support for account access and delivery issues, technical support for using Adobe software is provided directly by Adobe through their official support channels, tutorials, and community forums. Your subscription includes access to Adobe's extensive learning resources and help documentation.",
     category: "support",
   },
 ];

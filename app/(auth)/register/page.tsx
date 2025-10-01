@@ -50,10 +50,12 @@ export default function RegisterPage() {
 
   // Check if passwords match whenever either password changes
   useEffect(() => {
-    if (confirmPasswordTouched) {
+    if (confirmPassword.length > 0) {
       setPasswordsMatch(password === confirmPassword);
+    } else {
+      setPasswordsMatch(true); // Don't show mismatch if confirm password is empty
     }
-  }, [password, confirmPassword, confirmPasswordTouched]);
+  }, [password, confirmPassword]);
 
   // UPDATED useEffect for password strength calculation
   useEffect(() => {
@@ -98,15 +100,22 @@ export default function RegisterPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!recaptchaToken) {
+    
+    // Check if reCAPTCHA is required and available
+    if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !recaptchaToken) {
       setErrorMessage("Please complete the reCAPTCHA.");
       return;
     }
+    
     setErrorMessage('');
     setIsSubmitting(true); // --- Set loading state to true ---
 
     const formData = new FormData(event.currentTarget);
-    formData.append('g-recaptcha-response', recaptchaToken);
+    
+    // Only append reCAPTCHA token if it exists
+    if (recaptchaToken) {
+      formData.append('g-recaptcha-response', recaptchaToken);
+    }
 
     try {
       await signup(formData);
@@ -115,7 +124,9 @@ export default function RegisterPage() {
       setErrorMessage("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
-      recaptchaRef.current?.reset();
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
       setRecaptchaToken(null);
     }
   };
@@ -488,25 +499,27 @@ export default function RegisterPage() {
                   </label>
                 </motion.div>
 
-                <motion.div className="flex justify-center w-full">
-                  <div className="w-full max-w-md overflow-hidden">
-                    <ReCAPTCHA
-                      ref={recaptchaRef}
-                      sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                      onChange={handleRecaptchaChange}
-                      theme="dark"
-                      size="normal"
-                      className="transform scale-[1.03] origin-left"
-                    />
-                  </div>
-                </motion.div>
+                {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+                  <motion.div className="flex justify-center w-full">
+                    <div className="w-full max-w-md overflow-hidden">
+                      <ReCAPTCHA
+                        ref={recaptchaRef}
+                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                        onChange={handleRecaptchaChange}
+                        theme="dark"
+                        size="normal"
+                        className="transform scale-[1.03] origin-left"
+                      />
+                    </div>
+                  </motion.div>
+                )}
 
                 <motion.button
                   whileHover={{ scale: 1.03, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   className="w-full py-2.5 px-4 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 text-white font-semibold rounded-lg transition focus:ring-2 focus:ring-white/25 focus:outline-none cursor-pointer disabled:opacity-60 shadow-lg relative overflow-hidden"
-                  disabled={isSubmitting || (confirmPasswordTouched && !passwordsMatch) || !isPasswordValid || !recaptchaToken}
+                  disabled={isSubmitting || !passwordsMatch || !isPasswordValid || (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !recaptchaToken)}
                 >
                   {/* Animated shine effect */}
                   <motion.span 

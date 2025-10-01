@@ -8,6 +8,7 @@ import { useRef, useState, useEffect } from 'react';
 import type { Post } from '@/lib/blog';
 import ComparisonTable from '@/components/blog/ComparisonTable';
 import SEOImage from '@/components/SEOImage';
+import SEOInternalLinks from '@/components/SEOInternalLinks';
 
 interface ClientPostProps {
   postData: Post;
@@ -222,7 +223,7 @@ export default function ClientPost({ postData }: ClientPostProps) {
             <div className="absolute inset-0 opacity-30 transform scale-105 blur-md z-0">
               <SEOImage
                 src={postData.featuredImage}
-                alt=""
+                alt={`${postData.title} - Background blur effect`}
                 fill
                 className="object-cover"
                 responsiveSize="full"
@@ -562,6 +563,30 @@ export default function ClientPost({ postData }: ClientPostProps) {
               </svg>
               Back to all articles
             </Link>
+          </motion.div>
+          
+          {/* Related Articles & Internal Links */}
+          <motion.div 
+            className="mt-16 pt-12 border-t border-white/10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                Continue <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">Learning</span>
+              </h3>
+              <p className="text-white/80 max-w-2xl mx-auto">
+                Explore more guides, comparisons, and tools to master Adobe Creative Cloud
+              </p>
+            </div>
+            <SEOInternalLinks 
+              currentPage={`/blog/${postData.slug}`}
+              maxLinks={6}
+              layout="grid"
+              showDescription={true}
+              className="max-w-4xl mx-auto"
+            />
           </motion.div>
         </div>
       </main>

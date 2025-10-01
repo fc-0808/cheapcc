@@ -59,7 +59,7 @@ export default function ActivationTypeTooltip({ className = "" }: ActivationType
                     <i className="fas fa-user-plus text-white text-xs"></i>
                   </div>
                   <div>
-                    <div className="font-medium text-white mb-2 text-left">Self-Activation</div>
+                    <div className="font-medium text-white mb-2 text-left">Use Your Email</div>
                     <div className="text-gray-300 leading-relaxed text-left">
                       Use your existing Adobe account. We'll add the subscription to your current account, preserving your settings, cloud storage, and preferences. You'll need to provide your Adobe account email address.
                     </div>

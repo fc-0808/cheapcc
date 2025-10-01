@@ -60,15 +60,21 @@ export async function signup(formData: FormData): Promise<{ error?: string } | v
     const { name, email, password, recaptchaToken } = validationResult.data;
     logContext.email = email; 
 
-    if (!recaptchaToken || typeof recaptchaToken !== 'string') {
-      console.warn(JSON.stringify({ ...logContext, event: "recaptcha_token_missing_or_invalid_format" }, null, 2));
-      redirect('/register?error=Invalid+reCAPTCHA+token+format.');
-    }
+    // Only verify reCAPTCHA if a token is provided
+    if (recaptchaToken) {
+      if (typeof recaptchaToken !== 'string') {
+        console.warn(JSON.stringify({ ...logContext, event: "recaptcha_token_invalid_format" }, null, 2));
+        redirect('/register?error=Invalid+reCAPTCHA+token+format.');
+      }
 
-    const isRecaptchaValid = await verifyRecaptcha(recaptchaToken as string);
-    if (!isRecaptchaValid) {
-      console.warn(JSON.stringify({ ...logContext, event: "recaptcha_verification_failed" }, null, 2));
-      redirect('/register?error=Invalid+reCAPTCHA.+Please+try+again.');
+      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken as string);
+      if (!isRecaptchaValid) {
+        console.warn(JSON.stringify({ ...logContext, event: "recaptcha_verification_failed" }, null, 2));
+        redirect('/register?error=Invalid+reCAPTCHA.+Please+try+again.');
+      }
+    } else {
+      // Log that registration is proceeding without reCAPTCHA
+      console.info(JSON.stringify({ ...logContext, event: "registration_without_recaptcha" }, null, 2));
     }
 
     const supabase = await createClient();

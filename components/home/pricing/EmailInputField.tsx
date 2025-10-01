@@ -257,7 +257,7 @@ export default function EmailInputField({
                 This email will be used for your Adobe account activation and order confirmations.
               </p>
               <p className="text-gray-500">
-                For self-activation: Use the email associated with your existing Adobe account.
+                For use your email: Use the email associated with your existing Adobe account.
               </p>
             </>
           )}

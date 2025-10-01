@@ -11,7 +11,7 @@ export const SignupSchema = z.object({
     .regex(/[0-9]/, { message: "Password must contain at least one number." })
     .regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character." }), // Example: Add special character requirement
   confirmPassword: z.string().min(1, { message: "Confirm password is required." }),
-  recaptchaToken: z.string().min(1, { message: "reCAPTCHA response is required." })
+  recaptchaToken: z.string().optional()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match.",
   path: ["confirmPassword"],
@@ -58,14 +58,14 @@ export type UpdateProfileFormData = z.infer<typeof UpdateProfileSchema>;
 
 // --- PayPal Order Creation Schema (for /api/orders) ---
 // Assuming PRICING_OPTIONS is available or you have a way to validate priceId
-const VALID_PRICE_IDS = ["14d", "1m", "3m", "6m", "12m", "admin-test"]; // Include test-live and admin-test for admin testing
+const VALID_PRICE_IDS = ["1m", "3m", "6m", "12m", "admin-test"]; // Updated to match actual pricing options
 
 export const CreateOrderSchema = z.object({
   priceId: z.string().refine(val => VALID_PRICE_IDS.includes(val), { message: "Invalid pricing option selected." }),
   name: z.string().min(1, { message: "Name is required for the order." }).max(100),
   email: z.string().email({ message: "A valid email is required for the order." }),
   activationType: z.enum(['pre-activated', 'self-activation']).optional().default('pre-activated'),
-  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional(),
+  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional().or(z.literal("")).nullable(),
 });
 export type CreateOrderPayload = z.infer<typeof CreateOrderSchema>;
 
@@ -83,7 +83,7 @@ export const CreatePaymentIntentSchema = z.object({
   email: z.string().email({ message: "A valid email is required for the order." }),
   idempotencyKey: z.string().min(1, { message: "Idempotency key is required." }),
   activationType: z.enum(['pre-activated', 'self-activation']).optional().default('pre-activated'),
-  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional(),
+  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional().or(z.literal("")).nullable(),
 });
 export type CreatePaymentIntentPayload = z.infer<typeof CreatePaymentIntentSchema>;
 

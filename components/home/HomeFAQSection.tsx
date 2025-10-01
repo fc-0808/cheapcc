@@ -1,27 +1,109 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence, Variants } from 'framer-motion';
+import Script from 'next/script';
 
 const HOME_FAQS = [
+  // Basic Service Understanding
+  {
+    q: "Are these genuine Adobe Creative Cloud subscriptions?",
+    a: "Yes, absolutely. You will receive genuine Adobe Creative Cloud accounts with full access to all Creative Cloud applications and services. The subscriptions include regular updates, cloud storage, and all the features you would get from purchasing directly from Adobe, but at a much lower price.",
+  },
   {
     q: "How does cheapcc.online offer such low prices?",
     a: "As an alternative to cheapcc.net, we specialize in offering Adobe Creative Cloud subscriptions at significantly reduced prices. We achieve these savings through volume licensing agreements and strategic partnerships that allow us to pass the savings onto you. This is why we can offer up to 75% off compared to Adobe's official pricing while providing the same authentic product.",
   },
   {
-    q: "Are these genuine Adobe Creative Cloud subscriptions?",
-    a: "Yes, absolutely. You will receive genuine Adobe Creative Cloud accounts with full access to all Creative Cloud applications and services. The subscriptions include regular updates, cloud storage, and all the features you would get from purchasing directly from Adobe, but at a much lower price.",
+    q: "Do I get access to all Adobe Creative Cloud apps?",
+    a: "Yes, our Adobe Creative Cloud subscriptions include access to the complete suite of Adobe applications including Photoshop, Illustrator, InDesign, Premiere Pro, After Effects, Lightroom, XD, Acrobat Pro, and many more. You also get 100GB of cloud storage and access to Adobe Fonts and Adobe Stock (with limitations based on your plan).",
+  },
+  
+  // Activation Options
+  {
+    q: "What does 'Your Email Activation' mean and how does it work?",
+    a: "When you choose 'Your Email Activation', your existing Adobe email account will be added to an educational organization that provides access to Adobe Creative Cloud at discounted rates. This means you'll keep using your current Adobe email address, but gain access to educational pricing through our organizational partnership. Your account will be upgraded with full Creative Cloud access while maintaining your existing Adobe ID and any personal settings or files you may have.",
+  },
+  
+  // Purchase Process
+  {
+    q: "What payment methods do you accept?",
+    a: "We currently accept payments through PayPal and credit/debit card with Stripe, which allows you to pay using your PayPal balance, linked bank account, or credit/debit card with Stripe. This ensures your payment information is secure and protected.",
   },
   {
     q: "How quickly will I receive my Adobe account details?",
     a: "In most cases, you will receive your Adobe account information immediately after your payment is confirmed. The details will be sent to the email address you provided during checkout. Occasionally, during periods of high demand, delivery may take up to 24 hours, but this is rare.",
   },
   {
-    q: "What payment methods do you accept?",
-    a: "We currently accept payments through PayPal and credit/debit card with Stripe, which allows you to pay using your PayPal balance, linked bank account, or credit/debit card with Stripe. This ensures your payment information is secure and protected.",
+    q: "Is my personal information and payment data secure?",
+    a: "Absolutely. We use industry-standard SSL encryption to protect all data transmission. Payment processing is handled through secure, PCI-compliant payment processors (PayPal and Stripe), so we never store your payment information on our servers. Your privacy and security are our top priorities.",
   },
+  
+  // Usage & Features
+  {
+    q: "Can I use these accounts on multiple devices?",
+    a: "Yes, Adobe Creative Cloud allows you to install and use the applications on up to 2 devices simultaneously with a single subscription. You can activate and deactivate devices as needed through your Adobe account settings, giving you flexibility to use your subscription across your desktop, laptop, or other devices.",
+  },
+  {
+    q: "Are there any restrictions on commercial use?",
+    a: "No, these are full Adobe Creative Cloud subscriptions with complete commercial usage rights. You can use all applications for personal projects, client work, commercial designs, and business purposes just as you would with a subscription purchased directly from Adobe. There are no limitations on commercial use.",
+  },
+  {
+    q: "How do updates and new features work?",
+    a: "Your Adobe Creative Cloud subscription includes automatic updates and access to new features as they're released by Adobe. The Creative Cloud desktop app will notify you of available updates, and you can install them just like with any regular Adobe subscription. You'll always have access to the latest versions of all applications.",
+  },
+  
+  // Support & Policies
   {
     q: "What is your refund policy?",
     a: "We offer a 3-day money-back guarantee if you are unable to access the Adobe Creative Cloud services with the credentials provided. If you encounter any issues, please contact our support team at support@cheapcc.online with your order details, and we'll assist you promptly.",
+  },
+  {
+    q: "What happens if my Adobe account stops working?",
+    a: "In the rare event that your Adobe account experiences issues, we provide full support to resolve the problem quickly. We offer replacement accounts when necessary and have a dedicated support team available to assist you. Most issues are resolved within 24 hours, and we stand behind our service with our money-back guarantee.",
+  },
+  {
+    q: "What if I need help with Adobe software itself?",
+    a: "While we provide support for account access and delivery issues, technical support for using Adobe software is provided directly by Adobe through their official support channels, tutorials, and community forums. Your subscription includes access to Adobe's extensive learning resources and help documentation.",
+  },
+  
+  // Account Management
+  {
+    q: "Can I upgrade or downgrade my subscription plan?",
+    a: "Since these are discounted Adobe Creative Cloud accounts, plan changes need to be handled through our support team. Contact us at support@cheapcc.online with your current order details and desired plan change. We'll work with you to find the best solution, which may involve purchasing a new subscription at our discounted rates.",
+  },
+  {
+    q: "Can I cancel my subscription anytime?",
+    a: "Our subscriptions are sold for specific time periods (1 month, 6 months, or 1 year) and are one-time purchases rather than recurring subscriptions. There are no automatic renewals or cancellation fees. When your subscription period ends, you can choose to purchase a new subscription if you wish to continue using Adobe Creative Cloud.",
+  },
+  
+  // Business Options
+  {
+    q: "Do you offer bulk discounts for teams or businesses?",
+    a: "Yes, we offer additional discounts for bulk purchases of 5 or more subscriptions. Contact our sales team at support@cheapcc.online with your requirements, and we'll provide you with a custom quote. Bulk purchases are perfect for creative agencies, design teams, educational institutions, and businesses.",
+  },
+  
+  // Advanced Features & Compatibility
+  {
+    q: "Are all Adobe Creative Cloud features included?",
+    a: "Absolutely! You get access to all Adobe Creative Cloud features including Adobe Fonts, Adobe Stock (with plan limitations), Creative Cloud Libraries, cloud sync, collaboration tools, and all premium features. This includes advanced features like Content-Aware Fill in Photoshop, Auto Reframe in Premiere Pro, and all AI-powered tools like Adobe Firefly integration.",
+  },
+  {
+    q: "Can I use Adobe plugins and extensions?",
+    a: "Yes, your subscription includes full support for all Adobe plugins, extensions, and third-party integrations. You can install plugins from the Adobe Exchange marketplace, use popular extensions like BRAW Studio for Premiere Pro, or integrate with services like Frame.io. All marketplace content and extensions work exactly as they would with an official Adobe subscription.",
+  },
+  {
+    q: "What about Adobe Stock and Adobe Fonts access?",
+    a: "Your Creative Cloud subscription includes access to Adobe Fonts (previously Typekit) with thousands of fonts for web and desktop use. Adobe Stock access varies by plan - you'll receive the same stock credits and licensing as the equivalent official Adobe plan. All fonts and stock assets can be used commercially in your projects.",
+  },
+  
+  // Technical Support & Reliability
+  {
+    q: "How reliable are these accounts compared to official Adobe subscriptions?",
+    a: "Our accounts are genuine Adobe Creative Cloud subscriptions with the same reliability and uptime as official Adobe accounts. They're backed by Adobe's infrastructure and receive the same priority support from Adobe's servers. We maintain a 99.9% uptime rate and provide immediate replacement if any technical issues occur.",
+  },
+  {
+    q: "What happens during Adobe's major updates or new releases?",
+    a: "You'll receive all major Adobe updates and new software releases automatically, just like official subscribers. When Adobe releases new applications (like Adobe Fresco or Adobe Aero) or major version updates, they're immediately available in your Creative Cloud desktop app. There are no delays or restrictions on accessing new features.",
   },
 ];
 
@@ -75,8 +157,30 @@ export default function HomeFAQSection() {
     })
   };
 
+  // Generate FAQ Schema
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": HOME_FAQS.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
+      }
+    }))
+  };
+
   return (
-    <section className="relative py-20 pb-28 md:py-32 md:pb-40 overflow-hidden" id="faq" ref={sectionRef}>
+    <>
+      {/* FAQ Schema */}
+      <Script
+        id="faq-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      
+      <section className="relative py-20 pb-28 md:py-32 md:pb-40 overflow-hidden" id="faq" ref={sectionRef}>
       {/* Floating particles */}
       {particles.map((particle, i) => (
         <motion.div
@@ -254,5 +358,6 @@ export default function HomeFAQSection() {
         </motion.div>
       </div>
     </section>
+    </>
   );
 }

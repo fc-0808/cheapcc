@@ -495,14 +495,14 @@ export default function CheckoutSection({
                               </span>
                             </div>
                             <p className="text-amber-200/80 text-xs font-medium tracking-wide uppercase">
-                              Self-Activation Setup
+                              Use Your Email Setup
                             </p>
                           </div>
                           
                           {/* Enhanced description */}
                           <div className="space-y-3">
                             <p className="text-gray-200 text-sm leading-relaxed">
-                              To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Self-Activation</span>, 
+                              To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Use Your Email</span>, 
                               please provide your Adobe Creative Cloud account email address in the pricing section above.
                             </p>
                             
@@ -573,7 +573,13 @@ export default function CheckoutSection({
                               fetch('/api/orders', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ priceId: selectedPrice, name, email })
+                                body: JSON.stringify({ 
+                                  priceId: selectedPrice, 
+                                  name, 
+                                  email, 
+                                  activationType: selectedActivationType,
+                                  adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null
+                                })
                               })
                               .then(res => res.json())
                               .then(data => {
@@ -890,58 +896,38 @@ export default function CheckoutSection({
                   />
                 </div>
                 
-                <div className="flex-1 space-y-4">
-                  {/* Professional header */}
-                  <div className="space-y-1">
+                <div className="flex-1 space-y-3">
+                  {/* Streamlined header */}
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-white font-semibold text-lg">
+                      <h3 className="text-white font-semibold text-base">
                         Adobe Account Required
                       </h3>
                       <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-xs font-medium rounded-full border border-amber-400/30">
-                        Action Needed
+                        Setup Required
                       </span>
                     </div>
-                    <p className="text-amber-200/80 text-xs font-medium tracking-wide uppercase">
-                      Self-Activation Setup
-                    </p>
                   </div>
                   
-                  {/* Enhanced description */}
-                  <div className="space-y-3">
-                    <p className="text-gray-200 text-sm leading-relaxed">
-                      To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Self-Activation</span>, 
-                      please provide your Adobe Creative Cloud account email address in the pricing section above.
-                    </p>
-                    
-                    <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-400/20 rounded-lg">
-                      <i className="fas fa-info-circle text-amber-400 text-sm mt-0.5 flex-shrink-0"></i>
-                      <p className="text-amber-100/90 text-xs leading-relaxed">
-                        <span className="font-medium">Why is this needed?</span> We'll add the subscription directly to your existing Adobe account, 
-                        preserving all your settings, files, and preferences.
-                      </p>
-                    </div>
-                  </div>
+                  {/* Concise description */}
+                  <p className="text-gray-300 text-sm">
+                    Please enter your Adobe account email in the pricing section above to link your subscription.
+                  </p>
                   
-                  {/* Professional CTA buttons */}
-                  <div className="flex items-center gap-3 pt-2">
-                    <button
-                      onClick={() => {
-                        const pricingSection = document.querySelector('#pricing');
-                        if (pricingSection) {
-                          pricingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                      }}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold text-sm rounded-xl shadow-lg hover:shadow-xl hover:shadow-amber-500/25 transition-all duration-300 group transform hover:scale-105"
-                    >
-                      <i className="fas fa-arrow-up group-hover:transform group-hover:-translate-y-0.5 transition-transform duration-200"></i>
-                      <span>Complete Setup</span>
-                    </button>
-                    
-                    <div className="flex items-center gap-1 text-gray-400 text-xs">
-                      <i className="fas fa-clock"></i>
-                      <span>Takes 30 seconds</span>
-                    </div>
-                  </div>
+                  {/* Compact action button */}
+                  <button
+                    onClick={() => {
+                      const pricingSection = document.querySelector('#pricing');
+                      if (pricingSection) {
+                        pricingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-medium text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+                  >
+                    <i className="fas fa-arrow-up text-xs group-hover:transform group-hover:-translate-y-0.5 transition-transform duration-200"></i>
+                    <span>Complete Setup</span>
+                    <span className="text-xs opacity-75 ml-1">(30s)</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -978,7 +964,13 @@ export default function CheckoutSection({
                       fetch('/api/orders', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ priceId: selectedPrice, name, email })
+                        body: JSON.stringify({ 
+                          priceId: selectedPrice, 
+                          name, 
+                          email, 
+                          activationType: selectedActivationType,
+                          adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null
+                        })
                       })
                       .then(res => res.json())
                       .then(data => {

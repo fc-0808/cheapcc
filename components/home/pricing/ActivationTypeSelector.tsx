@@ -80,7 +80,7 @@ export default function ActivationTypeSelector({ selectedType, onTypeChange }: A
           >
             <div className="flex items-center gap-2">
               <i className="fas fa-user-plus text-xs"></i>
-              <span>Self-Activation</span>
+              <span>Use Your Email</span>
             </div>
             <div className={`text-xs mt-1 transition-opacity duration-300 ${
               selectedType === 'self-activation' ? 'opacity-100' : 'opacity-0'
