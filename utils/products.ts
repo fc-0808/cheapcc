@@ -334,6 +334,13 @@ export function getProductIdFromPriceId(priceId: string): string | null {
   return PRICE_ID_TO_PRODUCT_ID_MAP[priceId] || null;
 }
 
+export function formatCurrency(amount: number, currency: string = 'USD'): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(amount);
+}
+
 // Price ID to Product ID mapping
 export const PRICE_ID_TO_PRODUCT_ID_MAP: Record<string, string> = {
   '1m': '347bbb04-3f39-4a49-8ab6-cc2518673c65',

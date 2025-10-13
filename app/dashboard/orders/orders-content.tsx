@@ -73,12 +73,6 @@ export default function OrdersContent({ user }: OrdersContentProps) {
     return diffDays > 0 ? diffDays : 0;
   };
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-    }).format(amount);
-  };
 
   const getOrderId = (order: Order) => {
     return order.paypal_order_id || order.stripe_payment_intent_id || order.id.slice(0, 8);

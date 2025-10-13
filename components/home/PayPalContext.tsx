@@ -2,6 +2,10 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
+import { PAYPAL_CONFIG } from '@/utils/paypal-config';
+
+// Hardcoded fallback Client ID - guaranteed to work
+const FALLBACK_PAYPAL_CLIENT_ID = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
 
 type PayPalContextType = {
   isPayPalScriptLoaded: boolean;
@@ -23,6 +27,7 @@ const PayPalContext = createContext<PayPalContextType>({
 });
 
 export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
+  console.log('🚀 PayPalProvider initialized');
   const [isPayPalScriptLoaded, setIsPayPalScriptLoaded] = useState(false);
   const activeContainers = useRef<Set<string>>(new Set());
   const pendingRenders = useRef<Map<string, any>>(new Map());
@@ -81,41 +86,19 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Get PayPal Client ID from environment with multiple fallbacks
-  const envClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-  const fallbackClientId = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
+  // Get PayPal Client ID using the configuration utility with final fallback
+  let clientId = PAYPAL_CONFIG.getClientId();
   
-  // Force fallback if environment variable is missing or invalid
-  let clientId = envClientId;
-  if (!clientId || 
-      clientId.length < 50 || 
-      clientId === 'undefined' || 
-      clientId === 'null' ||
-      clientId === '' ||
-      clientId.includes('undefined') ||
-      clientId.includes('null')) {
-    console.warn('⚠️ Environment PayPal Client ID is invalid, using fallback');
-    console.warn('⚠️ Original value:', JSON.stringify(envClientId));
-    
-    // Try to get from window object (runtime injection)
-    if (typeof window !== 'undefined' && (window as any).PAYPAL_CLIENT_ID) {
-      const windowClientId = (window as any).PAYPAL_CLIENT_ID;
-      if (windowClientId && windowClientId.length > 50) {
-        console.log('✅ Using window PayPal Client ID');
-        clientId = windowClientId;
-      } else {
-        clientId = fallbackClientId;
-      }
-    } else {
-      clientId = fallbackClientId;
-    }
+  // Final safety check - if somehow we still don't have a valid client ID, use hardcoded
+  if (!clientId || clientId.length < 50) {
+    console.error('❌ All PayPal Client ID methods failed, using hardcoded fallback');
+    clientId = FALLBACK_PAYPAL_CLIENT_ID;
   }
   
   // Debug logging for production
   console.log('PayPal Client ID Debug:', {
-    envClientId,
-    envClientIdLength: envClientId?.length || 0,
-    usingFallback: !envClientId || envClientId.length <= 50,
+    envClientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+    envClientIdLength: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.length || 0,
     finalClientId: clientId,
     finalClientIdLength: clientId?.length || 0,
     environment: process.env.NODE_ENV,
@@ -130,7 +113,7 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     return null;
   }
 
-  const paypalScriptUrl = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
+  const paypalScriptUrl = PAYPAL_CONFIG.getScriptUrl();
   
   // Additional validation for the URL
   if (!paypalScriptUrl.includes(clientId) || paypalScriptUrl.includes('undefined') || paypalScriptUrl.includes('null')) {

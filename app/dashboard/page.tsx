@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       expiryDate,
       daysLeft,
       planDuration: getPlanDuration(order),
-      formattedAmount: formatCurrency(parseFloat(order.amount) || 0)
+      formattedAmount: formatCurrency(parseFloat(order.amount) || 0, order.currency || 'USD')
     };
   });
 
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
       ...order,
       isActive: isActiveSubscription(order),
       planDuration: getPlanDuration(order),
-      formattedAmount: formatCurrency(parseFloat(order.amount) || 0),
+      formattedAmount: formatCurrency(parseFloat(order.amount) || 0, order.currency || 'USD'),
       formattedDate: order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'
     };
   });
@@ -68,8 +68,8 @@ export default async function DashboardPage() {
   const stats = [
     { title: 'Active Subscriptions', value: activeOrders.length, icon: 'fa-check-circle', color: '#10b981' },
     { title: 'Total Orders', value: totalOrders, icon: 'fa-shopping-cart', color: '#3b82f6' },
-    { title: 'Total Spent', value: formatCurrency(totalSpent), icon: 'fa-credit-card', color: '#7e22ce' },
-    { title: 'Total Saved', value: formatCurrency(totalSavings), icon: 'fa-piggy-bank', color: '#ff3366' },
+    { title: 'Total Spent', value: formatCurrency(totalSpent, 'USD'), icon: 'fa-credit-card', color: '#7e22ce' },
+    { title: 'Total Saved', value: formatCurrency(totalSavings, 'USD'), icon: 'fa-piggy-bank', color: '#ff3366' },
   ];
 
   return <ClientDashboard 
