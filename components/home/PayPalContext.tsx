@@ -86,6 +86,12 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Check if environment is valid for PayPal
+  if (!PAYPAL_CONFIG.isEnvironmentValid()) {
+    console.error('❌ PayPal environment is not valid, cannot initialize');
+    return null;
+  }
+
   // Get PayPal Client ID using the configuration utility with final fallback
   let clientId = PAYPAL_CONFIG.getClientId();
   
@@ -126,6 +132,36 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     console.error('❌ Check: Client ID, Network, CSP settings');
     console.error('❌ Script URL:', paypalScriptUrl);
     console.error('❌ Client ID used:', clientId);
+    console.error('❌ Environment:', process.env.NODE_ENV);
+    console.error('❌ User Agent:', typeof window !== 'undefined' ? window.navigator.userAgent : 'N/A');
+    
+    // Try to provide helpful debugging information
+    if (typeof window !== 'undefined') {
+      console.error('❌ Available scripts:', Array.from(document.scripts).map(s => s.src));
+      console.error('❌ CSP violations:', 'Check browser console for Content Security Policy errors');
+      
+      // Check if PayPal script is blocked by CSP
+      const cspViolations = performance.getEntriesByType('navigation').filter(entry => 
+        entry.name.includes('paypal') || entry.name.includes('csp')
+      );
+      if (cspViolations.length > 0) {
+        console.error('❌ CSP violations detected:', cspViolations);
+      }
+      
+      // Try to load PayPal script manually as fallback
+      console.log('🔄 Attempting manual PayPal script load as fallback...');
+      const script = document.createElement('script');
+      script.src = paypalScriptUrl;
+      script.async = true;
+      script.onload = () => {
+        console.log('✅ Manual PayPal script load successful');
+        setIsPayPalScriptLoaded(true);
+      };
+      script.onerror = (e) => {
+        console.error('❌ Manual PayPal script load also failed:', e);
+      };
+      document.head.appendChild(script);
+    }
   };
 
   // Completely redesigned cleanup function - no DOM manipulation
@@ -360,11 +396,17 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     <PayPalContext.Provider value={{ isPayPalScriptLoaded, renderPayPalButton, cleanupPayPalButton }}>
       <Script 
         src={paypalScriptUrl}
-        strategy="afterInteractive"
+        strategy="beforeInteractive"
         onLoad={handlePayPalLoad}
         onError={handlePayPalError}
         onReady={() => {
           console.log('🚀 PayPal script onReady fired');
+        }}
+        // Add additional attributes for better compatibility
+        crossOrigin="anonymous"
+        // Add a timeout to detect if script fails to load
+        onLoadStart={() => {
+          console.log('🔄 PayPal script loading started');
         }}
       />
       {children}

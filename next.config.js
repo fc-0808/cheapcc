@@ -41,11 +41,10 @@ const nextConfig = {
 						key: 'Permissions-Policy',
 						value: 'accelerometer=*, camera=*, geolocation=*, gyroscope=*, magnetometer=*, microphone=*, payment=*, usb=*',
 					},
-					// Content Security Policy for Tawk.to, Stripe, PayPal, Supabase, and Vercel Analytics
+					// Content Security Policy - More permissive for PayPal compatibility
 					{
 						key: 'Content-Security-Policy',
-						value:
-							"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to https://www.googletagmanager.com https://cdnjs.cloudflare.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com https://va.vercel-scripts.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://embed.tawk.to https://*.tawk.to https://use.fontawesome.com https://www.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com https://use.fontawesome.com https://*.fontawesome.com https://www.paypal.com https://*.paypal.com https://www.paypalobjects.com https://*.paypalobjects.com https://t.paypal.com https://c.paypal.com https://www.sandbox.paypal.com https://embed.tawk.to https://*.tawk.to; img-src 'self' data: https: blob:; connect-src 'self' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to wss://*.tawk.to https://api.paypal.com https://www.sandbox.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com https://api.stripe.com https://vitals.vercel-insights.com https://*.supabase.co https://izidrmzvwdrzrlaexubt.supabase.co https://www.google.com; frame-src 'self' https://embed.tawk.to https://tawk.to https://*.tawk.to https://www.paypal.com https://www.sandbox.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com https://js.stripe.com https://www.google.com; media-src 'self' https://embed.tawk.to https://*.tawk.to; object-src 'none'; base-uri 'self';",
+						value: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: data: blob:; style-src 'self' 'unsafe-inline' https: http: data:; font-src 'self' data: https: http:; img-src 'self' data: https: http: blob:; connect-src 'self' https: http: wss: ws:; frame-src 'self' https: http:; media-src 'self' https: http: data: blob:; object-src 'none'; base-uri 'self';",
 					},
 					// Optimize mobile caching with stale-while-revalidate
 					{
@@ -85,7 +84,7 @@ const nextConfig = {
 		formats: ['image/avif', 'image/webp'],
 		minimumCacheTTL: 31536000, // 1 year cache for better Core Web Vitals
 		dangerouslyAllowSVG: true,
-		contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+		contentSecurityPolicy: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: data: blob:; style-src 'self' 'unsafe-inline' https: http: data:; font-src 'self' data: https: http:; img-src 'self' data: https: http: blob:; connect-src 'self' https: http: wss: ws:; frame-src 'self' https: http:; media-src 'self' https: http: data: blob:; object-src 'none'; base-uri 'self';",
 		remotePatterns: [
 			{
 				protocol: 'https',
