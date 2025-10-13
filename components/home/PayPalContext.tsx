@@ -41,9 +41,21 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     // Cleanup on unmount
     return () => {
       console.log('🧹 PayPal Provider cleanup');
+      
+      // Clean up all active buttons first
+      activeContainers.current.forEach(containerId => {
+        try {
+          cleanupPayPalButton(containerId);
+        } catch (error) {
+          console.debug(`Cleanup error for ${containerId}:`, error);
+        }
+      });
+      
+      // Clear all tracking
       activeContainers.current.clear();
       buttonInstances.current.clear();
       pendingRenders.current.clear();
+      
       // Clear any pending render timeouts
       renderTimeouts.current.forEach(timeout => clearTimeout(timeout));
       renderTimeouts.current.clear();
@@ -69,31 +81,68 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Get PayPal Client ID from environment with fallback
-  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 
-                   'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
+  // Get PayPal Client ID from environment with multiple fallbacks
+  const envClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  const fallbackClientId = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
+  
+  // Force fallback if environment variable is missing or invalid
+  let clientId = envClientId;
+  if (!clientId || 
+      clientId.length < 50 || 
+      clientId === 'undefined' || 
+      clientId === 'null' ||
+      clientId === '' ||
+      clientId.includes('undefined') ||
+      clientId.includes('null')) {
+    console.warn('⚠️ Environment PayPal Client ID is invalid, using fallback');
+    console.warn('⚠️ Original value:', JSON.stringify(envClientId));
+    
+    // Try to get from window object (runtime injection)
+    if (typeof window !== 'undefined' && (window as any).PAYPAL_CLIENT_ID) {
+      const windowClientId = (window as any).PAYPAL_CLIENT_ID;
+      if (windowClientId && windowClientId.length > 50) {
+        console.log('✅ Using window PayPal Client ID');
+        clientId = windowClientId;
+      } else {
+        clientId = fallbackClientId;
+      }
+    } else {
+      clientId = fallbackClientId;
+    }
+  }
   
   // Debug logging for production
   console.log('PayPal Client ID Debug:', {
-    clientId,
-    clientIdLength: clientId?.length || 0,
+    envClientId,
+    envClientIdLength: envClientId?.length || 0,
+    usingFallback: !envClientId || envClientId.length <= 50,
+    finalClientId: clientId,
+    finalClientIdLength: clientId?.length || 0,
     environment: process.env.NODE_ENV,
     allEnvVars: Object.keys(process.env).filter(key => key.includes('PAYPAL'))
   });
   
-  const paypalScriptUrl = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
-  
-  // Validate PayPal Client ID
+  // Validate PayPal Client ID before creating URL
   if (!clientId || clientId.length < 50) {
-    console.error('❌ PayPal Client ID is invalid or missing!');
+    console.error('❌ PayPal Client ID is invalid or missing even with fallback!');
     console.error('❌ Expected length: ~80 chars, Got:', clientId?.length || 0);
     console.error('❌ Environment variables available:', Object.keys(process.env).filter(key => key.includes('PAYPAL')));
+    return null;
+  }
+
+  const paypalScriptUrl = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
+  
+  // Additional validation for the URL
+  if (!paypalScriptUrl.includes(clientId) || paypalScriptUrl.includes('undefined') || paypalScriptUrl.includes('null')) {
+    console.error('❌ PayPal script URL is invalid:', paypalScriptUrl);
     return null;
   }
 
   const handlePayPalError = (error: Error) => {
     console.error('❌ PayPal SDK failed to load:', error);
     console.error('❌ Check: Client ID, Network, CSP settings');
+    console.error('❌ Script URL:', paypalScriptUrl);
+    console.error('❌ Client ID used:', clientId);
   };
 
   // Completely redesigned cleanup function - no DOM manipulation
@@ -111,22 +160,35 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     activeContainers.current.delete(containerId);
     pendingRenders.current.delete(containerId);
     
-    // Clean up button instance first
+    // Clean up button instance first - be very defensive
     const buttonInstance = buttonInstances.current.get(containerId);
     if (buttonInstance) {
       try {
-        // Try to properly close the button instance
-        if (typeof buttonInstance.close === 'function') {
-          buttonInstance.close();
-        }
-        // Some PayPal instances might have different cleanup methods
-        if (typeof buttonInstance.destroy === 'function') {
-          buttonInstance.destroy();
+        // Only call cleanup methods if they exist and are functions
+        if (buttonInstance && typeof buttonInstance === 'object') {
+          // Try to properly close the button instance
+          if (typeof buttonInstance.close === 'function') {
+            try {
+              buttonInstance.close();
+            } catch (closeError) {
+              console.debug(`Button close error for ${containerId}:`, closeError);
+            }
+          }
+          // Some PayPal instances might have different cleanup methods
+          if (typeof buttonInstance.destroy === 'function') {
+            try {
+              buttonInstance.destroy();
+            } catch (destroyError) {
+              console.debug(`Button destroy error for ${containerId}:`, destroyError);
+            }
+          }
         }
       } catch (error) {
         console.debug(`Button cleanup handled for ${containerId}:`, error);
+      } finally {
+        // Always remove from tracking, even if cleanup failed
+        buttonInstances.current.delete(containerId);
       }
-      buttonInstances.current.delete(containerId);
     }
     
     // DO NOT remove DOM elements - let PayPal manage its own DOM
@@ -148,6 +210,12 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     // Basic safety checks first
     if (!paypalButtonRef.current || !document.body.contains(paypalButtonRef.current)) {
       console.log(`❌ Container ${containerId} not ready`);
+      return;
+    }
+
+    // Check if the component is still mounted
+    if (!activeContainers.current.has(containerId) && !pendingRenders.current.has(containerId)) {
+      console.log(`❌ Container ${containerId} is no longer active, skipping render`);
       return;
     }
 

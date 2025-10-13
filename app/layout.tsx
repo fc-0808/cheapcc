@@ -49,6 +49,16 @@ export default function RootLayout({
         {/* Safari Pinned Tab Icon */}
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#2c2d5a" />
         
+        {/* PayPal Client ID Runtime Injection */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.PAYPAL_CLIENT_ID = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
+              console.log('🔧 PayPal Client ID injected at runtime:', window.PAYPAL_CLIENT_ID);
+            `,
+          }}
+        />
+        
         {/* Microsoft Tile Color */}
         <meta name="msapplication-TileColor" content="#2c2d5a" />
         <meta name="msapplication-config" content="/browserconfig.xml" />

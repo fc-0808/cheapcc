@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { PayPalProvider } from './PayPalContext';
+import { PayPalErrorBoundary } from '../PayPalErrorBoundary';
 
 interface PayPalContextWrapperProps {
   children: React.ReactNode;
@@ -9,8 +10,10 @@ interface PayPalContextWrapperProps {
 
 export default function PayPalContextWrapper({ children }: PayPalContextWrapperProps) {
   return (
-    <PayPalProvider>
-      {children}
-    </PayPalProvider>
+    <PayPalErrorBoundary>
+      <PayPalProvider>
+        {children}
+      </PayPalProvider>
+    </PayPalErrorBoundary>
   );
 }

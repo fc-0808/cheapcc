@@ -9,6 +9,10 @@ export default function DebugEnvPage() {
     PAYPAL_CLIENT_ID_LENGTH: process.env.PAYPAL_CLIENT_ID?.length || 0,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    // Test if the fallback is working
+    PAYPAL_CLIENT_ID_VALID: (process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.length || 0) > 50,
+    FALLBACK_CLIENT_ID: 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe',
+    FALLBACK_LENGTH: 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe'.length,
   };
 
   const allPaypalVars = Object.keys(process.env).filter(key => key.includes('PAYPAL'));
