@@ -32,12 +32,15 @@ export default function PayPalPaymentForm({
   onError
 }: PayPalPaymentFormProps) {
   const { isPayPalScriptLoaded, renderPayPalButton, cleanupPayPalButton } = usePayPal();
+  
   const mountedRef = useRef(true);
   const renderedRef = useRef(false);
   const uniqueContainerId = `paypal-button-${containerId}`;
 
   const effectiveOnLoad = onLoad || onPayPalLoad;
   const effectiveOnError = onError || onPayPalError;
+
+  console.log(`🎯 PayPal Form: ${uniqueContainerId}, SDK loaded: ${isPayPalScriptLoaded}`);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -49,48 +52,64 @@ export default function PayPalPaymentForm({
   }, []);
 
   useEffect(() => {
-    if (!isPayPalScriptLoaded || !mountedRef.current || !paypalButtonContainerRef.current) {
+    // Check if we have all required props
+    if (!mountedRef.current || !paypalButtonContainerRef.current || !createOrder || !onApprove) {
+      return;
+    }
+
+    // Check if PayPal script is loaded
+    if (!isPayPalScriptLoaded) {
       return;
     }
 
     const container = document.getElementById(uniqueContainerId);
     if (!container) {
-      console.error(`PayPal button container with ID ${uniqueContainerId} not found`);
       return;
     }
 
-    try {
+    // Cleanup previous render if exists
+    if (renderedRef.current) {
+      cleanupPayPalButton(uniqueContainerId);
+    }
+    
+    console.log(`🔄 Rendering PayPal button: ${uniqueContainerId}`);
+    
+    // Render the button with a small delay for DOM stability
+    const renderTimeout = setTimeout(() => {
+      if (!mountedRef.current) return;
+      
+      try {
+        renderPayPalButton(
+          uniqueContainerId,
+          paypalButtonContainerRef,
+          createOrder,
+          onApprove,
+          onCancel,
+          (err) => {
+            console.error('PayPal button error:', err);
+            if (effectiveOnError && mountedRef.current) effectiveOnError();
+          }
+        );
+        
+        renderedRef.current = true;
+        
+        if (effectiveOnLoad && mountedRef.current) {
+          effectiveOnLoad();
+        }
+      } catch (error) {
+        console.error(`PayPal render error:`, error);
+        if (effectiveOnError && mountedRef.current) effectiveOnError();
+      }
+    }, 100);
+    
+    // Cleanup function
+    return () => {
+      clearTimeout(renderTimeout);
       if (renderedRef.current) {
         cleanupPayPalButton(uniqueContainerId);
+        renderedRef.current = false;
       }
-    } catch (err) {
-      console.error(`Error cleaning up previous PayPal button for ${uniqueContainerId}:`, err);
-    }
-    
-    console.log(`PayPal script loaded, rendering button in container ${uniqueContainerId}`);
-    
-    try {
-      renderPayPalButton(
-        uniqueContainerId,
-        paypalButtonContainerRef,
-        createOrder,
-        onApprove,
-        onCancel,
-        (err) => {
-          console.error('PayPal button error:', err);
-          if (effectiveOnError && mountedRef.current) effectiveOnError();
-        }
-      );
-      
-      renderedRef.current = true;
-      
-      if (effectiveOnLoad && mountedRef.current) {
-        effectiveOnLoad();
-      }
-    } catch (error) {
-      console.error(`Error rendering PayPal button for ${uniqueContainerId}:`, error);
-      if (effectiveOnError && mountedRef.current) effectiveOnError();
-    }
+    };
   }, [
     isPayPalScriptLoaded,
     uniqueContainerId,
@@ -108,10 +127,11 @@ export default function PayPalPaymentForm({
     <div className="space-y-4">
       <div 
         ref={paypalButtonContainerRef} 
-        className={`w-full flex items-center justify-center min-h-14 rounded-md ${paymentStatus === 'loading' ? 'opacity-60 pointer-events-none' : ''}`}
+        className={`w-full min-h-14 rounded-md ${paymentStatus === 'loading' ? 'opacity-60 pointer-events-none' : ''}`}
         id={uniqueContainerId}
         data-paypal-container={containerId}
         data-email={email}
+        style={{ minHeight: '50px' }}
       >
         {!isPayPalScriptLoaded && (
           <div className="p-4 text-center">

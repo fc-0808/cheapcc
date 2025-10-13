@@ -1,8 +1,10 @@
 import { Resend } from 'resend';
 import { EmailTemplate } from '@/components/EmailTemplate';
 import { SelfActivationEmailTemplate } from '@/components/SelfActivationEmailTemplate';
+import { RedemptionCodeEmailTemplate } from '@/components/RedemptionCodeEmailTemplate';
 import { WelcomeEmailTemplate } from '@/components/WelcomeEmailTemplate';
 import { CustomerOwnedEmailAnnouncementTemplate } from '@/components/CustomerOwnedEmailAnnouncementTemplate';
+import { getPricingOptions, isRedemptionCode } from '@/utils/products-supabase';
 import React from 'react';
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -22,7 +24,8 @@ export async function sendConfirmationEmail(
   orderId: string, 
   isGuest: boolean = false, 
   activationType?: string,
-  adobeEmail?: string
+  adobeEmail?: string,
+  priceId?: string
 ) {
   if (!resendApiKey) {
     console.error(JSON.stringify({
@@ -36,17 +39,38 @@ export async function sendConfirmationEmail(
   }
 
   try {
-    // Choose the appropriate template based on activation type
-    const isSelfActivation = activationType === 'self-activation';
-    const templateComponent = isSelfActivation ? SelfActivationEmailTemplate : EmailTemplate;
-    const templateProps = isSelfActivation 
-      ? { name, orderId, isGuest, adobeEmail }
-      : { name, orderId, isGuest };
+    // Determine the product type and choose appropriate template
+    let templateComponent = EmailTemplate;
+    let templateProps: any = { name, orderId, isGuest };
+    let emailSubject = 'Your CheapCC Order Confirmation';
+
+    // Get pricing options dynamically
+    const pricingOptions = await getPricingOptions();
+    const selectedPriceOption = priceId ? pricingOptions.find(p => p.id === priceId) : null;
+    const isRedemptionCodeProduct = selectedPriceOption ? isRedemptionCode(selectedPriceOption) : false;
+
+    if (isRedemptionCodeProduct) {
+      // Use redemption code template
+      templateComponent = RedemptionCodeEmailTemplate;
+      templateProps = { 
+        name, 
+        orderId, 
+        isGuest,
+        productName: selectedPriceOption?.description?.includes('Acrobat') ? 'Adobe Acrobat Pro' : 'Adobe Creative Cloud',
+        duration: selectedPriceOption?.duration || '6 months'
+      };
+      emailSubject = 'Your CheapCC Redemption Code Order Confirmation';
+    } else if (activationType === 'self-activation') {
+      // Use self-activation template for regular products with self-activation
+      templateComponent = SelfActivationEmailTemplate;
+      templateProps = { name, orderId, isGuest, adobeEmail };
+    }
+    // Default case uses EmailTemplate with basic props (already set above)
 
     const emailData = {
       from: 'CheapCC Support <support@cheapcc.online>', // Ensure this email is verified with Resend
       to,
-      subject: 'Your CheapCC Order Confirmation',
+      subject: emailSubject,
       react: React.createElement(templateComponent, templateProps),
     };
 

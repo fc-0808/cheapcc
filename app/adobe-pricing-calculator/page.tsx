@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Script from 'next/script';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 // Schema markup for the calculator
 const calculatorSchema = {
@@ -27,6 +28,7 @@ export default function AdobePricingCalculatorPage() {
   const [cheapccPrice, setCheapccPrice] = useState(14.99);
   const [savings, setSavings] = useState(0);
   const [percentSaved, setPercentSaved] = useState(0);
+  const { formatLocalPrice, countryConfig } = useInternationalization();
 
   useEffect(() => {
     const totalAdobe = adobePrice * months;
@@ -103,20 +105,20 @@ export default function AdobePricingCalculatorPage() {
                 <div className="bg-red-900/30 border border-red-500 rounded-xl p-6 text-center">
                   <h3 className="text-xl font-bold text-red-400 mb-4">Adobe Official</h3>
                   <div className="text-3xl font-bold text-white mb-2">${adobePrice}/month</div>
-                  <div className="text-lg text-gray-300 mb-4">${(adobePrice * months).toFixed(2)} total</div>
+                  <div className="text-lg text-gray-300 mb-4">{formatLocalPrice(adobePrice * months)} total</div>
                   <div className="text-sm text-red-300">For {months} {months === 1 ? 'month' : 'months'}</div>
                 </div>
 
                 <div className="bg-green-900/30 border border-green-500 rounded-xl p-6 text-center">
                   <h3 className="text-xl font-bold text-green-400 mb-4">CheapCC</h3>
                   <div className="text-3xl font-bold text-white mb-2">${cheapccPrice}/month</div>
-                  <div className="text-lg text-gray-300 mb-4">${(cheapccPrice * months).toFixed(2)} total</div>
+                  <div className="text-lg text-gray-300 mb-4">{formatLocalPrice(cheapccPrice * months)} total</div>
                   <div className="text-sm text-green-300">Same CC apps</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border border-blue-500 rounded-xl p-6 text-center">
                   <h3 className="text-xl font-bold text-blue-400 mb-4">Your Savings</h3>
-                  <div className="text-3xl font-bold text-white mb-2">${savings.toFixed(2)}</div>
+                  <div className="text-3xl font-bold text-white mb-2">{formatLocalPrice(savings)}</div>
                   <div className="text-lg text-gray-300 mb-4">{percentSaved.toFixed(0)}% saved</div>
                   <div className="text-sm text-blue-300">Total savings</div>
                 </div>
@@ -125,7 +127,7 @@ export default function AdobePricingCalculatorPage() {
               {/* Savings Visualization */}
               <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-center">
                 <h3 className="text-2xl font-bold text-white mb-4">
-                  💰 You Save ${savings.toFixed(2)} Over {months} {months === 1 ? 'Month' : 'Months'}!
+                  💰 You Save {formatLocalPrice(savings)} Over {months} {months === 1 ? 'Month' : 'Months'}!
                 </h3>
                 <p className="text-xl text-green-100">
                   That's enough to buy: {savings > 500 ? 'A new laptop!' : savings > 200 ? 'A professional camera!' : savings > 100 ? 'Premium software licenses!' : 'A nice dinner out!'}
@@ -218,11 +220,11 @@ export default function AdobePricingCalculatorPage() {
 
             {/* CTA Section */}
             <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12">
-              <h3 className="text-3xl font-bold text-white mb-4">Ready to Save ${savings.toFixed(2)}?</h3>
+              <h3 className="text-3xl font-bold text-white mb-4">Ready to Save {formatLocalPrice(savings)}?</h3>
               <p className="text-xl text-blue-100 mb-8">Get the same Adobe Creative Cloud for {percentSaved.toFixed(0)}% less</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/#pricing" className="bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
-                  Get CheapCC Now - Save ${savings.toFixed(2)}
+                  Get CheapCC Now - Save {formatLocalPrice(savings)}
                 </Link>
                 <Link href="/adobe-alternatives" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-purple-600 transition-colors">
                   Compare All Options

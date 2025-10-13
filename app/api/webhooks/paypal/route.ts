@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
 import { createServiceClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
+import { calculateExpiryDate, getStandardPlanDescription, calculateSavings, getProductIdFromPriceId, getProductType, getPricingOptionById, getActivationTypeForProduct, getStatusForProduct, OrderLike } from '@/utils/products-supabase';
 // Inline ngrok utility functions to avoid build issues
 function isNgrokEnvironment(): boolean {
   if (typeof window !== 'undefined') {
@@ -52,12 +53,6 @@ function logWebhookEnvironment(context: string = 'webhook'): void {
     nodeEnv: process.env.NODE_ENV
   });
 }
-import {
-  calculateSavings,
-  getStandardPlanDescription,
-  calculateExpiryDate,
-  OrderLike
-} from '@/utils/products';
 
 // Helper to safely parse JSON, especially custom_id
 function safeJsonParse(jsonString: string | null | undefined, defaultValue: any = null) {
@@ -243,11 +238,8 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
         paypalDescription = purchaseUnit.description || '';
         const customIdData = safeJsonParse(purchaseUnit.custom_id);
         if (customIdData) {
-          name = customIdData.name || ''; 
-          email = customIdData.email || ''; 
           priceId = customIdData.priceId || null;
           activationType = customIdData.activationType || 'pre-activated';
-          adobeEmail = customIdData.adobeEmail || null;
         }
         if (purchaseUnit.amount) {
         amount = purchaseUnit.amount.value || null; currency = purchaseUnit.amount.currency_code || null;
@@ -256,11 +248,48 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
         console.warn(JSON.stringify({ ...logBase, message: "Purchase units missing or malformed.", resourcePreview: JSON.stringify(resource).substring(0,200) }, null, 2));
     }
 
+    // Try to get order data from database first (for form data)
+    let orderDataFromDb = null;
+    if (priceId) {
+        const { data: existingOrderData } = await supabaseClient
+            .from('orders')
+            .select('name, email, adobe_email, activation_type, product_type, product_id, amount, currency')
+            .eq('price_id', priceId)
+            .eq('status', 'PENDING')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        
+        if (existingOrderData) {
+            orderDataFromDb = existingOrderData;
+            name = existingOrderData.name || '';
+            email = existingOrderData.email || '';
+            adobeEmail = existingOrderData.adobe_email;
+            activationType = existingOrderData.activation_type || 'pre-activated';
+        }
+    }
+
+    // Fallback to PayPal payer information if no database data found
+    if (!orderDataFromDb && resource.payer) {
+        if (resource.payer.name) {
+            name = `${resource.payer.name.given_name || ''} ${resource.payer.name.surname || ''}`.trim();
+        }
+        if (resource.payer.email_address) {
+            email = resource.payer.email_address;
+        }
+    }
+
     const now = new Date();
     const orderDataForUtils: OrderLike = { description: paypalDescription, amount, created_at: now, priceId };
-    const standardDescription = getStandardPlanDescription(orderDataForUtils);
-    const savings = calculateSavings(orderDataForUtils);
-    const expiryDate = calculateExpiryDate(orderDataForUtils);
+    const standardDescription = await getStandardPlanDescription(orderDataForUtils);
+    const savings = await calculateSavings(orderDataForUtils);
+    const expiryDate = await calculateExpiryDate(orderDataForUtils);
+
+    // Get product information from priceId
+    const productId = getProductIdFromPriceId(priceId);
+    const pricingOption = await getPricingOptionById(priceId);
+    const productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+    const finalActivationType = pricingOption ? getActivationTypeForProduct(pricingOption, activationType) : (activationType || 'pre-activated');
 
     const { data: existingOrder, error: fetchError } = await supabaseClient
         .from('orders')
@@ -273,21 +302,31 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
         await storeWebhookEvent(webhookData, supabaseClient, clientIp); return;
     }
 
-    let newStatus = 'PENDING';
+    // Determine the appropriate status based on product type
+    let finalStatus: string | null;
     if (existingOrder && (existingOrder.status === 'ACTIVE' || existingOrder.status === 'COMPLETED')) {
-        newStatus = existingOrder.status;
+        finalStatus = existingOrder.status;
         console.info(JSON.stringify({ ...logBase, message: `Order already ${existingOrder.status}, preserving status.`}, null, 2));
+    } else {
+        // Use product-specific status logic
+        if (pricingOption) {
+            finalStatus = getStatusForProduct(pricingOption);
+        } else {
+            finalStatus = 'ACTIVE'; // Default for unknown products
+        }
     }
 
     const upsertPayload = {
-        paypal_order_id: orderId, name, email, status: newStatus, amount, currency,
+        paypal_order_id: orderId, name, email, status: finalStatus, amount, currency,
         description: standardDescription, savings, expiry_date: expiryDate ? expiryDate.toISOString() : null,
-        activation_type: activationType,
+        activation_type: finalActivationType,
         adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
         
         // --- UPDATED COLUMNS ---
         payment_processor: 'paypal',
         payment_data: webhookData,
+        product_id: productId,                       // Set the product ID from products table
+        product_type: productType,                   // Set the correct product type (subscription/redemption_code)
         // --- END OF UPDATES ---
         
         original_status: status, updated_at: now.toISOString(),
@@ -299,7 +338,7 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
     if (upsertError) {
         console.error(JSON.stringify({ ...logBase, message: `Failed to upsert order.`, payloadAttemptedEmail: email, dbError: upsertError.message, dbErrorCode: upsertError.code }, null, 2));
     } else {
-        console.info(JSON.stringify({ ...logBase, message: `Order upserted/updated successfully.`, newDbStatus: newStatus, emailForOrder: email }, null, 2));
+        console.info(JSON.stringify({ ...logBase, message: `Order upserted/updated successfully.`, newDbStatus: finalStatus, emailForOrder: email }, null, 2));
     }
     await storeWebhookEvent(webhookData, supabaseClient, clientIp);
 }
@@ -322,11 +361,8 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
         paypalDescription = purchaseUnit.description || '';
         const customIdData = safeJsonParse(purchaseUnit.custom_id || resource.custom_id);
         if (customIdData) { 
-          name = customIdData.name || ''; 
-          email = customIdData.email || ''; 
           priceId = customIdData.priceId || null; 
           activationType = customIdData.activationType || 'pre-activated';
-          adobeEmail = customIdData.adobeEmail || null; // Extract Adobe email for self-activation
         }
         if (purchaseUnit.amount) {
         amount = purchaseUnit.amount.value || null; currency = purchaseUnit.amount.currency_code || null;
@@ -334,9 +370,40 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
     } else if (resource.amount) {
         amount = resource.amount.value || null; currency = resource.amount.currency_code || null;
         const customIdData = safeJsonParse(resource.custom_id);
-        if (customIdData) { name = customIdData.name || null; email = customIdData.email || null; }
+        if (customIdData) { priceId = customIdData.priceId || null; }
     } else {
         console.warn(JSON.stringify({ ...logBase, message: "Critical data (purchase_units or amount) missing in webhook.", resourcePreview: JSON.stringify(resource).substring(0,200) }, null, 2));
+    }
+
+    // Try to get order data from database first (for form data)
+    let orderDataFromDb = null;
+    if (priceId) {
+        const { data: existingOrderData } = await supabaseClient
+            .from('orders')
+            .select('name, email, adobe_email, activation_type, product_type, product_id, amount, currency')
+            .eq('price_id', priceId)
+            .eq('status', 'PENDING')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        
+        if (existingOrderData) {
+            orderDataFromDb = existingOrderData;
+            name = existingOrderData.name || '';
+            email = existingOrderData.email || '';
+            adobeEmail = existingOrderData.adobe_email;
+            activationType = existingOrderData.activation_type || 'pre-activated';
+        }
+    }
+
+    // Fallback to PayPal payer information if no database data found
+    if (!orderDataFromDb && resource.payer) {
+        if (resource.payer.name) {
+            name = `${resource.payer.name.given_name || ''} ${resource.payer.name.surname || ''}`.trim();
+        }
+        if (resource.payer.email_address) {
+            email = resource.payer.email_address;
+        }
     }
 
     const now = new Date();
@@ -353,9 +420,15 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
 
     const orderCreationDate = existingOrder?.created_at ? new Date(existingOrder.created_at) : now;
     const orderDataForUtils: OrderLike = { description: paypalDescription, amount, created_at: orderCreationDate, priceId };
-    const finalDescription = getStandardPlanDescription(orderDataForUtils);
-    const finalSavings = calculateSavings(orderDataForUtils);
-    const finalExpiryDate = calculateExpiryDate(orderDataForUtils);
+    const finalDescription = await getStandardPlanDescription(orderDataForUtils);
+    const finalSavings = await calculateSavings(orderDataForUtils);
+    const finalExpiryDate = await calculateExpiryDate(orderDataForUtils);
+
+    // Get product information from priceId for proper handling
+    const productId = getProductIdFromPriceId(priceId);
+    const pricingOption = await getPricingOptionById(priceId);
+    const productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+    const finalActivationType = pricingOption ? getActivationTypeForProduct(pricingOption, activationType) : (activationType || 'pre-activated');
 
     let isGuestCheckout = true;
     const finalEmailForNotification = existingOrder?.email || email;
@@ -363,13 +436,21 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
 
     if (existingOrder) {
         if (existingOrder.status !== 'ACTIVE' && existingOrder.status !== 'COMPLETED') {
+        // Determine appropriate status based on product type
+        const finalStatus = pricingOption ? getStatusForProduct(pricingOption) : 'ACTIVE';
+        
         const { error: updateError } = await supabaseClient
             .from('orders')
             .update({
-              status: 'ACTIVE', description: finalDescription, savings: finalSavings,
+              status: finalStatus, 
+              description: finalDescription, 
+              savings: finalSavings,
               expiry_date: finalExpiryDate ? finalExpiryDate.toISOString() : null,
               updated_at: now.toISOString(),
               adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
+              activation_type: finalActivationType,
+              product_id: productId,
+              product_type: productType,
               
               // --- UPDATED COLUMNS ---
               payment_data: webhookData,
@@ -392,23 +473,39 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
         }
     } else {
         console.info(JSON.stringify({ ...logBase, message: `No existing order, creating new.`, emailForOrder: email }, null, 2));
-        const { error: insertError } = await supabaseClient.from('orders').insert([{
-            paypal_order_id: orderId, name, email, status: 'ACTIVE', amount, currency,
+        
+        // Get product information from priceId for new order
+        const productId = getProductIdFromPriceId(priceId);
+        const pricingOption = await getPricingOptionById(priceId);
+        const productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+        const finalActivationType = pricingOption ? getActivationTypeForProduct(pricingOption, activationType) : (activationType || 'pre-activated');
+        const finalStatus = pricingOption ? getStatusForProduct(pricingOption) : 'ACTIVE';
+        
+        const { data: newOrder, error: insertError } = await supabaseClient.from('orders').insert([{
+            paypal_order_id: orderId, name, email, status: finalStatus, amount, currency,
             description: finalDescription, savings: finalSavings, expiry_date: finalExpiryDate ? finalExpiryDate.toISOString() : null,
-            activation_type: activationType,
+            activation_type: finalActivationType,
             adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
             
             // --- UPDATED COLUMNS ---
             payment_data: webhookData,
             payment_processor: 'paypal',
+            product_id: productId,                       // Set the product ID from products table
+            product_type: productType,                   // Set the correct product type (subscription/redemption_code)
             // --- END OF UPDATES ---
 
             original_status: paymentStatus,
             created_at: now.toISOString(), updated_at: now.toISOString(),
-        }]);
+        }]).select('id');
+        
         if (insertError) {
-        console.error(JSON.stringify({ ...logBase, message: `Failed to create new order.`, emailForOrder: email, dbError: insertError.message, dbErrorCode: insertError.code }, null, 2));
-        await storeWebhookEvent(webhookData, supabaseClient, clientIp); return;
+            console.error(JSON.stringify({ ...logBase, message: `Failed to create new order.`, emailForOrder: email, dbError: insertError.message, dbErrorCode: insertError.code }, null, 2));
+            await storeWebhookEvent(webhookData, supabaseClient, clientIp); return;
+        }
+
+        // Redemption codes are now tracked directly in the orders table via product_type = 'redemption_code'
+        if (productType === 'redemption_code') {
+            console.info(JSON.stringify({ ...logBase, message: `Redemption code order created successfully in orders table.` }, null, 2));
         }
     }
 
@@ -419,7 +516,7 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
 
     if (finalEmailForNotification && finalNameForNotification) {
         try {
-        await sendConfirmationEmail(finalEmailForNotification, finalNameForNotification, orderId, isGuestCheckout, activationType, adobeEmail);
+        await sendConfirmationEmail(finalEmailForNotification, finalNameForNotification, orderId, isGuestCheckout, finalActivationType, adobeEmail || undefined, priceId);
         console.info(JSON.stringify({ ...logBase, message: `Confirmation email initiated.`, to: finalEmailForNotification, isGuest: isGuestCheckout }, null, 2));
         } catch (emailError: any) {
         console.error(JSON.stringify({ ...logBase, message: `Failed to send confirmation email.`, to: finalEmailForNotification, emailErrorName: emailError.name, emailErrorMessage: emailError.message }, null, 2));
@@ -442,12 +539,18 @@ async function storeWebhookEvent(webhookData: any, supabaseClient: any, clientIp
     const purchaseUnit = resource.supplementary_data?.purchase_units?.[0] || resource.purchase_units?.[0];
     if (purchaseUnit) {
         if (purchaseUnit.amount) { amount = purchaseUnit.amount.value || null; currency = purchaseUnit.amount.currency_code || null; }
-        const customIdData = safeJsonParse(purchaseUnit.custom_id || resource.custom_id);
-        if (customIdData) { name = customIdData.name || null; email = customIdData.email || null; }
     } else if (resource.amount) {
         amount = resource.amount.value || null; currency = resource.amount.currency_code || null;
-        const customIdData = safeJsonParse(resource.custom_id);
-        if (customIdData) { name = customIdData.name || null; email = customIdData.email || null; }
+    }
+
+    // Extract name and email from payer information if available
+    if (resource.payer) {
+        if (resource.payer.name) {
+            name = `${resource.payer.name.given_name || ''} ${resource.payer.name.surname || ''}`.trim();
+        }
+        if (resource.payer.email_address) {
+            email = resource.payer.email_address;
+        }
     }
 
     const logBase = { eventType, paypalEventId: eventId, orderId: finalPaypalOrderId, ip: clientIp, source: "storeWebhookEvent" };

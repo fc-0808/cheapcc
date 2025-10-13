@@ -24,98 +24,105 @@ const PayPalContext = createContext<PayPalContextType>({
 
 export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
   const [isPayPalScriptLoaded, setIsPayPalScriptLoaded] = useState(false);
-  // Keep track of container IDs that have active buttons
   const activeContainers = useRef<Set<string>>(new Set());
-  // Track any pending renders
   const pendingRenders = useRef<Map<string, any>>(new Map());
-  // Track button instances for each container
   const buttonInstances = useRef<Map<string, any>>(new Map());
+  const renderTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map()); // Add render debouncing
 
   // Check if PayPal is already loaded on window
   useEffect(() => {
+    console.log('🔄 PayPal Provider initialized');
+    
     if (typeof window !== 'undefined' && window.paypal) {
-      console.log('PayPal SDK already present on window object');
+      console.log('✅ PayPal SDK already present on window object');
       setIsPayPalScriptLoaded(true);
     }
     
     // Cleanup on unmount
     return () => {
-      try {
-        // Clean up all active containers
-        Array.from(activeContainers.current).forEach(containerId => {
-          try {
-            cleanupPayPalButton(containerId);
-          } catch (err) {
-            console.error(`Error cleaning up container ${containerId}:`, err);
-          }
-        });
-        
-        activeContainers.current.clear();
-        buttonInstances.current.clear();
-        pendingRenders.current.clear();
-      } catch (err) {
-        console.error('Error during PayPal provider cleanup:', err);
-      }
+      console.log('🧹 PayPal Provider cleanup');
+      activeContainers.current.clear();
+      buttonInstances.current.clear();
+      pendingRenders.current.clear();
+      // Clear any pending render timeouts
+      renderTimeouts.current.forEach(timeout => clearTimeout(timeout));
+      renderTimeouts.current.clear();
     };
   }, []);
 
   const handlePayPalLoad = () => {
-    console.log('PayPal SDK loaded successfully');
+    console.log('✅ PayPal SDK loaded successfully');
+    console.log('PayPal object available:', !!window.paypal);
+    console.log('PayPal Buttons available:', !!window.paypal?.Buttons);
     setIsPayPalScriptLoaded(true);
     
     // Process any pending button renders
-    if (typeof window !== 'undefined' && window.paypal) {
+    if (typeof window !== 'undefined' && window.paypal && pendingRenders.current.size > 0) {
+      console.log(`🔄 Processing ${pendingRenders.current.size} pending renders`);
       pendingRenders.current.forEach((config, containerId) => {
         const { ref, createOrder, onApprove, onCancel, onError } = config;
         if (ref.current && document.body.contains(ref.current)) {
-          try {
-            // Make sure to clean up any existing buttons for this container first
-            cleanupPayPalButton(containerId);
-            renderButtonSafely(containerId, ref, createOrder, onApprove, onCancel, onError);
-          } catch (error) {
-            console.error('Failed to render pending PayPal button:', error);
-          }
+          renderButtonSafely(containerId, ref, createOrder, onApprove, onCancel, onError);
         }
       });
       pendingRenders.current.clear();
     }
   };
 
+  // Get PayPal Client ID from environment
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  const paypalScriptUrl = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
+  
+  // Validate PayPal Client ID
+  if (!clientId || clientId.length < 50) {
+    console.error('❌ PayPal Client ID is invalid or missing!');
+    console.error('❌ Expected length: ~80 chars, Got:', clientId?.length || 0);
+  }
+
   const handlePayPalError = (error: Error) => {
-    console.error('PayPal SDK failed to load:', error);
+    console.error('❌ PayPal SDK failed to load:', error);
+    console.error('❌ Check: Client ID, Network, CSP settings');
   };
 
-  // Enhanced cleanup function that removes the button DOM elements
+  // Completely redesigned cleanup function - no DOM manipulation
   const cleanupPayPalButton = (containerId: string) => {
-    try {
-      if (activeContainers.current.has(containerId)) {
-        console.log(`Cleaning up PayPal button for container ${containerId}`);
-        
-        // Get the container element
-        const container = document.getElementById(containerId);
-        
-        // Only attempt to clear the container if it exists
-        if (container && document.body.contains(container)) {
-          try {
-            // Clear the container contents to remove the PayPal button
-            while (container.firstChild) {
-              container.removeChild(container.firstChild);
-            }
-          } catch (innerErr) {
-            console.error(`Error clearing container ${containerId}:`, innerErr);
-          }
-        }
-        
-        // Always remove from our tracking collections, even if DOM manipulation failed
-        activeContainers.current.delete(containerId);
-        buttonInstances.current.delete(containerId);
-      }
-    } catch (err) {
-      console.error(`Error during PayPal button cleanup for ${containerId}:`, err);
+    console.log(`🧹 Cleaning up PayPal button: ${containerId}`);
+    
+    // Clear any pending render timeout
+    const timeout = renderTimeouts.current.get(containerId);
+    if (timeout) {
+      clearTimeout(timeout);
+      renderTimeouts.current.delete(containerId);
     }
+    
+    // Remove from tracking
+    activeContainers.current.delete(containerId);
+    pendingRenders.current.delete(containerId);
+    
+    // Clean up button instance first
+    const buttonInstance = buttonInstances.current.get(containerId);
+    if (buttonInstance) {
+      try {
+        // Try to properly close the button instance
+        if (typeof buttonInstance.close === 'function') {
+          buttonInstance.close();
+        }
+        // Some PayPal instances might have different cleanup methods
+        if (typeof buttonInstance.destroy === 'function') {
+          buttonInstance.destroy();
+        }
+      } catch (error) {
+        console.debug(`Button cleanup handled for ${containerId}:`, error);
+      }
+      buttonInstances.current.delete(containerId);
+    }
+    
+    // DO NOT remove DOM elements - let PayPal manage its own DOM
+    // The PayPal SDK will clean up its own elements when properly closed
+    console.log(`✅ PayPal button cleanup completed for: ${containerId}`);
   };
 
-  // This function safely checks and renders a button
+  // Improved button rendering function with better error handling
   const renderButtonSafely = (
     containerId: string,
     paypalButtonRef: React.RefObject<HTMLDivElement>,
@@ -124,115 +131,113 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     onCancel?: () => void,
     onError?: (err: Error) => void
   ) => {
-    // Always clean up existing button first
-    cleanupPayPalButton(containerId);
+    console.log(`🔄 Rendering PayPal button in: ${containerId}`);
     
-    // Safety checks before attempting to render
-    if (!paypalButtonRef.current) {
-      console.log(`PayPal button container #${containerId} not found, cannot render.`);
+    // Basic safety checks first
+    if (!paypalButtonRef.current || !document.body.contains(paypalButtonRef.current)) {
+      console.log(`❌ Container ${containerId} not ready`);
       return;
     }
 
-    if (!document.body.contains(paypalButtonRef.current)) {
-      console.log(`PayPal button container #${containerId} not in DOM, cannot render.`);
-      return;
+    // Check if container already has an active button
+    if (activeContainers.current.has(containerId)) {
+      console.log(`⚠️ Container ${containerId} already has active button, cleaning up first`);
+      cleanupPayPalButton(containerId);
     }
-    
-    // Create a wrapper for error handling
-    const safeCreateOrder = async () => {
-      try {
-        return await createOrder();
-      } catch (error) {
-        console.error(`Error in createOrder for ${containerId}:`, error);
-        if (onError) onError(error as Error);
-        throw error; // Re-throw to let PayPal handle it
-      }
-    };
 
-    const safeOnApprove = async (data: any) => {
-      try {
-        // We no longer need to store order ID for redirection
-        const result = await onApprove(data);
-        return result;
-      } catch (error) {
-        console.error(`Error in onApprove for ${containerId}:`, error);
-        if (onError) onError(error as Error);
-        throw error; // Re-throw to let PayPal handle it
-      }
-    };
-
-    // Wrapper for onCancel
-    const safeOnCancel = () => {
-      try {
-        if (onCancel) onCancel();
-      } catch (error) {
-        console.error(`Error in onCancel for ${containerId}:`, error);
-        if (onError) onError(error as Error);
-      }
-    };
-    
-    // Wrapper for onError to ensure we catch all errors
-    const safeOnError = (err: Error) => {
-      console.error(`PayPal button error for ${containerId}:`, err);
-      if (onError) onError(err);
-    };
-
-    console.log(`Rendering PayPal button in container ${containerId}`);
-    try {
-      // Get the container element by ID to ensure it exists
+    // Wait for DOM to be stable and cleanup to complete (with debouncing)
+    const timeout = setTimeout(() => {
       const container = document.getElementById(containerId);
       if (!container || !document.body.contains(container)) {
-        console.error(`Container #${containerId} not found in DOM, cannot render PayPal button`);
+        console.log(`❌ Container ${containerId} not found or removed from DOM`);
+        renderTimeouts.current.delete(containerId);
         return;
       }
-      
-      // First make sure container is empty
-      try {
-        while (container.firstChild) {
-          container.removeChild(container.firstChild);
-        }
-      } catch (clearError) {
-        console.error(`Error clearing container #${containerId}:`, clearError);
-        // Continue anyway, PayPal might handle this
+
+      // Check if container already has PayPal buttons - if so, skip rendering
+      const existingButtons = container.querySelectorAll('[data-paypal-button], .paypal-buttons');
+      if (existingButtons.length > 0) {
+        console.log(`⚠️ Container ${containerId} already has ${existingButtons.length} PayPal elements, skipping render`);
+        renderTimeouts.current.delete(containerId);
+        return;
       }
-      
-      // Create button
-      const buttonInstance = window.paypal.Buttons({
-        createOrder: safeCreateOrder,
-        onApprove: safeOnApprove,
-        onCancel: safeOnCancel,
-        onError: safeOnError,
-        style: {
-          layout: 'vertical',
-          color: 'gold',
-          shape: 'rect',
-          label: 'paypal'
-        }
-      });
-      
-      // Check eligibility without causing errors
-      const isEligible = !buttonInstance.isEligible || buttonInstance.isEligible();
-      
-      if (isEligible) {
+
+      try {
+        // Create PayPal button
+        const buttonInstance = window.paypal.Buttons({
+          createOrder: async () => {
+            try {
+              return await createOrder();
+            } catch (error) {
+              console.error(`CreateOrder error:`, error);
+              if (onError) onError(error as Error);
+              throw error;
+            }
+          },
+          onApprove: async (data: any) => {
+            try {
+              await onApprove(data);
+            } catch (error) {
+              console.error(`OnApprove error:`, error);
+              if (onError) onError(error as Error);
+              throw error;
+            }
+          },
+          onCancel: () => {
+            console.log(`PayPal payment cancelled: ${containerId}`);
+            if (onCancel) onCancel();
+          },
+          onError: (err: Error) => {
+            console.error(`PayPal error:`, err);
+            if (onError) onError(err);
+          },
+          style: {
+            layout: 'vertical',
+            color: 'gold',
+            shape: 'rect',
+            label: 'paypal'
+          }
+        });
+
+        // Render the button
         try {
-          // Use the container ID directly for rendering
-          buttonInstance.render(`#${containerId}`);
+          const renderResult: any = buttonInstance.render(`#${containerId}`);
           
-          // Store button instance reference
-          buttonInstances.current.set(containerId, buttonInstance);
-          activeContainers.current.add(containerId);
+          // Handle both promise and synchronous returns
+          if (renderResult && typeof renderResult.then === 'function') {
+            renderResult.then(() => {
+              console.log(`✅ PayPal button rendered: ${containerId}`);
+              buttonInstances.current.set(containerId, buttonInstance);
+              activeContainers.current.add(containerId);
+            }).catch((error: any) => {
+              console.error(`❌ PayPal render failed:`, error);
+              // Clean up failed render attempt
+              activeContainers.current.delete(containerId);
+              buttonInstances.current.delete(containerId);
+              if (onError) onError(error);
+            });
+          } else {
+            // Synchronous render or no return value
+            console.log(`✅ PayPal button rendered: ${containerId}`);
+            buttonInstances.current.set(containerId, buttonInstance);
+            activeContainers.current.add(containerId);
+          }
         } catch (renderError) {
-          console.error(`Failed to render PayPal button for ${containerId}:`, renderError);
+          console.error(`❌ PayPal render error:`, renderError);
+          // Clean up failed render attempt
+          activeContainers.current.delete(containerId);
+          buttonInstances.current.delete(containerId);
           if (onError) onError(renderError as Error);
         }
-      } else {
-        console.warn(`PayPal button for ${containerId} not eligible for rendering`);
-        if (onError) onError(new Error('PayPal button not eligible for rendering'));
+
+      } catch (error) {
+        console.error(`❌ PayPal button creation failed:`, error);
+        renderTimeouts.current.delete(containerId);
       }
-    } catch (error) {
-      console.error(`Error creating PayPal button for ${containerId}:`, error);
-      if (onError) onError(error as Error);
-    }
+    }, 200); // Increased delay for better DOM stability
+    
+    // Store timeout for cleanup
+    renderTimeouts.current.set(containerId, timeout);
   };
 
   const renderPayPalButton = (
@@ -243,25 +248,24 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     onCancel?: () => void,
     onError?: (err: Error) => void
   ) => {
-    // Validate inputs first
+    console.log(`🎯 renderPayPalButton called: ${containerId}`);
+    console.log(`- SDK loaded: ${isPayPalScriptLoaded}`);
+    console.log(`- Window PayPal: ${typeof window !== 'undefined' && !!window.paypal}`);
+    
+    // Validate inputs
     if (!containerId || !paypalButtonRef) {
-      console.error("Invalid arguments to renderPayPalButton");
+      console.error("❌ Invalid arguments to renderPayPalButton");
       return;
     }
     
-    // First check if there's already a button in this container and clean it up
-    try {
-      if (activeContainers.current.has(containerId)) {
-        cleanupPayPalButton(containerId);
-      }
-    } catch (err) {
-      console.error(`Error cleaning up existing PayPal button for ${containerId}:`, err);
-      // Continue anyway, we'll try to render a new button
+    // Clean up existing button if any
+    if (activeContainers.current.has(containerId)) {
+      cleanupPayPalButton(containerId);
     }
     
-    // If PayPal SDK is not loaded yet, store config for later
+    // If PayPal SDK is not ready, queue for later
     if (!isPayPalScriptLoaded || typeof window === 'undefined' || !window.paypal) {
-      console.log(`PayPal SDK not ready, queuing button render for container ${containerId}`);
+      console.log(`⏳ PayPal SDK not ready, queuing: ${containerId}`);
       pendingRenders.current.set(containerId, { 
         ref: paypalButtonRef, 
         createOrder, 
@@ -272,23 +276,33 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Check if container exists in DOM before attempting to render
+    // Check container exists
     if (!paypalButtonRef.current || !document.body.contains(paypalButtonRef.current)) {
-      console.error(`PayPal button container ${containerId} not in DOM, cannot render`);
+      console.error(`❌ Container ${containerId} not in DOM`);
       return;
     }
 
-    // Render new button with safety checks
+    // Clear container content safely before rendering (only if necessary)
+    const container = document.getElementById(containerId);
+    if (container && container.innerHTML.trim() !== '') {
+      console.log(`🧹 Clearing container content for fresh render: ${containerId}`);
+      container.innerHTML = ''; // Safe way to clear content without removing the container itself
+    }
+
+    // Render the button
     renderButtonSafely(containerId, paypalButtonRef, createOrder, onApprove, onCancel, onError);
   };
 
   return (
     <PayPalContext.Provider value={{ isPayPalScriptLoaded, renderPayPalButton, cleanupPayPalButton }}>
       <Script 
-        src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb'}&currency=USD&intent=capture&components=buttons&disable-funding=card`}
+        src={paypalScriptUrl}
         strategy="afterInteractive"
         onLoad={handlePayPalLoad}
         onError={handlePayPalError}
+        onReady={() => {
+          console.log('🚀 PayPal script onReady fired');
+        }}
       />
       {children}
     </PayPalContext.Provider>

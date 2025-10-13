@@ -17,39 +17,20 @@ interface OptimizedPaymentProvidersProps {
 }
 
 export default function OptimizedPaymentProviders({ children }: OptimizedPaymentProvidersProps) {
-  // Track whether PayPal provider has loaded
-  const [paypalReady, setPaypalReady] = useState(false);
-  
-  // Delay PayPal rendering to prevent layout shifts
-  useEffect(() => {
-    if (isClient()) {
-      const timer = setTimeout(() => {
-        setPaypalReady(true);
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
-  }, []);
-  
   // Don't render providers at all during SSR to improve performance
   if (!isClient()) {
     return <>{children}</>;
   }
   
-  // IMPORTANT: Always render StripePaymentProvider immediately on client-side
-  // to ensure it's available for the StripePaymentForm component
+  // IMPORTANT: Always render both providers immediately on client-side
+  // to ensure they're available for their respective components
   return (
     <StripePaymentProvider>
-      {paypalReady ? (
-        <Suspense fallback={<PayPalFallback />}>
-          <PayPalContextWrapper>
-            {children}
-          </PayPalContextWrapper>
-        </Suspense>
-      ) : (
-        // Initial mounting state - just render children without PayPal provider
-        <>{children}</>
-      )}
+      <Suspense fallback={<PayPalFallback />}>
+        <PayPalContextWrapper>
+          {children}
+        </PayPalContextWrapper>
+      </Suspense>
     </StripePaymentProvider>
   );
 } 

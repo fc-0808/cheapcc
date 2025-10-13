@@ -3,13 +3,15 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { PRICING_OPTIONS, getPriceForActivationType, getSelfActivationFee } from '@/utils/products';
+import { getPricingOptions, getPriceForActivationType, isRedemptionCode, getActivationFee, isSelfActivationSubscription, type PricingOption } from '@/utils/products-supabase';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { format } from 'date-fns';
 import { motion, useInView, Variants, AnimatePresence, PanInfo } from 'framer-motion';
 import StripePaymentForm from './StripePaymentForm';
 import PayPalPaymentForm from './PayPalPaymentForm';
 import { useRouter } from 'next/navigation';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
+import Script from 'next/script';
 
 // Success message component to show after successful payment
 const PaymentSuccessMessage = ({ email }: { email: string }) => (
@@ -123,10 +125,12 @@ export default function CheckoutSection({
   renderPayPalButton, clientSecret, selectedActivationType, adobeEmail,
   createPayPalOrderWithRetry, onRefreshPaymentIntent,
 }: CheckoutSectionProps) {
-
+  
+  // Get internationalization context
+  const { formatLocalPrice, countryConfig } = useInternationalization();
   // --- Refs and Hooks ---
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
+  const isInView = useInView(sectionRef, { once: false, amount: 0.2 });
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleInView = useInView(titleRef, { once: false, margin: "-100px 0px" });
 
@@ -134,11 +138,20 @@ export default function CheckoutSection({
   const [activeTab, setActiveTab] = useState<'stripe' | 'paypal'>('stripe');
   const [timeInfo, setTimeInfo] = useState<TimeInfo>({ currentTime: new Date(), expiryTime: null, timezone: 'UTC', isLoading: true });
   
+  // Pricing options - loaded immediately
+  const [pricingOptions, setPricingOptions] = useState<PricingOption[]>([]);
+  
+  // State for activation fee
+  const [activationFee, setActivationFee] = useState<number>(0);
+  
   const [nameError, setNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   
   // Track screen size to determine which view to render
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Force re-render when country changes for real-time price updates
+  const [, forceUpdate] = useState({});
   
   const stripe = useStripe();
   const elements = useElements();
@@ -165,6 +178,31 @@ export default function CheckoutSection({
     return () => window.removeEventListener('resize', handleResize);
   }, [handleResize]);
 
+  // Listen for country changes to update prices in real-time
+  useEffect(() => {
+    const handleCountryChange = () => {
+      forceUpdate({}); // Force re-render to update prices with new currency
+    };
+
+    window.addEventListener('countryChanged', handleCountryChange);
+    return () => window.removeEventListener('countryChanged', handleCountryChange);
+  }, []);
+
+  // Fetch pricing options from Supabase immediately
+  useEffect(() => {
+    const fetchPricingOptions = async () => {
+      try {
+        const options = await getPricingOptions();
+        setPricingOptions(options);
+      } catch (error) {
+        console.error('Failed to fetch pricing options:', error);
+        setPricingOptions([]);
+      }
+    };
+
+    fetchPricingOptions();
+  }, []);
+
   // --- Real-time Validation Effect ---
   useEffect(() => {
     // Defer validation to idle time
@@ -188,29 +226,60 @@ export default function CheckoutSection({
   }, [email]);
 
   // --- Effects for PayPal and Timezone ---
-  useEffect(() => {
-    const container = paypalButtonContainerRef.current;
-    if (container && activeTab === 'paypal' && sdkReady && canPay && isInView) {
-      renderPayPalButton?.();
-      container.style.display = 'block';
-    } else if (container) {
-      container.style.display = 'none';
-    }
-  }, [sdkReady, canPay, isInView, renderPayPalButton, paypalButtonContainerRef, activeTab]);
+  // NOTE: PayPal button rendering is now handled by PayPalPaymentForm component
+  // This effect was interfering with the new PayPal context system
+  // useEffect(() => {
+  //   const container = paypalButtonContainerRef.current;
+  //   if (container && activeTab === 'paypal' && sdkReady && canPay && isInView) {
+  //     renderPayPalButton?.();
+  //     container.style.display = 'block';
+  //   } else if (container) {
+  //     container.style.display = 'none';
+  //   }
+  // }, [sdkReady, canPay, isInView, renderPayPalButton, paypalButtonContainerRef, activeTab]);
 
   // Optimize expiry date calculation using memoization
   const calculateExpiryDate = useCallback((priceId: string): Date => {
     const now = new Date();
-    const currentPriceOption = PRICING_OPTIONS.find(option => option.id === priceId) || PRICING_OPTIONS[0];
+    const currentPriceOption = pricingOptions.find(option => option.id === priceId) || pricingOptions[0];
+    if (!currentPriceOption) return now; // Fallback if no pricing option found
+    
+    console.log('Calculating expiry date for:', { priceId, duration: currentPriceOption.duration });
+    
     let expiryDate = new Date();
     const durationValue = parseInt(currentPriceOption.duration);
+    
+    console.log('Parsed duration value:', durationValue);
 
-    if (currentPriceOption.duration.includes('month')) expiryDate.setMonth(now.getMonth() + durationValue);
-    else if (currentPriceOption.duration.includes('year')) expiryDate.setFullYear(now.getFullYear() + durationValue);
-    else if (currentPriceOption.duration.includes('day')) expiryDate.setDate(now.getDate() + durationValue);
+    if (currentPriceOption.duration.includes('month')) {
+      // Use a more accurate method to add months
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const currentDay = now.getDate();
+      
+      // Calculate the target month and year
+      const targetMonth = currentMonth + durationValue;
+      const targetYear = currentYear + Math.floor(targetMonth / 12);
+      const finalMonth = targetMonth % 12;
+      
+      // Create the new date, handling month-end edge cases
+      expiryDate = new Date(targetYear, finalMonth, currentDay);
+      
+      // If the day doesn't exist in the target month (e.g., Jan 31 -> Feb 31), 
+      // set to the last day of the target month
+      if (expiryDate.getDate() !== currentDay) {
+        expiryDate = new Date(targetYear, finalMonth + 1, 0);
+      }
+      
+      console.log('Added months:', durationValue, 'New date:', expiryDate);
+    } else if (currentPriceOption.duration.includes('year')) {
+      expiryDate = new Date(now.getFullYear() + durationValue, now.getMonth(), now.getDate());
+    } else if (currentPriceOption.duration.includes('day')) {
+      expiryDate = new Date(now.getTime() + (durationValue * 24 * 60 * 60 * 1000));
+    }
     
     return expiryDate;
-  }, []);
+  }, [pricingOptions]);
 
   useEffect(() => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -284,14 +353,33 @@ export default function CheckoutSection({
   
   // --- Constants and Framer Motion Variants ---
   const selectedPriceOption = useMemo(() => 
-    PRICING_OPTIONS.find(option => option.id === selectedPrice) || PRICING_OPTIONS[1],
-    [selectedPrice]
+    pricingOptions.find(option => option.id === selectedPrice) || pricingOptions[0] || null,
+    [selectedPrice, pricingOptions]
   );
 
-  const finalPrice = useMemo(() => 
-    getPriceForActivationType(selectedPriceOption, selectedActivationType || 'pre-activated'),
-    [selectedPriceOption, selectedActivationType]
-  );
+  const finalPrice = useMemo(() => {
+    // The base price already includes the activation fee, so don't add it again
+    return getPriceForActivationType(selectedPriceOption);
+  }, [selectedPriceOption]);
+
+  // Calculate activation fee when selected price option changes
+  useEffect(() => {
+    const calculateActivationFee = async () => {
+      if (selectedPriceOption && isSelfActivationSubscription(selectedPriceOption)) {
+        try {
+          const fee = await getActivationFee(selectedPriceOption.id);
+          setActivationFee(fee);
+        } catch (error) {
+          console.error('Failed to calculate activation fee:', error);
+          setActivationFee(0);
+        }
+      } else {
+        setActivationFee(0);
+      }
+    };
+
+    calculateActivationFee();
+  }, [selectedPriceOption]);
 
   // Professional guidance for missing Adobe email
   const isAdobeEmailRequired = selectedActivationType === 'self-activation';
@@ -500,17 +588,24 @@ export default function CheckoutSection({
                           </div>
                           
                           {/* Enhanced description */}
-                          <div className="space-y-3">
-                            <p className="text-gray-200 text-sm leading-relaxed">
-                              To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Use Your Email</span>, 
-                              please provide your Adobe Creative Cloud account email address in the pricing section above.
+                          <div className="md:space-y-3 space-y-2">
+                            <p className="text-gray-200 text-sm md:leading-relaxed">
+                              <span className="hidden md:inline">
+                                To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Use Your Email</span>, 
+                                please provide your Adobe Creative Cloud account email address in the pricing section above.
+                              </span>
+                              <span className="md:hidden">
+                                Please enter your Adobe account email in the pricing section above.
+                              </span>
                             </p>
                             
                             <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-400/20 rounded-lg">
-                              <i className="fas fa-info-circle text-amber-400 text-sm mt-0.5 flex-shrink-0"></i>
-                              <p className="text-amber-100/90 text-xs leading-relaxed">
-                                <span className="font-medium">Why is this needed?</span> We'll add the subscription directly to your existing Adobe account, 
-                                preserving all your settings, files, and preferences.
+                              <i className="fas fa-info-circle text-amber-400 text-sm mt-0.5 flex-shrink-0 hidden md:inline"></i>
+                              <p className="text-amber-100/90 md:text-xs text-xs md:leading-relaxed">
+                                <span className="font-medium hidden md:inline">Why is this needed?</span> 
+                                <span className="hidden md:inline">We'll add the subscription directly to your existing Adobe account, 
+                                preserving all your settings, files, and preferences.</span>
+                                <span className="md:hidden">We'll add the subscription directly to your existing Adobe account.</span>
                               </p>
                             </div>
                           </div>
@@ -644,7 +739,10 @@ export default function CheckoutSection({
                   <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center text-sm text-red-300 gap-2">
                     <i className="fas fa-exclamation-circle text-red-400"></i>
                     <span className="flex-1">{checkoutFormError}</span>
-                    {checkoutFormError.includes('Payment session expired') && onRefreshPaymentIntent && (
+                    {(checkoutFormError.includes('Payment session expired') || 
+                      checkoutFormError.includes('Payment service') || 
+                      checkoutFormError.includes('timeout') ||
+                      checkoutFormError.includes('Failed to initialize')) && onRefreshPaymentIntent && (
                       <button
                         onClick={() => {
                           setCheckoutFormError(null);
@@ -671,71 +769,70 @@ export default function CheckoutSection({
             <span className="text-xs font-medium text-fuchsia-400">Limited Time Offer</span>
           </div>
           <div className="space-y-3 pb-4 border-b border-dashed border-white/10">
-            <div className="flex justify-between items-center text-sm"><span className="text-gray-400">Subscription</span><span className="font-medium text-gray-200">{selectedPriceOption.duration}</span></div>
-          </div>
-          <div className="space-y-3 py-4 border-b border-dashed border-white/10">
-            <h4 className="text-sm font-semibold text-gray-200">Billing Details</h4>
-            {timeInfo.isLoading ? (
-              <div className="flex items-center justify-center"><div className="h-4 w-4 border-2 border-gray-600 border-t-fuchsia-500 rounded-full animate-spin"></div></div>
-            ) : (
-              <>
-                <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Billed on</span><span className="font-medium text-gray-300">{format(timeInfo.currentTime, 'MMMM d, yyyy')}</span></div>
-                <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Expires on</span><span className="font-medium text-gray-300">{timeInfo.expiryTime ? format(timeInfo.expiryTime, 'MMMM d, yyyy') : 'N/A'}</span></div>
-              </>
-            )}
-          </div>
-          <div className="space-y-3 text-sm py-4 border-b border-white/10">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Regular Price</span>
-              <span className="line-through text-gray-500">
-                ${selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice.toFixed(2) : (selectedPriceOption.price * 4).toFixed(2)}
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-gray-400">Product</span>
+              <span className="text-xs text-gray-200 text-right max-w-[200px]">
+                {selectedPriceOption?.originalName || 'Loading...'}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Discount <span className="text-fuchsia-400 text-xs font-medium">(Limited Time)</span></span>
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm">
-                {selectedPriceOption.originalPrice ? 
-                  Math.round((1 - selectedPriceOption.price / selectedPriceOption.originalPrice) * 100) : 
-                  Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}% OFF
+          </div>
+          {!isRedemptionCode(selectedPriceOption) && (
+            <div className="space-y-3 py-4 border-b border-dashed border-white/10">
+              <h4 className="text-sm font-semibold text-gray-200">Billing Details</h4>
+              {timeInfo.isLoading ? (
+                <div className="flex items-center justify-center"><div className="h-4 w-4 border-2 border-gray-600 border-t-fuchsia-500 rounded-full animate-spin"></div></div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Billed on</span><span className="font-medium text-gray-300">{format(timeInfo.currentTime, 'MMMM d, yyyy')}</span></div>
+                  <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Expires on</span><span className="font-medium text-gray-300">{timeInfo.expiryTime ? format(timeInfo.expiryTime, 'MMMM d, yyyy') : 'N/A'}</span></div>
+                </>
+              )}
+            </div>
+          )}
+            <div className="space-y-3 text-sm py-4 border-b border-white/10">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Regular Price</span>
+                <span className="line-through text-gray-500">
+                  {selectedPriceOption ? formatLocalPrice(selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice : (selectedPriceOption.price * 4)) : 'Loading...'}
+                </span>
+              </div>
+              {isSelfActivationSubscription(selectedPriceOption) && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Activation Fee</span>
+                  <span className="text-gray-300">
+                    {formatLocalPrice(activationFee)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Discount <span className="text-fuchsia-400 text-xs font-medium">(Limited Time)</span></span>
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm">
+                  {selectedPriceOption ? (selectedPriceOption.originalPrice ? 
+                    Math.round((1 - selectedPriceOption.price / selectedPriceOption.originalPrice) * 100) : 
+                    Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)) : 0}% OFF
+                </div>
               </div>
             </div>
-          </div>
           <div className="pt-5 flex justify-between items-baseline">
             <span className="text-base font-semibold text-gray-200">Amount Due Today</span>
             <div className="flex items-baseline">
               <motion.span 
-                key={`${selectedPrice}-${selectedActivationType}`}
+                key={`${selectedPrice}-${selectedActivationType}-${countryConfig.currency}`}
                 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
                 initial={{ scale: 0.9, opacity: 0.7 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                ${finalPrice.toFixed(2)}
+                {formatLocalPrice(finalPrice)}
               </motion.span>
-              <span className="ml-1 text-xs text-gray-400">USD</span>
+              <span className="ml-1 text-xs text-gray-400">{countryConfig.currency}</span>
             </div>
           </div>
-          {selectedActivationType === 'self-activation' && selectedPriceOption.selfActivationPrice && (
-            <motion.div 
-              className="mt-2 text-xs text-pink-300 text-right"
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              Includes ${getSelfActivationFee(selectedPriceOption.duration).toFixed(2)} activation fee
-            </motion.div>
-          )}
         </motion.div>
       </div>
     );
   }, [
     itemVariants, 
-    name, 
-    setName,
-    email, 
-    setEmail,
-    nameError, 
-    emailError, 
     isUserSignedIn, 
     isFormValid, 
     activeTab,
@@ -757,7 +854,9 @@ export default function CheckoutSection({
     selectedPrice,
     createPayPalOrderWithRetry,
     finalPrice,
-    selectedActivationType
+    selectedActivationType,
+    formatLocalPrice,
+    countryConfig.currency
   ]);
 
   // Desktop view components
@@ -1036,7 +1135,10 @@ export default function CheckoutSection({
         <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center text-sm text-red-300 gap-2">
           <i className="fas fa-exclamation-circle text-red-400"></i>
           <span className="flex-1">{checkoutFormError}</span>
-          {checkoutFormError.includes('Payment session expired') && onRefreshPaymentIntent && (
+          {(checkoutFormError.includes('Payment session expired') || 
+            checkoutFormError.includes('Payment service') || 
+            checkoutFormError.includes('timeout') ||
+            checkoutFormError.includes('Failed to initialize')) && onRefreshPaymentIntent && (
             <button
               onClick={() => {
                 setCheckoutFormError(null);
@@ -1052,10 +1154,6 @@ export default function CheckoutSection({
     </motion.div>
   ), [
     itemVariants, 
-    name, 
-    email, 
-    nameError, 
-    emailError, 
     isUserSignedIn, 
     isFormValid, 
     activeTab, 
@@ -1073,7 +1171,9 @@ export default function CheckoutSection({
     setCheckoutFormError,
     paypalButtonContainerRef,
     onPayPalLoad,
-    onPayPalError
+    onPayPalError,
+    formatLocalPrice,
+    countryConfig.currency
   ]);
 
   const renderDesktopSummaryCard = useCallback(() => (
@@ -1087,32 +1187,47 @@ export default function CheckoutSection({
         <span className="text-xs font-medium text-fuchsia-400">Limited Time Offer</span>
       </div>
       <div className="space-y-3 pb-4 border-b border-dashed border-white/10">
-        <div className="flex justify-between items-center text-sm"><span className="text-gray-400">Subscription</span><span className="font-medium text-gray-200">{selectedPriceOption.duration}</span></div>
+        <div className="flex justify-between items-center text-xs">
+          <span className="text-gray-400">Product</span>
+          <span className="text-xs text-gray-200 text-right max-w-[200px]">
+            {selectedPriceOption?.originalName || 'Loading...'}
+          </span>
+        </div>
       </div>
-      <div className="space-y-3 py-4 border-b border-dashed border-white/10">
-        <h4 className="text-sm font-semibold text-gray-200">Billing Details</h4>
-        {timeInfo.isLoading ? (
-          <div className="flex items-center justify-center"><div className="h-4 w-4 border-2 border-gray-600 border-t-fuchsia-500 rounded-full animate-spin"></div></div>
-        ) : (
-          <>
-            <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Billed on</span><span className="font-medium text-gray-300">{format(timeInfo.currentTime, 'MMMM d, yyyy')}</span></div>
-            <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Expires on</span><span className="font-medium text-gray-300">{timeInfo.expiryTime ? format(timeInfo.expiryTime, 'MMMM d, yyyy') : 'N/A'}</span></div>
-          </>
-        )}
-      </div>
+      {!isRedemptionCode(selectedPriceOption) && (
+        <div className="space-y-3 py-4 border-b border-dashed border-white/10">
+          <h4 className="text-sm font-semibold text-gray-200">Billing Details</h4>
+          {timeInfo.isLoading ? (
+            <div className="flex items-center justify-center"><div className="h-4 w-4 border-2 border-gray-600 border-t-fuchsia-500 rounded-full animate-spin"></div></div>
+          ) : (
+            <>
+              <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Billed on</span><span className="font-medium text-gray-300">{format(timeInfo.currentTime, 'MMMM d, yyyy')}</span></div>
+              <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Expires on</span><span className="font-medium text-gray-300">{timeInfo.expiryTime ? format(timeInfo.expiryTime, 'MMMM d, yyyy') : 'N/A'}</span></div>
+            </>
+          )}
+        </div>
+      )}
       <div className="space-y-3 text-sm py-4 border-b border-white/10">
         <div className="flex justify-between items-center">
           <span className="text-gray-400">Regular Price</span>
           <span className="line-through text-gray-500">
-            ${selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice.toFixed(2) : (selectedPriceOption.price * 4).toFixed(2)}
+            {selectedPriceOption ? formatLocalPrice(selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice : (selectedPriceOption.price * 4)) : 'Loading...'}
           </span>
         </div>
+        {isSelfActivationSubscription(selectedPriceOption) && (
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400">Activation Fee</span>
+            <span className="text-gray-300">
+              {formatLocalPrice(activationFee)}
+            </span>
+          </div>
+        )}
         <div className="flex justify-between items-center">
           <span className="text-gray-400">Discount <span className="text-fuchsia-400 text-xs font-medium">(Limited Time)</span></span>
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow-sm">
-            {selectedPriceOption.originalPrice ? 
+            {selectedPriceOption ? (selectedPriceOption.originalPrice ? 
               Math.round((1 - selectedPriceOption.price / selectedPriceOption.originalPrice) * 100) : 
-              Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)}% OFF
+              Math.round(100 - (selectedPriceOption.price / (selectedPriceOption.price * 4)) * 100)) : 0}% OFF
           </div>
         </div>
       </div>
@@ -1120,27 +1235,17 @@ export default function CheckoutSection({
         <span className="text-base font-semibold text-gray-200">Amount Due Today</span>
         <div className="flex items-baseline">
           <motion.span 
-            key={`${selectedPrice}-${selectedActivationType}`}
+            key={`${selectedPrice}-${selectedActivationType}-${countryConfig.currency}`}
             className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500"
             initial={{ scale: 0.9, opacity: 0.7 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            ${finalPrice.toFixed(2)}
+            {formatLocalPrice(finalPrice)}
           </motion.span>
-          <span className="ml-1 text-xs text-gray-400">USD</span>
+          <span className="ml-1 text-xs text-gray-400">{countryConfig.currency}</span>
         </div>
       </div>
-      {selectedActivationType === 'self-activation' && selectedPriceOption.selfActivationPrice && (
-        <motion.div 
-          className="mt-2 text-xs text-pink-300 text-right"
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          Includes ${getSelfActivationFee(selectedPriceOption.duration).toFixed(2)} activation fee
-        </motion.div>
-      )}
     </motion.div>
   ), [
     itemVariants, 
@@ -1148,8 +1253,12 @@ export default function CheckoutSection({
     timeInfo,
     finalPrice,
     selectedActivationType,
-    selectedPrice
+    selectedPrice,
+    formatLocalPrice,
+    countryConfig.currency
   ]);
+
+  // No loading state - show content immediately
 
   return (
     <section className="relative py-20 md:py-32 overflow-hidden" id="checkout" ref={sectionRef}>
@@ -1160,8 +1269,7 @@ export default function CheckoutSection({
             ref={titleRef}
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6"
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             style={{ 
               textShadow: '0 0 20px rgba(255, 51, 102, 0.3)',

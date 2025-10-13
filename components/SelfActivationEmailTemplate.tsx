@@ -29,7 +29,7 @@ export const SelfActivationEmailTemplate: React.FC<Readonly<SelfActivationEmailT
             <div style={{ marginBottom: 20 }}>
               <p style={{ marginBottom: 18 }}>Hi {name},</p>
               <p style={{ marginBottom: 18 }}>Thank you for your purchase! Your order has been received and is now being processed.</p>
-              <p style={{ marginBottom: 18 }}>Since you chose to use your own Adobe account{adobeEmail ? ` (${adobeEmail})` : ''}, we will be adding the Creative Cloud subscription directly to your existing account. This process typically takes most at 24 hours to complete.</p>
+              <p style={{ marginBottom: 18 }}>Since you chose to use your own Adobe account{adobeEmail ? ` (${adobeEmail})` : ''}, we will be adding the Creative Cloud subscription directly to your existing account. This process typically takes up to 24 hours to complete.</p>
             </div>
             
             <div style={{ background: '#f4f7f6', borderRadius: 6, padding: 18, margin: '30px 0', fontSize: 15, color: '#2c2d5a', fontWeight: 500 }}>
@@ -42,7 +42,7 @@ export const SelfActivationEmailTemplate: React.FC<Readonly<SelfActivationEmailT
             <div style={{ background: '#e0f2fe', borderLeft: '4px solid #0ea5e9', borderRadius: 6, padding: 16, margin: '24px 0', color: '#0c4a6e', fontSize: 15 }}>
               <strong>🔄 Account Activation Process:</strong>
               <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                <li>We will add the Creative Cloud subscription to your Adobe account within 24-48 hours</li>
+                <li>We will add the Creative Cloud subscription to your Adobe account within 24 hours</li>
                 <li>You will receive an email notification from Adobe once the subscription is active</li>
                 <li>No new login credentials needed - use your existing Adobe account</li>
                 <li>All your current settings, files, and preferences will remain unchanged</li>

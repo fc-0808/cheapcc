@@ -31,7 +31,7 @@ const HOME_FAQS = [
   },
   {
     q: "How quickly will I receive my Adobe account details?",
-    a: "In most cases, you will receive your Adobe account information immediately after your payment is confirmed. The details will be sent to the email address you provided during checkout. Occasionally, during periods of high demand, delivery may take up to 24 hours, but this is rare.",
+    a: "You will receive your Adobe account information within 24 hours after your payment is confirmed. The details will be sent to the email address you provided during checkout. Please check your inbox (including spam/junk folders) for the delivery email.",
   },
   {
     q: "Is my personal information and payment data secure?",

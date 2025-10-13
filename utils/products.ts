@@ -1,3 +1,6 @@
+// utils/products.ts
+// Simple, working pricing system
+
 export interface PricingOption {
   id: string;
   name: string;
@@ -5,213 +8,348 @@ export interface PricingOption {
   price: number;
   originalPrice?: number;
   description: string;
-  adminOnly?: boolean;
-  activationType?: 'pre-activated' | 'self-activation';
-  selfActivationPrice?: number;
+  activationType: 'pre-activated' | 'self-activation' | 'redemption-required';
+  productType: 'subscription' | 'redemption_code';
+  adobeProductLine: 'creative_cloud' | 'acrobat_pro';
+  productId: string;
+  durationMonths: number;
 }
 
-export const PRODUCT = {
-  name: 'Adobe Creative Cloud',
-  description: 'Access to Adobe Creative Cloud apps and services',
-  image: '/adobe-cc.png', // You'll need to add this image to your public folder
-};
-
+// Simple hardcoded pricing options - no API calls, no complexity
 export const PRICING_OPTIONS: PricingOption[] = [
+  // Pre-activated subscriptions
   {
     id: '1m',
     name: '1 Month',
     duration: '1 month',
     price: 12.99,
-    selfActivationPrice: 15.98, // 12.99 + 2.99
     originalPrice: 54.99,
-    description: 'Adobe Creative Cloud - 1 Month',
+    description: 'Adobe Creative Cloud - 1 Month Subscription with Account Credentials',
+    activationType: 'pre-activated',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: '347bbb04-3f39-4a49-8ab6-cc2518673c65',
+    durationMonths: 1
   },
   {
     id: '3m',
     name: '3 Months',
     duration: '3 months',
     price: 29.99,
-    selfActivationPrice: 36.98, // 29.99 + 6.99
     originalPrice: 164.97,
-    description: 'Adobe Creative Cloud - 3 Months',
+    description: 'Adobe Creative Cloud - 3 Months Subscription with Account Credentials',
+    activationType: 'pre-activated',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: '101ec822-4d33-4504-b932-568b82c48f25',
+    durationMonths: 3
   },
   {
     id: '6m',
     name: '6 Months',
     duration: '6 months',
     price: 54.99,
-    selfActivationPrice: 67.98, // 54.99 + 12.99
     originalPrice: 329.94,
-    description: 'Adobe Creative Cloud - 6 Months',
+    description: 'Adobe Creative Cloud - 6 Months Subscription with Account Credentials',
+    activationType: 'pre-activated',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: 'ce3c3c59-499a-44e1-851e-98edfe95944e',
+    durationMonths: 6
   },
   {
     id: '12m',
     name: '12 Months',
     duration: '12 months',
     price: 99.99,
-    selfActivationPrice: 119.98, // 99.99 + 19.99
     originalPrice: 599.88,
-    description: 'Adobe Creative Cloud - 12 Months',
+    description: 'Adobe Creative Cloud - 12 Months Subscription with Account Credentials',
+    activationType: 'pre-activated',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: '21056281-4310-4a4a-bea0-0b7bcea420f0',
+    durationMonths: 12
   },
-  // Admin-only test option
+  // Self-activation subscriptions
   {
-    id: 'admin-test',
-    name: '1 Day',
-    duration: '1 day',
-    price: 0.5,
-    originalPrice: 1.99,
-    description: 'Admin Testing - 1 Day',
-    adminOnly: true
+    id: '1m-self',
+    name: '1 Month (Self-Activation)',
+    duration: '1 month',
+    price: 15.98,
+    originalPrice: 54.99,
+    description: 'Adobe Creative Cloud - 1 Month Self-Activation Subscription',
+    activationType: 'self-activation',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: '0850d34b-630a-4c6e-ab2f-c3b0b2ffb940',
+    durationMonths: 1
   },
+  {
+    id: '3m-self',
+    name: '3 Months (Self-Activation)',
+    duration: '3 months',
+    price: 35.98,
+    originalPrice: 164.97,
+    description: 'Adobe Creative Cloud - 3 Months Self-Activation Subscription',
+    activationType: 'self-activation',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: 'edffec5c-d6b5-4bf6-8f05-304bef3ca26f',
+    durationMonths: 3
+  },
+  {
+    id: '6m-self',
+    name: '6 Months (Self-Activation)',
+    duration: '6 months',
+    price: 65.98,
+    originalPrice: 329.94,
+    description: 'Adobe Creative Cloud - 6 Months Self-Activation Subscription',
+    activationType: 'self-activation',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: '51d85540-844e-44a0-b7c2-a3746165e525',
+    durationMonths: 6
+  },
+  {
+    id: '12m-self',
+    name: '12 Months (Self-Activation)',
+    duration: '12 months',
+    price: 119.98,
+    originalPrice: 599.88,
+    description: 'Adobe Creative Cloud - 12 Months Self-Activation Subscription',
+    activationType: 'self-activation',
+    productType: 'subscription',
+    adobeProductLine: 'creative_cloud',
+    productId: 'b2f439b5-e679-4348-9eef-4d03fdd9e32b',
+    durationMonths: 12
+  },
+  // Redemption codes
+  {
+    id: 'cc-code-1m',
+    name: '1 Month Code',
+    duration: '1 month',
+    price: 39.99,
+    originalPrice: 54.99,
+    description: 'Adobe Creative Cloud 1-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'creative_cloud',
+    productId: 'c1cfed9d-565d-49d2-a740-b40300a01c99',
+    durationMonths: 1
+  },
+  {
+    id: 'cc-code-3m',
+    name: '3 Months Code',
+    duration: '3 months',
+    price: 89.99,
+    originalPrice: 164.97,
+    description: 'Adobe Creative Cloud 3-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'creative_cloud',
+    productId: '2d762c8b-6d0e-4e8e-9f8c-7b2979736030',
+    durationMonths: 3
+  },
+  {
+    id: 'cc-code-6m',
+    name: '6 Months Code',
+    duration: '6 months',
+    price: 159.99,
+    originalPrice: 329.94,
+    description: 'Adobe Creative Cloud 6-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'creative_cloud',
+    productId: 'd54971fe-f8c8-485d-a905-fa74b550d6b1',
+    durationMonths: 6
+  },
+  {
+    id: 'cc-code-12m',
+    name: '12 Months Code',
+    duration: '12 months',
+    price: 249.99,
+    originalPrice: 659.88,
+    description: 'Adobe Creative Cloud 12-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'creative_cloud',
+    productId: '7ea7daad-d68f-4d99-879f-9b1500005b93',
+    durationMonths: 12
+  },
+  {
+    id: 'acrobat-code-1m',
+    name: '1 Month Code',
+    duration: '1 month',
+    price: 9.99,
+    originalPrice: 22.99,
+    description: 'Adobe Acrobat Pro 1-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'acrobat_pro',
+    productId: '7b0d0979-8ecc-4c7d-b488-eea4c7e8d9bb',
+    durationMonths: 1
+  },
+  {
+    id: 'acrobat-code-3m',
+    name: '3 Months Code',
+    duration: '3 months',
+    price: 27.99,
+    originalPrice: 68.97,
+    description: 'Adobe Acrobat Pro 3-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'acrobat_pro',
+    productId: '5a44151e-fe50-4379-b540-b8e6dddac078',
+    durationMonths: 3
+  },
+  {
+    id: 'acrobat-code-6m',
+    name: '6 Months Code',
+    duration: '6 months',
+    price: 49.99,
+    originalPrice: 137.94,
+    description: 'Adobe Acrobat Pro 6-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'acrobat_pro',
+    productId: '3cac15fe-0539-4015-91e0-a521c2518d72',
+    durationMonths: 6
+  },
+  {
+    id: 'acrobat-code-12m',
+    name: '12 Months Code',
+    duration: '12 months',
+    price: 89.99,
+    originalPrice: 275.88,
+    description: 'Adobe Acrobat Pro 12-Month Redemption Code - Redeem at redeem.adobe.com',
+    activationType: 'redemption-required',
+    productType: 'redemption_code',
+    adobeProductLine: 'acrobat_pro',
+    productId: 'a0f98489-9143-4527-a78b-f9eddb02bf97',
+    durationMonths: 12
+  }
 ];
 
-export interface OrderLike {
-  description?: string | null;
-  amount?: number | string | null;
-  created_at?: string | Date | null;
-  status?: string | null;
-  expiry_date?: string | Date | null;
-  priceId?: string | null;
+// Simple utility functions
+export function getPricingOptions(): PricingOption[] {
+  return PRICING_OPTIONS;
 }
 
-export const ADOBE_REGULAR_PRICING: { [key: string]: number } = {
-  '14 days': 23.99,
-  '1 month': 54.99,
-  '3 months': 164.97,
-  '6 months': 329.94,
-  '12 months': 599.88,
-};
-
-export function getPricingOptionById(priceId: string | null | undefined): PricingOption | undefined {
-  if (!priceId) return undefined;
-  return PRICING_OPTIONS.find(option => option.id === priceId);
+export function getPricingOptionById(id: string): PricingOption | null {
+  return PRICING_OPTIONS.find(option => option.id === id) || null;
 }
 
-export function getPlanDuration(order: OrderLike): string {
-  if (order.priceId) {
-    const option = getPricingOptionById(order.priceId);
-    if (option) return option.duration;
-  }
-  const description = order.description || '';
-  const amount = order.amount ? parseFloat(order.amount.toString()) : undefined;
-  for (const option of PRICING_OPTIONS) {
-    if (description.includes(option.duration) || description.includes(option.name)) {
-      return option.duration;
-    }
-    if (amount === option.price) {
-      return option.duration;
-    }
-  }
-  const durationMap: { [key: string]: RegExp } = {
-    '14 days': /14\s*-?\s*days?/i,
-    '1 month': /1\s*-?\s*month|30\s*-?\s*days?/i,
-    '3 months': /3\s*-?\s*months?|90\s*-?\s*days?/i,
-    '6 months': /6\s*-?\s*months?|180\s*-?\s*days?/i,
-    '12 months': /12\s*-?\s*months?|1\s*-?\s*year|365\s*-?\s*days?/i,
-  };
-  for (const [label, regex] of Object.entries(durationMap)) {
-    if (regex.test(description)) return label;
-  }
-  if (amount === 4.99) return '14 days';
-  if (amount === 14.99) return '1 month';
-  if (amount === 39.99) return '3 months';
-  if (amount === 64.99) return '6 months';
-  if (amount === 124.99) return '12 months';
-  return 'Unknown';
-}
-
-export function getStandardPlanDescription(order: OrderLike): string {
-  const duration = getPlanDuration(order);
-  if (duration && duration !== 'Unknown') {
-    const pricingOption = PRICING_OPTIONS.find(p => p.duration === duration);
-    if (pricingOption) return pricingOption.description;
-    return `${PRODUCT.name} - ${duration} Subscription`;
-  }
-  const amount = order.amount ? parseFloat(order.amount.toString()) : undefined;
-  const matchedOption = PRICING_OPTIONS.find(opt => opt.price === amount);
-  if (matchedOption) return matchedOption.description;
-  return order.description || `${PRODUCT.name} Subscription (Unknown Duration)`;
-}
-
-export function calculateSavings(order: OrderLike): number {
-  const orderAmount = order.amount ? parseFloat(order.amount.toString()) : null;
-  if (orderAmount === null || isNaN(orderAmount)) return 0;
-  
-  // First try to get the pricing option to use its originalPrice
-  if (order.priceId) {
-    const option = getPricingOptionById(order.priceId);
-    if (option && option.originalPrice) {
-      const savings = option.originalPrice - orderAmount;
-      return Math.max(0, parseFloat(savings.toFixed(2)));
-    }
-  }
-  
-  // Fall back to duration lookup in ADOBE_REGULAR_PRICING
-  const duration = getPlanDuration(order);
-  const regularPrice = ADOBE_REGULAR_PRICING[duration];
-  if (regularPrice) {
-    const savings = regularPrice - orderAmount;
-    return Math.max(0, parseFloat(savings.toFixed(2)));
-  }
-  return 0;
-}
-
-export function calculateExpiryDate(order: OrderLike): Date | null {
-  if (!order.created_at) return null;
-  const createdAt = new Date(order.created_at);
-  const durationStr = getPlanDuration(order);
-  let daysToAdd = 0;
-  switch (durationStr) {
-    case '1 day': daysToAdd = 1; break;
-    case '14 days': daysToAdd = 14; break;
-    case '1 month': daysToAdd = 30; break;
-    case '3 months': daysToAdd = 90; break;
-    case '6 months': daysToAdd = 180; break;
-    case '12 months': daysToAdd = 365; break;
-    default: return null;
-  }
-  const expiryDate = new Date(createdAt);
-  expiryDate.setDate(createdAt.getDate() + daysToAdd);
-  return expiryDate;
-}
-
-export function isActiveSubscription(order: OrderLike): boolean {
-  const status = order.status?.toUpperCase();
-  if (status === 'ACTIVE' || status === 'COMPLETED') {
-    // First check if there's a stored expiry_date in the database
-    if (order.expiry_date) {
-      return new Date(order.expiry_date) > new Date();
-    }
-    // Fall back to calculated expiry date if no stored date
-    const calculatedExpiry = calculateExpiryDate(order);
-    if (calculatedExpiry) {
-      return calculatedExpiry > new Date();
-    }
-    return true;
-  }
-  return false;
-}
-
-export function formatCurrency(amount: number | null | undefined): string {
-  if (amount === null || amount === undefined || isNaN(amount)) {
-    return '$0.00';
-  }
-  return `$${parseFloat(amount.toString()).toFixed(2)}`;
-}
-
-export function getPriceForActivationType(option: PricingOption, activationType: 'pre-activated' | 'self-activation'): number {
-  if (activationType === 'self-activation' && option.selfActivationPrice) {
-    return option.selfActivationPrice;
-  }
+export function getPriceForActivationType(option: PricingOption | null | undefined): number {
+  if (!option) return 0;
   return option.price;
 }
 
-export function getSelfActivationFee(duration: string): number {
-  const fees: { [key: string]: number } = {
-    '1 month': 2.99,
-    '3 months': 6.99,
-    '6 months': 12.99,
-    '12 months': 19.99,
-  };
-  return fees[duration] || 0;
-} 
+export function isRedemptionCode(option: PricingOption | null | undefined): boolean {
+  if (!option) return false;
+  return option.productType === 'redemption_code';
+}
+
+export function getProductType(option: PricingOption | null | undefined): string {
+  if (!option) return 'creative_cloud';
+  return option.productType;
+}
+
+export function getAdobeProductLine(option: PricingOption | null | undefined): string {
+  if (!option) return 'creative_cloud';
+  return option.adobeProductLine;
+}
+
+export function isSelfActivationSubscription(option: PricingOption | null | undefined): boolean {
+  if (!option) return false;
+  return option.productType === 'subscription' && option.activationType === 'self-activation';
+}
+
+export function getActivationFee(priceId: string): number {
+  const option = getPricingOptionById(priceId);
+  if (!option || !isSelfActivationSubscription(option)) return 0;
+  
+  // Find corresponding pre-activated option
+  const preActivatedId = option.id.replace('-self', '');
+  const preActivatedOption = getPricingOptionById(preActivatedId);
+  
+  if (!preActivatedOption) return 0;
+  
+  return option.price - preActivatedOption.price;
+}
+
+export function getPlanDuration(order: any): string {
+  const option = getPricingOptionById(order.priceId);
+  if (!option) return 'Unknown';
+  return option.duration;
+}
+
+export function getStandardPlanDescription(order: any): string {
+  const option = getPricingOptionById(order.priceId);
+  if (!option) return 'Unknown Plan';
+  return option.description;
+}
+
+export function calculateSavings(order: any): number {
+  const option = getPricingOptionById(order.priceId);
+  if (!option || !option.originalPrice) return 0;
+  return option.originalPrice - option.price;
+}
+
+export function calculateExpiryDate(order: any): string {
+  const option = getPricingOptionById(order.priceId);
+  if (!option) return 'Unknown';
+  
+  const now = new Date();
+  const expiryDate = new Date(now.getTime() + (option.durationMonths * 30 * 24 * 60 * 60 * 1000));
+  return expiryDate.toISOString().split('T')[0];
+}
+
+export function isActiveSubscription(order: any): boolean {
+  const option = getPricingOptionById(order.priceId);
+  if (!option) return false;
+  return option.productType === 'subscription';
+}
+
+export function getRedemptionInstructions(option: PricingOption | null | undefined): string {
+  if (!option) return '';
+  if (option.productType === 'redemption_code') {
+    return 'Redeem at redeem.adobe.com';
+  }
+  return '';
+}
+
+export function getActivationTypeForProduct(option: PricingOption | null | undefined, requestedType?: string): string {
+  if (!option) return 'pre-activated';
+  
+  // For redemption codes, always return redemption-required
+  if (option.productType === 'redemption_code') {
+    return 'redemption-required';
+  }
+  
+  // For subscriptions, use the option's activation type or the requested type
+  return option.activationType || requestedType || 'pre-activated';
+}
+
+export function getProductIdFromPriceId(priceId: string): string | null {
+  return PRICE_ID_TO_PRODUCT_ID_MAP[priceId] || null;
+}
+
+// Price ID to Product ID mapping
+export const PRICE_ID_TO_PRODUCT_ID_MAP: Record<string, string> = {
+  '1m': '347bbb04-3f39-4a49-8ab6-cc2518673c65',
+  '3m': '101ec822-4d33-4504-b932-568b82c48f25', 
+  '6m': 'ce3c3c59-499a-44e1-851e-98edfe95944e',
+  '12m': '21056281-4310-4a4a-bea0-0b7bcea420f0',
+  '1m-self': '0850d34b-630a-4c6e-ab2f-c3b0b2ffb940',
+  '3m-self': 'edffec5c-d6b5-4bf6-8f05-304bef3ca26f',
+  '6m-self': '51d85540-844e-44a0-b7c2-a3746165e525',
+  '12m-self': 'b2f439b5-e679-4348-9eef-4d03fdd9e32b',
+  'cc-code-1m': 'c1cfed9d-565d-49d2-a740-b40300a01c99',
+  'cc-code-3m': '2d762c8b-6d0e-4e8e-9f8c-7b2979736030',
+  'cc-code-6m': 'd54971fe-f8c8-485d-a905-fa74b550d6b1',
+  'cc-code-12m': '7ea7daad-d68f-4d99-879f-9b1500005b93',
+  'acrobat-code-1m': '7b0d0979-8ecc-4c7d-b488-eea4c7e8d9bb',
+  'acrobat-code-3m': '5a44151e-fe50-4379-b540-b8e6dddac078',
+  'acrobat-code-6m': '3cac15fe-0539-4015-91e0-a521c2518d72',
+  'acrobat-code-12m': 'a0f98489-9143-4527-a78b-f9eddb02bf97'
+};

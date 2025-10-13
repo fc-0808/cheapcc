@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Stripe } from 'stripe';
-import { PRICING_OPTIONS, getPriceForActivationType } from '@/utils/products';
+import { getPricingOptions, getPriceForActivationType } from '@/utils/products-supabase';
 import { CreatePaymentIntentSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
 
@@ -64,18 +64,45 @@ export async function POST(request: NextRequest) {
     }
 
     const { priceId, name, email, idempotencyKey, activationType, adobeEmail } = validationResult.data;
-    const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
+    
+    // Get pricing options dynamically
+    const pricingOptions = await getPricingOptions();
+    const selectedOption = pricingOptions.find(option => option.id === priceId);
 
     if (!selectedOption) {
       console.error(JSON.stringify({ ...logContext, event: "invalid_price_id" }, null, 2));
       return NextResponse.json({ error: 'Invalid pricing option selected.' }, { status: 400 });
     }
 
+    // Import product utility functions
+    const { 
+      getProductType, 
+      getAdobeProductLine, 
+      getActivationTypeForProduct,
+      getProductIdFromPriceId 
+    } = await import('@/utils/products-supabase');
+
+    // Determine product details
+    const productType = getProductType(selectedOption);
+    const adobeProductLine = getAdobeProductLine(selectedOption);
+    const finalActivationType = getActivationTypeForProduct(selectedOption, activationType);
+    const productId = getProductIdFromPriceId(priceId);
+
     // Calculate final price based on activation type
     const finalPrice = getPriceForActivationType(selectedOption, activationType || 'pre-activated');
     
     // Convert price to cents
     const amountInCents = Math.round(finalPrice * 100);
+
+    // Create appropriate description based on product type and Adobe product line
+    let productDescription: string;
+    if (productType === 'redemption_code') {
+      const productName = adobeProductLine === 'acrobat_pro' ? 'Adobe Acrobat Pro' : 'Adobe Creative Cloud';
+      productDescription = `${productName} - ${selectedOption.duration} Redemption Code`;
+    } else {
+      const productName = adobeProductLine === 'acrobat_pro' ? 'Adobe Acrobat Pro' : 'Adobe Creative Cloud';
+      productDescription = `${productName} - ${selectedOption.duration} Subscription`;
+    }
 
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
@@ -90,9 +117,12 @@ export async function POST(request: NextRequest) {
         priceId: priceId,
         userName: name,
         userEmail: email,
-        productDescription: selectedOption.description,
-        activationType: activationType,
-        adobeEmail: adobeEmail || null
+        productDescription: productDescription,
+        activationType: finalActivationType,
+        adobeEmail: adobeEmail || null,
+        productType: productType,
+        adobeProductLine: adobeProductLine,
+        productId: productId || ''
       },
       receipt_email: email, // Send receipt emails automatically
       // Set a description that appears on the customer's statement
@@ -106,6 +136,10 @@ export async function POST(request: NextRequest) {
       event: "payment_intent_created",
       paymentIntentId: paymentIntent.id,
       amount: amountInCents / 100,
+      productType: productType,
+      adobeProductLine: adobeProductLine,
+      finalActivationType: finalActivationType,
+      productId: productId,
       durationMs: Date.now() - requestStartTime,
     }, null, 2));
 

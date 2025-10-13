@@ -6,6 +6,7 @@ import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import CountrySelector from './CountrySelector';
 // import { logout as serverLogout } from '@/app/(auth)/logout/actions';
 
 // Dynamically import MobileMenu to reduce initial load size
@@ -27,6 +28,7 @@ export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [userName, setUserName] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -421,6 +423,7 @@ export default function Header() {
         <div className="hidden md:flex md:items-center md:space-x-8">
           {/* Navigation Links */}
           <div className="flex items-center space-x-6">
+            {/* Simplified navigation: Blog -> CheapCC dropdown */}
             <Link 
               href="/blog" 
               prefetch={false}
@@ -434,25 +437,103 @@ export default function Header() {
               )}
             </Link>
             
-            <Link 
-              href="/adobe-alternatives" 
-              prefetch={false}
-              className={`${navLinkClasses} relative group text-white/90 hover:text-white`}
-              onClick={handleNavLinkClick}
-            >
-              <span className="relative z-10">Alternatives</span>
-              <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
-            </Link>
-            
-            <Link 
-              href="/adobe-pricing-calculator" 
-              prefetch={false}
-              className={`${navLinkClasses} relative group text-white/90 hover:text-white`}
-              onClick={handleNavLinkClick}
-            >
-              <span className="relative z-10">Calculator</span>
-              <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
-            </Link>
+            {/* CheapCC Brand Pages Dropdown */}
+            <div className="relative group">
+              <button 
+                className={`${navLinkClasses} relative group text-white/90 hover:text-white flex items-center gap-1`}
+                onMouseEnter={() => setIsBrandDropdownOpen(true)}
+                onMouseLeave={() => setIsBrandDropdownOpen(false)}
+              >
+                <span className="relative z-10">CheapCC</span>
+                <i className="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
+                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
+              </button>
+              
+              {/* Dropdown Menu */}
+              <div 
+                className={`absolute top-full left-0 mt-2 w-64 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 ${
+                  isBrandDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+                }`}
+                onMouseEnter={() => setIsBrandDropdownOpen(true)}
+                onMouseLeave={() => setIsBrandDropdownOpen(false)}
+              >
+                <div className="p-2">
+                  <Link
+                    href="/adobe-pricing-calculator"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                    onClick={handleNavLinkClick}
+                  >
+                    <i className="fas fa-calculator text-indigo-400"></i>
+                    <div>
+                      <div className="font-medium">Pricing Calculator</div>
+                      <div className="text-xs text-white/60">Calculate your savings</div>
+                    </div>
+                  </Link>
+                  
+                  <Link
+                    href="/adobe-alternatives"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                    onClick={handleNavLinkClick}
+                  >
+                    <i className="fas fa-th-large text-orange-400"></i>
+                    <div>
+                      <div className="font-medium">Adobe Alternatives</div>
+                      <div className="text-xs text-white/60">Compare options</div>
+                    </div>
+                  </Link>
+                  
+                  <div className="border-t border-white/10 my-2"></div>
+                  
+                  <Link
+                    href="/cheapcc-review"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                    onClick={handleNavLinkClick}
+                  >
+                    <i className="fas fa-star text-yellow-400"></i>
+                    <div>
+                      <div className="font-medium">Reviews</div>
+                      <div className="text-xs text-white/60">Customer testimonials</div>
+                    </div>
+                  </Link>
+                  
+                  <Link
+                    href="/what-is-cheapcc"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                    onClick={handleNavLinkClick}
+                  >
+                    <i className="fas fa-question-circle text-blue-400"></i>
+                    <div>
+                      <div className="font-medium">What is CheapCC?</div>
+                      <div className="text-xs text-white/60">Service explained</div>
+                    </div>
+                  </Link>
+                  
+                  <Link
+                    href="/cheapcc-vs-adobe-official"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                    onClick={handleNavLinkClick}
+                  >
+                    <i className="fas fa-balance-scale text-green-400"></i>
+                    <div>
+                      <div className="font-medium">vs Adobe Official</div>
+                      <div className="text-xs text-white/60">Price comparison</div>
+                    </div>
+                  </Link>
+                  
+                  <Link
+                    href="/cheapcc-testimonials"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                    onClick={handleNavLinkClick}
+                  >
+                    <i className="fas fa-users text-purple-400"></i>
+                    <div>
+                      <div className="font-medium">Customer Stories</div>
+                      <div className="text-xs text-white/60">10,000+ testimonials</div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* Admin link for desktop */}
@@ -474,6 +555,8 @@ export default function Header() {
             <div className="bg-white/5 h-8 w-28 rounded-md backdrop-blur-sm" />
           ) : user ? (
             <div className="flex items-center space-x-5">
+              {/* Country Selector */}
+              <CountrySelector className="hidden lg:block" showPricing={false} />
               <span className="hidden lg:flex items-center text-sm font-light">
                 <div className="flex items-center">
                   <i className="fas fa-user-circle mr-2 text-[#ff3366]/80" />
@@ -588,6 +671,8 @@ export default function Header() {
             </div>
           ) : (
             <div className="flex items-center gap-4">
+              {/* Country Selector */}
+              <CountrySelector className="hidden lg:block" showPricing={false} />
               <div>
                 <div>
                   <Link 

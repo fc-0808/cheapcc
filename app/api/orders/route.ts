@@ -7,10 +7,10 @@ import {
   Order,
   CheckoutPaymentIntent
 } from '@paypal/paypal-server-sdk';
-import { PRICING_OPTIONS, getPriceForActivationType } from '@/utils/products';
+import { getPricingOptions, getPriceForActivationType } from '@/utils/products-supabase';
 import { CreateOrderSchema } from '@/lib/schemas';
 import { checkRateLimit, limiters } from '@/utils/rate-limiter';
-import { createClient } from '@/utils/supabase/supabase-server';
+import { createServiceClient } from '@/utils/supabase/supabase-server';
 
 // Base environment settings from environment variables
 let clientId = process.env.PAYPAL_CLIENT_ID || '';
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Get supabase client
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
     
     // Check auth
     const { data: { user } } = await supabase.auth.getUser();
@@ -288,7 +288,9 @@ export async function POST(request: NextRequest) {
     priceIdSubmitted = priceId;
     emailSubmitted = email;
 
-    const selectedOption = PRICING_OPTIONS.find(option => option.id === priceId);
+    // Get pricing options dynamically
+    const pricingOptions = await getPricingOptions();
+    const selectedOption = pricingOptions.find(option => option.id === priceId);
     
     if (!selectedOption) {
       console.error(JSON.stringify({
@@ -302,17 +304,84 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Import product utility functions
+    const { 
+      getProductType, 
+      getAdobeProductLine, 
+      getActivationTypeForProduct,
+      getProductIdFromPriceId
+    } = await import('@/utils/products');
+
+    // Determine product details
+    const productType = getProductType(selectedOption);
+    const adobeProductLine = getAdobeProductLine(selectedOption);
+    const finalActivationType = getActivationTypeForProduct(selectedOption, activationType);
+    const productId = getProductIdFromPriceId(priceId);
+    const finalPrice = selectedOption.price;
+
+    // Store order data in database before creating PayPal order
+    // This allows the webhook to retrieve the form data later
+    const supabase = await createServiceClient();
+    const pendingOrderData = {
+      price_id: priceId,
+      name,
+      email,
+      adobe_email: adobeEmail || null,
+      activation_type: finalActivationType,
+      product_type: productType,
+      adobe_product_line: adobeProductLine,
+      product_id: productId,
+      amount: finalPrice,
+      currency: 'USD',
+      status: 'PENDING',
+      payment_processor: 'paypal',
+      paypal_order_id: `pending-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: pendingOrder, error: insertError } = await supabase
+      .from('orders')
+      .insert([pendingOrderData])
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error(JSON.stringify({
+        message: "Failed to store pending order data",
+        error: insertError.message,
+        source: "app/api/orders/route.ts POST"
+      }, null, 2));
+      return NextResponse.json(
+        { error: 'Failed to process order. Please try again.' },
+        { status: 500 }
+      );
+    }
+
     // Log the request details for debugging
     console.info(JSON.stringify({
       message: "Creating PayPal order",
       priceId,
       price: selectedOption.price,
       duration: selectedOption.duration,
+      productType,
+      adobeProductLine,
+      finalActivationType,
+      productId,
+      pendingOrderId: pendingOrder.id,
       environment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
       source: "app/api/orders/route.ts POST"
     }, null, 2));
-
-    const finalPrice = getPriceForActivationType(selectedOption, activationType || 'pre-activated');
+    
+    // Create appropriate description based on product type and Adobe product line
+    let productDescription: string;
+    if (productType === 'redemption_code') {
+      const productName = adobeProductLine === 'acrobat_pro' ? 'Adobe Acrobat Pro' : 'Adobe Creative Cloud';
+      productDescription = `${productName} - ${selectedOption.duration} Redemption Code`;
+    } else {
+      const productName = adobeProductLine === 'acrobat_pro' ? 'Adobe Acrobat Pro' : 'Adobe Creative Cloud';
+      productDescription = `${productName} - ${selectedOption.duration} Subscription`;
+    }
     
     const paypalRequestBody = {
       intent: CheckoutPaymentIntent.Capture,
@@ -322,8 +391,12 @@ export async function POST(request: NextRequest) {
             currencyCode: 'USD',
             value: finalPrice.toFixed(2),
           },
-          description: `Adobe Creative Cloud - ${selectedOption.duration} Subscription`,
-          customId: JSON.stringify({ name, email, priceId, activationType, adobeEmail: adobeEmail || null }),
+          description: productDescription,
+          customId: JSON.stringify({ 
+            priceId, 
+            activationType: finalActivationType, 
+            productType
+          }),
       },
       ],
     };
@@ -379,6 +452,26 @@ export async function POST(request: NextRequest) {
       status: orderData.status,
       links: orderData.links
     }, null, 2));
+
+    // Update the pending order with the real PayPal order ID
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({ 
+        paypal_order_id: orderData.id,
+        status: 'PENDING' // Keep as PENDING until webhook confirms payment
+      })
+      .eq('id', pendingOrder.id);
+
+    if (updateError) {
+      console.error(JSON.stringify({
+        message: "Failed to update pending order with PayPal order ID",
+        error: updateError.message,
+        pendingOrderId: pendingOrder.id,
+        paypalOrderId: orderData.id,
+        source: "app/api/orders/route.ts POST"
+      }, null, 2));
+      // Don't fail the request, just log the error
+    }
 
     const durationMs = Date.now() - requestStartTime;
     console.info(JSON.stringify({

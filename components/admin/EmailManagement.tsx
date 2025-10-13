@@ -39,7 +39,7 @@ export default function EmailManagement() {
   const [showCustomerSelector, setShowCustomerSelector] = useState(false);
   const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
 
-  const adminKey = "cheapcc_admin_2024_secure_key_xyz789"; // From env
+  const adminKey = "cheapcc_admin_2025_secure_key_xyz789"; // From env
 
   const sendTestEmail = async () => {
     if (!selectedTemplate) return;

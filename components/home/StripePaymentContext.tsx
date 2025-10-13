@@ -47,8 +47,19 @@ export const StripePaymentProvider = ({ children }: { children: React.ReactNode 
     
     return (
       <form onSubmit={handleSubmit} className="space-y-5">
-        {!clientSecret && <div className="p-5 h-48 border border-white/20 rounded-lg bg-black/20 text-gray-400 text-sm flex flex-col items-center justify-center"><div className="h-6 w-6 border-2 border-fuchsia-500/50 border-t-fuchsia-500 rounded-full animate-spin mb-3"></div><span>Preparing secure terminal...</span></div>}
-        {clientSecret && <PaymentElement id="payment-element" options={{ layout: { type: 'tabs', defaultCollapsed: false } }} />}
+        {!clientSecret ? (
+          <div className="p-5 h-48 border border-white/20 rounded-lg bg-black/20 text-gray-400 text-sm flex flex-col items-center justify-center">
+            <div className="h-6 w-6 border-2 border-fuchsia-500/50 border-t-fuchsia-500 rounded-full animate-spin mb-3"></div>
+            <span>Preparing secure terminal...</span>
+          </div>
+        ) : (
+          <PaymentElement 
+            id="payment-element" 
+            options={{ 
+              layout: { type: 'tabs', defaultCollapsed: false } 
+            }} 
+          />
+        )}
         <button 
           disabled={paymentStatus === 'loading' || !stripe || !elements || !isFormValid || !clientSecret} 
           id="stripe-submit" 

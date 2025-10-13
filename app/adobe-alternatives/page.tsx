@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Adobe CC Alternatives 2025: Why CheapCC is the Smart Choice',
-  description: 'Compare Adobe Creative Cloud alternatives in 2025. CheapCC offers the REAL Adobe CC for 75% less than official pricing. Same apps, same features, massive savings.',
+  title: 'CheapCC vs Adobe Alternatives 2025: Why CheapCC is the Smart Choice',
+  description: 'Compare Adobe Creative Cloud alternatives in 2025. CheapCC offers the REAL Adobe CC for 83% less than official pricing. Same apps, same features, massive savings.',
   keywords: 'adobe alternatives, adobe cc alternatives, cheap adobe creative cloud, adobe alternatives 2025, adobe illustrator alternative, adobe photoshop alternative, cheapcc vs adobe',
   alternates: {
     canonical: '/adobe-alternatives'

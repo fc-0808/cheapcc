@@ -1,5 +1,6 @@
 import { CustomerOwnedEmailAnnouncementTemplate } from '@/components/CustomerOwnedEmailAnnouncementTemplate';
 import { PriceReductionAnnouncementTemplate } from '@/components/PriceReductionAnnouncementTemplate';
+import { RedemptionCodeEmailTemplate } from '@/components/RedemptionCodeEmailTemplate';
 
 export interface EmailTemplate {
   id: string;
@@ -33,8 +34,8 @@ export const EMAIL_TEMPLATES: EmailTemplate[] = [
     previewProps: { name: 'John Doe' },
     subject: '🎉 New Feature: Use Your Own Adobe Account with CheapCC',
     enabled: true,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z'
   },
   {
     id: 'price-reduction-announcement',
@@ -46,8 +47,27 @@ export const EMAIL_TEMPLATES: EmailTemplate[] = [
     previewProps: { name: 'Sarah Johnson' },
     subject: '🎉 We Appreciate You! New Lower Prices on All Adobe Creative Cloud Plans',
     enabled: true,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z'
+  },
+  {
+    id: 'redemption-code-confirmation',
+    name: 'Redemption Code Purchase Confirmation',
+    description: 'Confirmation email for redemption code purchases with delivery timeline',
+    category: 'transactional',
+    component: RedemptionCodeEmailTemplate,
+    requiredProps: ['name', 'orderId'],
+    previewProps: { 
+      name: 'Alex Johnson', 
+      orderId: 'RC-12345', 
+      productName: 'Adobe Creative Cloud',
+      duration: '6 months',
+      isGuest: false 
+    },
+    subject: 'Your CheapCC Redemption Code Order Confirmation',
+    enabled: true,
+    createdAt: '2025-10-11T00:00:00Z',
+    updatedAt: '2025-10-11T00:00:00Z'
   }
   // Future templates will be added here
 ];

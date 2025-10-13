@@ -11,13 +11,15 @@ import ClientUnifiedBackground from '@/components/ClientUnifiedBackground';
 import ClientTawkToChat from '@/components/ClientTawkToChat';
 import ClientSEOOptimizer from '@/components/ClientSEOOptimizer';
 import ClientLoading from '@/components/ClientLoading';
+import EnhancedAnalytics from '@/components/EnhancedAnalytics';
+import { InternationalizationProvider } from '@/contexts/InternationalizationContext';
 
 export const metadata: Metadata = {
   title: {
     template: '%s | CheapCC - Affordable Adobe CC Subscriptions',
     default: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
   },
-  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 75% off. Instant delivery for all Adobe apps.",
+  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 83% off. Instant delivery for all Adobe apps.",
 };
 
 export default function RootLayout({
@@ -54,7 +56,7 @@ export default function RootLayout({
         {/* Theme Color */}
         <meta name="theme-color" content="#2c2d5a" />
         
-        <meta name="keywords" content="cheapcc, cheapcc review, cheapcc adobe, adobe cc discount, cheapcc login" />
+        <meta name="keywords" content="cheapcc, cheapcc adobe, adobe creative cloud discount, cheap adobe cc, adobe cc alternative, adobe subscription discount, photoshop discount, illustrator discount, premiere pro discount, cheapcc review, cheapcc login" />
         
         {/* Performance Optimizations */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes" />
@@ -163,21 +165,52 @@ export default function RootLayout({
               "name": "CheapCC",
               "url": "https://cheapcc.online",
               "logo": "https://cheapcc.online/favicon.svg",
-              "description": "CheapCC - Provider of affordable Adobe Creative Cloud subscriptions",
+              "description": "CheapCC - Adobe Creative Cloud discount provider offering genuine CC subscriptions at 83% off official pricing",
               "slogan": "Affordable Adobe Creative Cloud for Everyone",
               "foundingDate": "2023",
               "numberOfEmployees": "10-50",
               "knowsAbout": [
-                "Adobe Creative Cloud",
-                "Graphic Design Software",
-                "Video Editing Software",
-                "Digital Marketing Tools",
+                "Adobe Creative Cloud Discount",
+                "Adobe CC Alternative",
+                "Photoshop Discount",
+                "Illustrator Discount",
+                "Premiere Pro Discount",
+                "Adobe Subscription Discount",
                 "Creative Software Licensing"
               ],
               "serviceArea": {
                 "@type": "GeoShape",
                 "addressCountry": ["US", "CA", "GB", "AU", "DE", "FR", "ES", "IT", "NL", "SE", "NO", "DK"]
               },
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "US",
+                "addressRegion": "Global",
+                "addressLocality": "Online"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "40.7128",
+                "longitude": "-74.0060"
+              },
+              "areaServed": [
+                {
+                  "@type": "Country",
+                  "name": "United States"
+                },
+                {
+                  "@type": "Country", 
+                  "name": "Canada"
+                },
+                {
+                  "@type": "Country",
+                  "name": "United Kingdom"
+                },
+                {
+                  "@type": "Country",
+                  "name": "Australia"
+                }
+              ],
               "contactPoint": [
                 {
                   "@type": "ContactPoint",
@@ -247,8 +280,8 @@ export default function RootLayout({
             {
               "@context": "https://schema.org",
               "@type": "Product",
-              "name": "Adobe Creative Cloud Subscription - CheapCC",
-              "description": "Genuine Adobe Creative Cloud subscriptions at 75% off official pricing. All CC apps included: Photoshop, Illustrator, Premiere Pro, After Effects.",
+              "name": "Adobe Creative Cloud Discount - CheapCC Alternative",
+              "description": "CheapCC: Genuine Adobe Creative Cloud subscriptions at 83% off official pricing. Adobe CC alternative with all apps: Photoshop, Illustrator, Premiere Pro, After Effects.",
               "brand": {
                 "@type": "Brand",
                 "name": "CheapCC"
@@ -349,21 +382,27 @@ export default function RootLayout({
           `}} 
         />
         
-        {/* Critical content rendered first */}
-        <ClientHeader />
-        <Suspense fallback={<ClientLoading />}>
-          <ClientSWRProvider>
-          {/* Main Content */}
-          <main className="cheapcc-main-content">
-            {children}
-          </main>
-          </ClientSWRProvider>
-        </Suspense>
-        {/* Footer rendered after main content */}
-        <ClientFooter />
+        {/* Wrap everything in InternationalizationProvider */}
+        <InternationalizationProvider>
+          {/* Critical content rendered first */}
+          <ClientHeader />
+          <Suspense fallback={<ClientLoading />}>
+            <ClientSWRProvider>
+            {/* Main Content */}
+            <main className="cheapcc-main-content">
+              {children}
+            </main>
+            </ClientSWRProvider>
+          </Suspense>
+          {/* Footer rendered after main content */}
+          <ClientFooter />
+        </InternationalizationProvider>
         
         {/* Vercel Analytics */}
         <Analytics />
+        
+        {/* Enhanced Analytics - Professional tracking */}
+        <EnhancedAnalytics />
         
         {/* SEO Performance Optimizer - Client-side only */}
         <ClientSEOOptimizer />

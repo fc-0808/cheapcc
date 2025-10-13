@@ -22,13 +22,13 @@ const SwipeableCardExample: React.FC = () => {
       id: '2',
       title: 'Adobe Illustrator CC',
       description: 'Vector graphics and illustration software used by designers',
-      date: 'Active until Feb 2024',
+      date: 'Active until Feb 2025',
     },
     {
       id: '3',
       title: 'Adobe Premiere Pro',
       description: 'Video editing software for film, TV, and web',
-      date: 'Active until Jan 2024',
+      date: 'Active until Jan 2025',
     },
   ]);
 
@@ -148,7 +148,7 @@ const SwipeableCardExample: React.FC = () => {
               <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Premium</span>
             </div>
             <p className="text-sm text-gray-600 mt-1">Full access to all Adobe CC applications</p>
-            <div className="mt-2 text-xs text-green-600 font-medium">Active until Mar 2024</div>
+            <div className="mt-2 text-xs text-green-600 font-medium">Active until Mar 2025</div>
           </div>
         </SwipeableCard>
       </div>

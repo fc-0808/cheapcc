@@ -13,7 +13,7 @@ export default function TermsOfService() {
       <div className="container max-w-4xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Terms of Service</h1>
           <div className="text-center mb-8">
-            <p className="text-gray-400">Last updated: June 1, 2024</p>
+            <p className="text-gray-400">Last updated: January 1, 2025</p>
         </div>
           
           <div className="rounded-xl p-6 sm:p-8 mb-10" style={{

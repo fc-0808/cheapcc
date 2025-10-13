@@ -24,8 +24,8 @@ const INTERNAL_LINKS: InternalLink[] = [
   // High priority pages
   {
     href: '/#pricing',
-    title: 'Adobe CC Pricing Plans',
-    description: 'Compare our affordable Adobe Creative Cloud subscription plans starting at $14.99/month',
+    title: 'Adobe Creative Cloud Discount Plans',
+    description: 'Compare our Adobe CC discount pricing plans - genuine Creative Cloud subscriptions starting at $14.99/month',
     category: 'pricing',
     priority: 'high'
   },
@@ -50,6 +50,48 @@ const INTERNAL_LINKS: InternalLink[] = [
     category: 'blog',
     priority: 'high'
   },
+  {
+    href: '/cheapcc-net',
+    title: 'CheapCC.net Alternative - Adobe CC Discount',
+    description: 'Looking for CheapCC.net? Find genuine Adobe Creative Cloud subscriptions at 83% off official pricing',
+    category: 'alternatives',
+    priority: 'high'
+  },
+  {
+    href: '/cheapcc-review',
+    title: 'CheapCC Review 2025 - Is CheapCC Legit?',
+    description: 'Honest CheapCC review with real customer experiences. Find out if CheapCC is worth it for Adobe CC discounts',
+    category: 'support',
+    priority: 'high'
+  },
+  {
+    href: '/cheapcc-vs-adobe-official',
+    title: 'CheapCC vs Adobe Official Pricing - Save 83%',
+    description: 'Compare CheapCC vs Adobe official pricing. Same Adobe CC apps for $14.99/month vs $79.99/month',
+    category: 'pricing',
+    priority: 'high'
+  },
+  {
+    href: '/what-is-cheapcc',
+    title: 'What is CheapCC? - Adobe CC Discount Service',
+    description: 'Learn what CheapCC is and how it provides genuine Adobe Creative Cloud subscriptions at 83% off',
+    category: 'support',
+    priority: 'high'
+  },
+  {
+    href: '/cheapcc-testimonials',
+    title: 'CheapCC Customer Testimonials - 10,000+ Reviews',
+    description: 'Read real CheapCC customer testimonials and success stories. See why creatives worldwide trust CheapCC',
+    category: 'support',
+    priority: 'medium'
+  },
+  {
+    href: '/voice-search-faq',
+    title: 'Voice Search FAQ - CheapCC Questions Answered',
+    description: 'Voice-optimized FAQ with instant answers to common CheapCC questions and concerns.',
+    category: 'support',
+    priority: 'medium'
+  },
   
   // Medium priority pages
   {
@@ -69,7 +111,7 @@ const INTERNAL_LINKS: InternalLink[] = [
   {
     href: '/adobe-photoshop-discount',
     title: 'Adobe Photoshop Discount',
-    description: 'Get Adobe Photoshop at 75% off official pricing with full Creative Cloud access',
+    description: 'Get Adobe Photoshop at 83% off official pricing with full Creative Cloud access',
     category: 'pricing',
     priority: 'medium'
   },

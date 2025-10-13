@@ -39,7 +39,7 @@ export default function CustomerList() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          adminKey: "cheapcc_admin_2024_secure_key_xyz789",
+          adminKey: "cheapcc_admin_2025_secure_key_xyz789",
           action: "check"
         })
       });

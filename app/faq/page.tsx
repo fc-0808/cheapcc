@@ -3,9 +3,9 @@ import FAQPageContent from '@/components/faq/FAQPageContent';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'FAQ - Your Questions Answered about Cheap Adobe CC',
-  description: 'Find answers to common questions about our cheap Adobe Creative Cloud subscriptions. Learn about legitimacy, payment methods, account delivery, and more.',
-  keywords: 'cheap adobe creative cloud faq, adobe cc discount questions, is cheapcc legit, adobe subscription support',
+  title: 'CheapCC FAQ - Is CheapCC Legit? Adobe CC Discount Questions Answered',
+  description: 'Find answers to common CheapCC questions. Is CheapCC legit? How does CheapCC work? Learn about our Adobe Creative Cloud discount service.',
+  keywords: 'cheapcc faq, is cheapcc legit, cheapcc review, cheapcc questions, adobe cc discount faq, cheapcc support',
   alternates: {
     canonical: '/faq'
   },
@@ -26,10 +26,18 @@ const faqStructuredData = {
     },
     {
       "@type": "Question",
-      "name": "How does cheapcc.online offer such low prices?",
+      "name": "Is CheapCC legit and safe to use?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "As an alternative to cheapcc.net, we specialize in offering Adobe Creative Cloud subscriptions at significantly reduced prices. We achieve these savings through volume licensing agreements and strategic partnerships that allow us to pass the savings onto you. This is why we can offer up to 75% off compared to Adobe's official pricing while providing the same authentic product."
+        "text": "Yes, CheapCC is a legitimate service with over 10,000 satisfied customers and a 4.8/5 rating. We provide genuine Adobe Creative Cloud subscriptions with secure payment processing and reliable customer support. All accounts are authentic Adobe subscriptions with full functionality."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does CheapCC offer Adobe CC at such low prices?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "CheapCC achieves significant savings through volume licensing agreements and strategic partnerships. This allows us to offer genuine Adobe Creative Cloud subscriptions at up to 83% off official Adobe pricing while maintaining the same authentic product quality and features."
       }
     },
     {
@@ -45,7 +53,7 @@ const faqStructuredData = {
       "name": "How quickly will I receive my Adobe account details?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "In most cases, you will receive your Adobe account information immediately after your payment is confirmed. The details will be sent to the email address you provided during checkout. Occasionally, during periods of high demand, delivery may take up to 24 hours, but this is rare."
+        "text": "You will receive your Adobe account information within 24 hours after your payment is confirmed. The details will be sent to the email address you provided during checkout. Please check your inbox (including spam/junk folders) for the delivery email."
       }
     },
     {

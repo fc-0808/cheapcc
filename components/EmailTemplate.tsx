@@ -27,7 +27,7 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
             <div style={{ marginBottom: 20 }}>
               <p style={{ marginBottom: 18 }}>Hi {name},</p>
               <p style={{ marginBottom: 18 }}>Thank you for your purchase! Your order has been received and is now being processed.</p>
-              <p style={{ marginBottom: 18 }}>Below are your order details. You will receive your Adobe account credentials in a separate email within 30 minutes (usually much sooner).</p>
+              <p style={{ marginBottom: 18 }}>Below are your order details. You will receive your Adobe account credentials in a separate email within 24 hours.</p>
             </div>
             <div style={{ background: '#f4f7f6', borderRadius: 6, padding: 18, margin: '30px 0', fontSize: 15, color: '#2c2d5a', fontWeight: 500 }}>
               <div style={{ marginBottom: 8 }}><strong>Order Number:</strong> <span style={{ color: '#ff3366' }}>{orderId}</span></div>

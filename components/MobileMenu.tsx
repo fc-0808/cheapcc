@@ -177,7 +177,7 @@ const MobileMenu = memo(({
       
       <div className="px-4 py-2 relative z-10">
         <nav aria-label="Mobile navigation">
-          {/* Common links for all users */}
+        image.png          {/* Common links for all users */}
           <div className="py-1">
             <Link 
               href="/blog"
@@ -192,6 +192,99 @@ const MobileMenu = memo(({
               </span>
               <span>Blog</span>
             </Link>
+            
+            {/* CheapCC Brand Pages Section */}
+            <div className="border-t border-white/10 pt-4 mt-4">
+              <div className="px-4 py-2 text-sm font-semibold text-white/60 uppercase tracking-wider">
+                CheapCC Pages
+              </div>
+              
+              <Link 
+                href="/adobe-pricing-calculator"
+                onClick={handleLinkClickWithFeedback}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium text-white/90 hover:bg-white/10 active:bg-white/15 active:scale-[0.98] transition-all duration-300"
+              >
+                <span className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500/20 to-indigo-600/20 shadow-lg shadow-indigo-500/10">
+                  <i className="fas fa-calculator text-indigo-400" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <div className="font-medium">Pricing Calculator</div>
+                  <div className="text-xs text-white/60">Calculate your savings</div>
+                </div>
+              </Link>
+              
+              <Link 
+                href="/adobe-alternatives"
+                onClick={handleLinkClickWithFeedback}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium text-white/90 hover:bg-white/10 active:bg-white/15 active:scale-[0.98] transition-all duration-300"
+              >
+                <span className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-orange-600/20 shadow-lg shadow-orange-500/10">
+                  <i className="fas fa-th-large text-orange-400" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <div className="font-medium">Adobe Alternatives</div>
+                  <div className="text-xs text-white/60">Compare options</div>
+                </div>
+              </Link>
+              
+              <div className="border-t border-white/10 my-2 mx-4"></div>
+              
+              <Link 
+                href="/cheapcc-review"
+                onClick={handleLinkClickWithFeedback}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium text-white/90 hover:bg-white/10 active:bg-white/15 active:scale-[0.98] transition-all duration-300"
+              >
+                <span className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 shadow-lg shadow-yellow-500/10">
+                  <i className="fas fa-star text-yellow-400" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <div className="font-medium">Reviews</div>
+                  <div className="text-xs text-white/60">Customer testimonials</div>
+                </div>
+              </Link>
+              
+              <Link 
+                href="/what-is-cheapcc"
+                onClick={handleLinkClickWithFeedback}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium text-white/90 hover:bg-white/10 active:bg-white/15 active:scale-[0.98] transition-all duration-300"
+              >
+                <span className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500/20 to-blue-600/20 shadow-lg shadow-blue-500/10">
+                  <i className="fas fa-question-circle text-blue-400" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <div className="font-medium">What is CheapCC?</div>
+                  <div className="text-xs text-white/60">Service explained</div>
+                </div>
+              </Link>
+              
+              <Link 
+                href="/cheapcc-vs-adobe-official"
+                onClick={handleLinkClickWithFeedback}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium text-white/90 hover:bg-white/10 active:bg-white/15 active:scale-[0.98] transition-all duration-300"
+              >
+                <span className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-green-500/20 to-green-600/20 shadow-lg shadow-green-500/10">
+                  <i className="fas fa-balance-scale text-green-400" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <div className="font-medium">vs Adobe Official</div>
+                  <div className="text-xs text-white/60">Price comparison</div>
+                </div>
+              </Link>
+              
+              <Link 
+                href="/cheapcc-testimonials"
+                onClick={handleLinkClickWithFeedback}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium text-white/90 hover:bg-white/10 active:bg-white/15 active:scale-[0.98] transition-all duration-300"
+              >
+                <span className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-purple-600/20 shadow-lg shadow-purple-500/10">
+                  <i className="fas fa-users text-purple-400" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <div className="font-medium">Customer Stories</div>
+                  <div className="text-xs text-white/60">10,000+ testimonials</div>
+                </div>
+              </Link>
+            </div>
 
             <Link 
               href="/swipeable-cards-demo"

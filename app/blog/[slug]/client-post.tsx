@@ -51,7 +51,7 @@ export default function ClientPost({ postData }: ClientPostProps) {
     "@type": "BlogPosting",
     "headline": postData.title,
     "description": postData.excerpt,
-    "image": postData.featuredImage || "https://cheapcc.online/og-image.jpg",
+    "image": postData.featuredImage || "https://cheapcc.online/og-image.svg",
     "author": { "@type": "Organization", "name": "CheapCC" },
     "publisher": {
       "@type": "Organization", "name": "CheapCC",

@@ -1,5 +1,8 @@
+'use client';
+
 import React from 'react';
 import { PricePoint, calculateYearlySavings } from '@/lib/comparisons';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 interface PriceComparisonTableProps {
   adobeProduct: string;
@@ -21,13 +24,8 @@ export default function PriceComparisonTable({
     cheapCCPricing,
     alternativePricing
   );
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
-  };
+  
+  const { formatLocalPrice } = useInternationalization();
 
   return (
     <div className="overflow-x-auto my-8 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm">
@@ -46,28 +44,28 @@ export default function PriceComparisonTable({
           <tr>
             <td className="p-4 border-b border-white/10 text-white">Monthly Price</td>
             <td className="p-4 border-b border-white/10 text-white/80">
-              {adobePricing.subscription ? formatPrice(adobePricing.monthly) : 'N/A'}
+              {adobePricing.subscription ? formatLocalPrice(adobePricing.monthly) : 'N/A'}
             </td>
             <td className="p-4 border-b border-white/10 bg-pink-500/20 text-white/80">
-              {cheapCCPricing.subscription ? formatPrice(cheapCCPricing.monthly) : 'N/A'}
+              {cheapCCPricing.subscription ? formatLocalPrice(cheapCCPricing.monthly) : 'N/A'}
             </td>
             <td className="p-4 border-b border-white/10 text-white/80">
-              {alternativePricing.subscription ? formatPrice(alternativePricing.monthly) : 'N/A'}
+              {alternativePricing.subscription ? formatLocalPrice(alternativePricing.monthly) : 'N/A'}
             </td>
           </tr>
           <tr>
             <td className="p-4 border-b border-white/10 text-white">Annual Price</td>
             <td className="p-4 border-b border-white/10 text-white/80">
-              {formatPrice(adobePricing.annual)}
+              {formatLocalPrice(adobePricing.annual)}
             </td>
             <td className="p-4 border-b border-white/10 bg-pink-500/20 text-white/80">
-              {formatPrice(cheapCCPricing.annual)}
+              {formatLocalPrice(cheapCCPricing.annual)}
             </td>
             <td className="p-4 border-b border-white/10 text-white/80">
               {alternativePricing.subscription 
-                ? formatPrice(alternativePricing.annual) 
+                ? formatLocalPrice(alternativePricing.annual) 
                 : alternativePricing.oneTime 
-                  ? `${formatPrice(alternativePricing.oneTime)} (one-time)`
+                  ? `${formatLocalPrice(alternativePricing.oneTime)} (one-time)`
                   : 'N/A'}
             </td>
           </tr>
@@ -75,11 +73,11 @@ export default function PriceComparisonTable({
             <td className="p-4 border-b border-white/10 text-white">Savings vs Adobe (Annual)</td>
             <td className="p-4 border-b border-white/10 text-white/80">-</td>
             <td className="p-4 border-b border-white/10 font-bold bg-pink-500/20 text-green-400">
-              {formatPrice(cheapCCSavings)} ({Math.round((cheapCCSavings / adobePricing.annual) * 100)}%)
+              {formatLocalPrice(cheapCCSavings)} ({Math.round((cheapCCSavings / adobePricing.annual) * 100)}%)
             </td>
             <td className="p-4 border-b border-white/10 font-bold text-green-400">
               {alternativeSavings > 0 
-                ? `${formatPrice(alternativeSavings)} (${Math.round((alternativeSavings / adobePricing.annual) * 100)}%)`
+                ? `${formatLocalPrice(alternativeSavings)} (${Math.round((alternativeSavings / adobePricing.annual) * 100)}%)`
                 : 'No savings'}
             </td>
           </tr>

@@ -22,6 +22,18 @@ export default function EmailInputField({
   const [emailError, setEmailError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Professional email validation
   const validateEmail = (email: string): boolean => {
@@ -89,16 +101,21 @@ export default function EmailInputField({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <i className="fas fa-envelope text-fuchsia-400 text-sm"></i>
-        {isSelfActivation ? 'Adobe Account Email Address' : 'Email Address for Activation'}
+        <i className="fas fa-envelope text-fuchsia-400 text-sm hidden md:inline"></i>
+        <span className="hidden md:inline">
+          {isSelfActivation ? 'Adobe Account Email Address' : 'Email Address for Activation'}
+        </span>
+        <span className="md:hidden">
+          {isSelfActivation ? 'Adobe Account Email' : 'Email Address'}
+        </span>
         <span className="text-fuchsia-400">*</span>
       </motion.label>
 
       {/* Input Container */}
       <div className="relative group">
-        {/* Glow Effect */}
+        {/* Glow Effect - Desktop, Subtle focus ring - Mobile */}
         <motion.div 
-          className={`absolute -inset-0.5 rounded-xl blur transition-all duration-300 ${
+          className={`absolute -inset-0.5 rounded-xl blur transition-all duration-300 hidden md:block ${
             emailError 
               ? 'bg-red-500 opacity-75' 
               : isFocused 
@@ -109,6 +126,15 @@ export default function EmailInputField({
             opacity: emailError ? 0.75 : isFocused ? 0.75 : 0,
           }}
           transition={{ duration: 0.3 }}
+        />
+        <div 
+          className={`absolute -inset-0.5 rounded-lg transition-all duration-200 md:hidden ${
+            emailError 
+              ? 'bg-red-500/20' 
+              : isFocused 
+                ? 'bg-fuchsia-500/20' 
+                : 'bg-transparent'
+          }`}
         />
 
         {/* Input Field */}
@@ -121,30 +147,34 @@ export default function EmailInputField({
             onFocus={handleFocus}
             onBlur={handleBlur}
             disabled={isUserSignedIn}
-            placeholder={isSelfActivation ? "Enter your Adobe account email" : "Enter your email address"}
+            placeholder={isSelfActivation ? 
+              (isDesktop ? "Enter your Adobe account email" : "your.email@adobe.com") : 
+              (isDesktop ? "Enter your email address" : "your.email@example.com")
+            }
             className={`
-              relative w-full px-4 py-4 pl-12 pr-12
-              bg-[rgba(17,17,40,0.8)] backdrop-blur-sm
-              border-2 rounded-xl
-              text-white placeholder-gray-400
-              focus:outline-none transition-all duration-300
+              relative w-full transition-all
+              md:px-4 md:py-4 md:pl-12 md:pr-12 md:bg-[rgba(17,17,40,0.8)] md:border-2 md:rounded-xl md:duration-300
+              px-4 py-3 pl-10 pr-10 bg-[rgba(17,17,40,0.9)] border rounded-lg duration-200
+              backdrop-blur-sm
+              text-white md:placeholder-gray-400 placeholder-gray-500
+              focus:outline-none
               ${emailError 
-                ? 'border-red-500' 
+                ? 'md:border-red-500 border-red-400' 
                 : isFocused 
-                  ? 'border-fuchsia-400/50' 
+                  ? 'md:border-fuchsia-400/50 border-fuchsia-400' 
                   : 'border-white/20 hover:border-white/30'
               }
               ${isUserSignedIn 
-                ? 'cursor-not-allowed bg-[rgba(17,17,40,0.6)]' 
+                ? 'cursor-not-allowed md:bg-[rgba(17,17,40,0.6)] opacity-60' 
                 : 'cursor-text'
               }
             `}
           />
 
           {/* Email Icon */}
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="absolute md:left-4 left-3 top-1/2 -translate-y-1/2 pointer-events-none">
             <motion.i 
-              className={`fas fa-envelope text-sm transition-colors duration-300 ${
+              className={`fas fa-envelope text-sm transition-colors md:duration-300 duration-200 ${
                 emailError 
                   ? 'text-red-400' 
                   : isFocused 
@@ -158,7 +188,7 @@ export default function EmailInputField({
           </div>
 
           {/* Right Side Icons */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          <div className="absolute md:right-4 right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
             {/* Validation Loading */}
             <AnimatePresence>
               {isValidating && (
@@ -178,9 +208,9 @@ export default function EmailInputField({
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center"
+                  className="md:w-5 md:h-5 md:bg-green-500/20 md:rounded-full md:flex md:items-center md:justify-center"
                 >
-                  <i className="fas fa-check text-green-400 text-xs"></i>
+                  <i className="fas fa-check text-green-400 md:text-xs text-sm"></i>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -192,9 +222,9 @@ export default function EmailInputField({
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="w-5 h-5 bg-red-500/20 rounded-full flex items-center justify-center"
+                  className="md:w-5 md:h-5 md:bg-red-500/20 md:rounded-full md:flex md:items-center md:justify-center"
                 >
-                  <i className="fas fa-exclamation text-red-400 text-xs"></i>
+                  <i className="md:fas md:fa-exclamation md:text-red-400 md:text-xs fas fa-exclamation-triangle text-red-400 text-sm"></i>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -204,7 +234,8 @@ export default function EmailInputField({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-gradient-to-r from-green-500 to-cyan-500 text-xs text-black font-medium py-1 px-2 rounded-full flex items-center gap-1"
+                className="md:bg-gradient-to-r md:from-green-500 md:to-cyan-500 md:text-xs md:text-black md:font-medium md:py-1 md:px-2 md:rounded-full md:flex md:items-center md:gap-1
+                           bg-green-500/20 text-green-400 text-xs font-medium py-1 px-2 rounded flex items-center gap-1"
               >
                 <i className="fas fa-check text-[10px]"></i>
                 Auto-filled
@@ -224,7 +255,7 @@ export default function EmailInputField({
             transition={{ duration: 0.3 }}
             className="mt-2 flex items-center gap-2 text-sm text-red-400"
           >
-            <i className="fas fa-exclamation-circle text-xs"></i>
+            <i className="fas fa-exclamation-circle text-xs hidden md:inline"></i>
             {emailError}
           </motion.div>
         )}
@@ -237,26 +268,29 @@ export default function EmailInputField({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
       >
-        <i className="fas fa-info-circle text-fuchsia-400 mt-0.5"></i>
+        <i className="fas fa-info-circle text-fuchsia-400 mt-0.5 hidden md:inline"></i>
         <div>
           {isSelfActivation ? (
             <>
-              <p className="mb-2 font-medium text-white text-left">
+              <p className="mb-2 font-medium text-white text-left hidden md:block">
                 Adobe Account Email Required
               </p>
-              <p className="">
-                Enter the email address associated with your existing Adobe Creative Cloud account. 
+              <p className="hidden md:block text-left">
+                Enter your Adobe account email address. CheapCC will authorize your account and add it to an educational organization for Adobe Creative Cloud access.
               </p>
-              <p className="text-left">
-                We will add the subscription to this account.
+              <p className="text-left hidden md:block">
+                This preserves your existing settings, files, and preferences.
+              </p>
+              <p className="md:hidden text-left">
+                CheapCC will authorize your Adobe account via educational organization.
               </p>
             </>
           ) : (
             <>
-              <p className="mb-1">
+              <p className="mb-1 hidden md:block text-left">
                 This email will be used for your Adobe account activation and order confirmations.
               </p>
-              <p className="text-gray-500">
+              <p className="text-gray-500 hidden md:block text-left">
                 For use your email: Use the email associated with your existing Adobe account.
               </p>
             </>

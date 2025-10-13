@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       publishedTime: postData.date,
       images: [
         {
-          url: postData.featuredImage || '/og-image.jpg',
+          url: postData.featuredImage || '/og-image.svg',
           width: 1200,
           height: 630,
           alt: postData.title,
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: postData.title,
       description: postData.excerpt,
-      images: [postData.featuredImage || '/twitter-image.jpg'],
+      images: [postData.featuredImage || '/twitter-image.svg'],
     }
   };
 }
@@ -65,7 +65,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
     "@type": "Article",
     "headline": postData.title,
     "description": postData.excerpt,
-    "image": postData.featuredImage || "https://cheapcc.online/og-image.jpg",
+    "image": postData.featuredImage || "https://cheapcc.online/og-image.svg",
     "author": {
       "@type": "Organization",
       "name": "CheapCC",

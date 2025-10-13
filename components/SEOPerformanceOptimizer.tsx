@@ -22,8 +22,8 @@ export default function SEOPerformanceOptimizer({
       // Preload critical images that are likely to be needed
       const criticalImages = [
         '/favicon.svg',
-        '/og-image.jpg',
-        '/twitter-image.jpg'
+        '/og-image.svg',
+        '/twitter-image.svg'
       ];
       
       criticalImages.forEach(src => {

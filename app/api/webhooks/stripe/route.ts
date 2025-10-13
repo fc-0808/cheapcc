@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Stripe } from 'stripe';
 import { createServiceClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
+import { calculateExpiryDate, getStandardPlanDescription, calculateSavings, getProductIdFromPriceId, getProductType, getPricingOptionById, getActivationTypeForProduct, getStatusForProduct, OrderLike } from '@/utils/products-supabase';
 // Inline ngrok utility functions to avoid build issues
 function isNgrokEnvironment(): boolean {
   if (typeof window !== 'undefined') {
@@ -52,12 +53,6 @@ function logWebhookEnvironment(context: string = 'webhook'): void {
     nodeEnv: process.env.NODE_ENV
   });
 }
-import {
-  calculateSavings,
-  getStandardPlanDescription,
-  calculateExpiryDate,
-  OrderLike
-} from '@/utils/products';
 
 // Check if required environment variables are available
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
@@ -231,39 +226,53 @@ export async function POST(request: NextRequest) {
           priceId
         };
         
-        const standardDescription = getStandardPlanDescription(orderDataForUtils);
-        const savings = calculateSavings(orderDataForUtils);
-        const expiryDate = calculateExpiryDate(orderDataForUtils);
+        const standardDescription = await getStandardPlanDescription(orderDataForUtils);
+        const savings = await calculateSavings(orderDataForUtils);
+        const expiryDate = await calculateExpiryDate(orderDataForUtils);
+
+        // Get product information from priceId
+        const productId = getProductIdFromPriceId(priceId);
+        const pricingOption = await getPricingOptionById(priceId);
+        const productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+        const finalActivationType = pricingOption ? getActivationTypeForProduct(pricingOption, activationType) : (activationType || 'pre-activated');
+        const finalStatus = pricingOption ? getStatusForProduct(pricingOption, 'ACTIVE') : 'ACTIVE';
 
         // --- Insert order into database ---
-        const { error: insertError } = await supabase
+        const { data: newOrder, error: insertError } = await supabase
           .from('orders')
           .insert([{
             name: userName,
             email: userEmail,
-            status: 'ACTIVE',
+            status: finalStatus,
             amount: amount,
             currency: paymentIntent.currency.toUpperCase(),
             description: standardDescription,
             savings: savings,
             expiry_date: expiryDate ? expiryDate.toISOString() : null,
-            activation_type: activationType || 'pre-activated',
+            activation_type: finalActivationType,
             adobe_email: adobeEmail || null, // Store Adobe account email for self-activation
             
             // --- UPDATED COLUMNS ---
             stripe_payment_intent_id: paymentIntent.id, // Use the new Stripe column
             payment_processor: 'stripe',                 // Set the processor type
             payment_data: paymentIntent,                 // Use the generic data column
+            product_id: productId,                       // Set the product ID from products table
+            product_type: productType,                   // Set the correct product type (subscription/redemption_code)
             // --- END OF UPDATES ---
 
             original_status: paymentIntent.status,
             created_at: now.toISOString(),
             updated_at: now.toISOString(),
-          }]);
+          }]).select('id');
 
         if (insertError) {
           console.error(JSON.stringify({ ...logContext, event: "db_insert_error", dbError: insertError.message, dbErrorCode: insertError.code }, null, 2));
           return NextResponse.json({ error: 'Database insert failed' }, { status: 500 });
+        }
+
+        // Redemption codes are now tracked directly in the orders table via product_type = 'redemption_code'
+        if (productType === 'redemption_code') {
+          console.info(JSON.stringify({ ...logContext, event: "redemption_code_order_created" }, null, 2));
         }
 
         console.info(JSON.stringify({ ...logContext, event: "order_created_in_db" }, null, 2));
@@ -272,7 +281,7 @@ export async function POST(request: NextRequest) {
         const { data: userProfile } = await supabase.from('profiles').select('id').eq('email', userEmail).maybeSingle();
         const isGuestCheckout = !userProfile;
         
-        await sendConfirmationEmail(userEmail, userName, paymentIntent.id, isGuestCheckout, activationType, adobeEmail);
+        await sendConfirmationEmail(userEmail, userName, paymentIntent.id, isGuestCheckout, finalActivationType, adobeEmail, priceId);
         console.info(JSON.stringify({ ...logContext, event: "confirmation_email_sent" }, null, 2));
 
       } catch (dbError: any) {

@@ -1,10 +1,12 @@
 "use client";
-import React, { useEffect, useRef, useMemo, Suspense } from 'react';
-import { PRICING_OPTIONS } from '@/utils/products';
+import React, { useEffect, useRef, useMemo, Suspense, useState } from 'react';
+import { getPricingOptions, type PricingOption } from '@/utils/products-supabase';
 import { useInView, motion } from 'framer-motion';
 import PricingSchema from './pricing/PricingSchema';
 import PricingHeading from './pricing/PricingHeading';
 import SimplePricingCardList from './pricing/SimplePricingCardList';
+import GroupedPricingDisplay from './pricing/GroupedPricingDisplay';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 // Simple fallback component
 function PricingFallback() {
@@ -48,6 +50,25 @@ const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 export default function PricingSection({ selectedPrice, setSelectedPrice, selectedPriceRef, userEmail, selectedActivationType, onActivationTypeChange, email, setEmail, isUserSignedIn }: PricingSectionProps) {
   const pricingRef = useRef<HTMLDivElement>(null);
   const [adminError, setAdminError] = React.useState<string | null>(null);
+  const { countryConfig } = useInternationalization();
+  
+  // Pricing options - loaded immediately
+  const [pricingOptions, setPricingOptions] = useState<PricingOption[]>([]);
+
+  // Fetch pricing options from Supabase immediately
+  useEffect(() => {
+    const fetchPricingOptions = async () => {
+      try {
+        const options = await getPricingOptions();
+        setPricingOptions(options);
+      } catch (err) {
+        console.error('Failed to fetch pricing options:', err);
+        setPricingOptions([]);
+      }
+    };
+
+    fetchPricingOptions();
+  }, []);
   
   // Ensure scrollable container starts at correct position
   useEffect(() => {
@@ -84,12 +105,26 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
 
   const sortedPricingOptions = useMemo(() => {
     try {
-      const options = [...PRICING_OPTIONS]
+      const options = [...pricingOptions]
         .filter(option => {
+          // Filter out admin/test options
           if (option.id === 'test-payment' || (option.id === 'test-live' && !isAdmin) || (option.adminOnly && !isAdmin)) {
             return false;
           }
-          return true;
+          
+          // Filter by activation type for subscription products
+          if (!option.activationType) {
+            // Legacy options without activationType - treat as pre-activated
+            return selectedActivationType === 'pre-activated';
+          }
+          
+          // For redemption codes, always show them (they have their own section)
+          if (option.activationType === 'redemption-required' && option.id.includes('code')) {
+            return true;
+          }
+          
+          // For subscription products, filter by selected activation type
+          return option.activationType === selectedActivationType;
         })
         .sort((a, b) => {
           const durationOrder: Record<string, number> = { "1 day": 0, "14 days": 1, "1 month": 2, "3 months": 3, "6 months": 4, "12 months": 5 };
@@ -97,12 +132,13 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
         });
       
       console.log("Sorted pricing options:", options);
+      console.log("Selected activation type:", selectedActivationType);
       return options;
     } catch (error) {
       console.error('Error processing pricing options:', error);
       return [];
     }
-  }, [isAdmin]);
+  }, [pricingOptions, isAdmin, selectedActivationType]);
 
   const handlePlanSelect = (optionId: string) => {
     if (selectedPrice !== optionId) {
@@ -116,13 +152,14 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
 
   // Ensure we have pricing options
   useEffect(() => {
-    console.log("PRICING_OPTIONS:", PRICING_OPTIONS);
+    console.log("Dynamic pricing options:", pricingOptions);
     console.log("Filtered pricing options:", sortedPricingOptions);
-  }, [sortedPricingOptions]);
+  }, [sortedPricingOptions, pricingOptions]);
 
+  // No loading state - show content immediately
   return (
     <>
-      <PricingSchema pricingOptions={PRICING_OPTIONS} />
+      <PricingSchema pricingOptions={pricingOptions} />
       <section className="relative py-20 md:py-32 overflow-visible w-full" id="pricing" ref={pricingRef}>
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
           <PricingHeading 
@@ -139,7 +176,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
         <div className="w-full overflow-visible">
           <Suspense fallback={<PricingFallback />}>
             {sortedPricingOptions.length > 0 ? (
-              <SimplePricingCardList 
+              <GroupedPricingDisplay 
                 pricingOptions={sortedPricingOptions} 
                 selectedPrice={selectedPrice} 
                 onSelectPrice={handlePlanSelect}
@@ -157,7 +194,7 @@ export default function PricingSection({ selectedPrice, setSelectedPrice, select
 
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 overflow-visible">
           <motion.div className="text-right sm:text-right mt-4 sm:mt-6 text-xs sm:text-sm text-gray-400 italic md:-mr-14" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-            *All prices are listed in USD
+            *All prices are listed in {countryConfig.currency}
           </motion.div>
           {/* Extra spacing div for tablet view */}
           <div className="hidden md:block lg:hidden h-10"></div>

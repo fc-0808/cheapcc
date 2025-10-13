@@ -45,7 +45,7 @@ const nextConfig = {
 					{
 						key: 'Content-Security-Policy',
 						value:
-							"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to https://www.googletagmanager.com https://cdnjs.cloudflare.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://va.vercel-scripts.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://embed.tawk.to https://*.tawk.to https://use.fontawesome.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com https://use.fontawesome.com; img-src 'self' data: https: blob:; connect-src 'self' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to wss://*.tawk.to https://api.paypal.com https://www.sandbox.paypal.com https://api.stripe.com https://vitals.vercel-insights.com https://*.supabase.co https://izidrmzvwdrzrlaexubt.supabase.co https://www.google.com; frame-src 'self' https://embed.tawk.to https://tawk.to https://*.tawk.to https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com https://www.google.com; media-src 'self' https://embed.tawk.to https://*.tawk.to; object-src 'none'; base-uri 'self';",
+							"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to https://www.googletagmanager.com https://cdnjs.cloudflare.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com https://va.vercel-scripts.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://embed.tawk.to https://*.tawk.to https://use.fontawesome.com https://www.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com https://use.fontawesome.com https://*.fontawesome.com https://www.paypal.com https://*.paypal.com https://www.paypalobjects.com https://*.paypalobjects.com https://t.paypal.com https://c.paypal.com https://www.sandbox.paypal.com https://embed.tawk.to https://*.tawk.to; img-src 'self' data: https: blob:; connect-src 'self' https://embed.tawk.to https://tawk.to https://va.tawk.to https://*.tawk.to wss://*.tawk.to https://api.paypal.com https://www.sandbox.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com https://api.stripe.com https://vitals.vercel-insights.com https://*.supabase.co https://izidrmzvwdrzrlaexubt.supabase.co https://www.google.com; frame-src 'self' https://embed.tawk.to https://tawk.to https://*.tawk.to https://www.paypal.com https://www.sandbox.paypal.com https://*.paypal.com https://t.paypal.com https://c.paypal.com https://js.stripe.com https://www.google.com; media-src 'self' https://embed.tawk.to https://*.tawk.to; object-src 'none'; base-uri 'self';",
 					},
 					// Optimize mobile caching with stale-while-revalidate
 					{
@@ -57,7 +57,7 @@ const nextConfig = {
 		]
 	},
 	env: {
-		NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
+		NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
 		NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
 		NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
 		NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -80,7 +80,19 @@ const nextConfig = {
 		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
 		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 		formats: ['image/avif', 'image/webp'],
-		minimumCacheTTL: 60 * 60 * 24 * 7, // Cache images for a week
+		minimumCacheTTL: 31536000, // 1 year cache for better Core Web Vitals
+		dangerouslyAllowSVG: true,
+		contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+		remotePatterns: [
+			{
+				protocol: 'https',
+				hostname: 'cheapcc.online',
+			},
+			{
+				protocol: 'https',
+				hostname: '*.cheapcc.online',
+			},
+		],
 	},
 	experimental: {
 		optimizeCss: true,
@@ -97,16 +109,40 @@ const nextConfig = {
 	// Avoid adding X-Powered-By header
 	poweredByHeader: false,
 	// Disable CSS processing to bypass the error
-	webpack: (config) => {
+	webpack: (config, { isServer }) => {
 		// Find and disable the CSS minimizer
 		if (config.optimization && config.optimization.minimizer) {
 			config.optimization.minimizer = config.optimization.minimizer.filter((minimizer) => !minimizer.constructor.name.includes('CssMinimizerPlugin'))
 		}
 
-		// Add support for touch events and gestures
-		config.resolve.fallback = {
-			...config.resolve.fallback,
-			hammerjs: require.resolve('hammerjs'),
+		// Exclude server-only modules from client bundle
+		if (!isServer) {
+			config.resolve.fallback = {
+				...config.resolve.fallback,
+				hammerjs: require.resolve('hammerjs'),
+				// Exclude Node.js modules from client bundle
+				fs: false,
+				path: false,
+				crypto: false,
+				stream: false,
+				util: false,
+				buffer: false,
+				assert: false,
+				os: false,
+			}
+
+			// Exclude server-only files from client bundle
+			config.resolve.alias = {
+				...config.resolve.alias,
+				'@/utils/supabase/supabase-server': false,
+				'@/utils/products-server': false,
+			}
+		} else {
+			// Server-side fallbacks
+			config.resolve.fallback = {
+				...config.resolve.fallback,
+				hammerjs: require.resolve('hammerjs'),
+			}
 		}
 
 		return config
