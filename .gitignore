@@ -158,6 +158,12 @@ important.info
 *.dev
 *.development
 
+# Docker and development configuration files
+docker-compose.ollama.yml
+
+# CSV data files (should not be deployed)
+*.csv
+
 # Documentation that shouldn't be in production
 docs/
 *.md
