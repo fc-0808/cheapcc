@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import React, { Component, ReactNode } from 'react';
 
@@ -12,7 +12,7 @@ interface State {
   error?: Error;
 }
 
-export class PayPalErrorBoundary extends Component<Props, State> {
+class PayPalErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
@@ -24,37 +24,41 @@ export class PayPalErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log the error but don't crash the app
-    console.warn('PayPal Error Boundary caught an error:', error);
-    console.warn('Error info:', errorInfo);
-    
-    // Check if it's a DOM manipulation error
-    if (error.message.includes('removeChild') || error.message.includes('Node')) {
-      console.warn('PayPal DOM manipulation error caught and handled');
-      // Don't re-throw, just log and continue
-    }
+    // Log the error for debugging
+    console.error('PayPal Error Boundary caught an error:', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return this.props.fallback || (
-        <div className="p-4 border border-yellow-500/20 rounded-lg bg-yellow-500/10 text-yellow-400 text-center">
-          <div className="mb-2">
-            <i className="fas fa-exclamation-triangle text-xl mb-2"></i>
-            <h3 className="text-lg font-semibold mb-2">Payment System Temporarily Unavailable</h3>
-            <p className="text-sm mb-4">
-              We're experiencing a temporary issue with our payment system. Please try refreshing the page or use an alternative payment method.
-            </p>
-            <button
-              onClick={() => {
-                this.setState({ hasError: false, error: undefined });
-                window.location.reload();
-              }}
-              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
-            >
-              Refresh Page
-            </button>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">
+                PayPal Payment Temporarily Unavailable
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p>
+                  We're experiencing issues with PayPal payments. Please try again in a few moments, 
+                  or use our alternative payment methods.
+                </p>
+                {process.env.NODE_ENV === 'development' && this.state.error && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer font-medium">Technical Details</summary>
+                    <pre className="mt-1 text-xs bg-yellow-100 p-2 rounded overflow-auto">
+                      {this.state.error.message}
+                      {this.state.error.stack}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -63,3 +67,5 @@ export class PayPalErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export default PayPalErrorBoundary;

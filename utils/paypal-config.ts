@@ -22,11 +22,17 @@ export const PAYPAL_CONFIG = {
       return envClientId;
     }
     
-    console.warn('⚠️ Environment PayPal Client ID is invalid, using fallback');
+    console.warn('⚠️ Environment PayPal Client ID is invalid');
     console.warn('⚠️ Original value:', JSON.stringify(envClientId));
     console.warn('⚠️ Is production:', isProduction);
     
-    // Try window object as backup
+    // In production, if environment variable is not properly set, return 'sb' to trigger error boundary
+    if (isProduction) {
+      console.error('❌ Production mode: PayPal Client ID not configured properly, returning sb');
+      return 'sb';
+    }
+    
+    // Try window object as backup for development
     if (typeof window !== 'undefined' && (window as any).PAYPAL_CLIENT_ID) {
       const windowClientId = (window as any).PAYPAL_CLIENT_ID;
       if (windowClientId && windowClientId.length > 50) {
@@ -35,11 +41,8 @@ export const PAYPAL_CONFIG = {
       }
     }
     
-    // Always return fallback in production if environment variable fails
-    if (isProduction) {
-      console.log('🔧 Production mode: Using hardcoded fallback Client ID');
-    }
-    
+    // For development, use fallback
+    console.log('🔧 Development mode: Using hardcoded fallback Client ID');
     return this.CLIENT_ID;
   },
   
@@ -61,4 +64,9 @@ export const PAYPAL_CONFIG = {
     const clientId = this.getClientId();
     return !!(clientId && clientId.length > 50);
   }
+};
+
+// Export a function that can be used by components
+export const getPayPalClientId = (): string => {
+  return PAYPAL_CONFIG.getClientId();
 };
