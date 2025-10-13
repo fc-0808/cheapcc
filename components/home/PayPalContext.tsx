@@ -69,14 +69,26 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Get PayPal Client ID from environment
-  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  // Get PayPal Client ID from environment with fallback
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 
+                   'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
+  
+  // Debug logging for production
+  console.log('PayPal Client ID Debug:', {
+    clientId,
+    clientIdLength: clientId?.length || 0,
+    environment: process.env.NODE_ENV,
+    allEnvVars: Object.keys(process.env).filter(key => key.includes('PAYPAL'))
+  });
+  
   const paypalScriptUrl = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
   
   // Validate PayPal Client ID
   if (!clientId || clientId.length < 50) {
     console.error('❌ PayPal Client ID is invalid or missing!');
     console.error('❌ Expected length: ~80 chars, Got:', clientId?.length || 0);
+    console.error('❌ Environment variables available:', Object.keys(process.env).filter(key => key.includes('PAYPAL')));
+    return null;
   }
 
   const handlePayPalError = (error: Error) => {
