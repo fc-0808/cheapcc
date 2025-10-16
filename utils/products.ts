@@ -278,9 +278,21 @@ export function getActivationFee(priceId: string): number {
 }
 
 export function getPlanDuration(order: any): string {
+  // First try to lookup from priceId
   const option = getPricingOptionById(order.priceId);
-  if (!option) return 'Unknown';
-  return option.duration;
+  if (option) return option.duration;
+  
+  // Fallback: extract from description field
+  if (order.description) {
+    if (order.description.includes('12 Months')) return '12 months';
+    if (order.description.includes('6 Months')) return '6 months';
+    if (order.description.includes('3 Months')) return '3 months';
+    if (order.description.includes('1 Month')) return '1 month';
+    if (order.description.includes('14 Days')) return '14 days';
+    return order.description;
+  }
+  
+  return 'Unknown';
 }
 
 export function getStandardPlanDescription(order: any): string {
@@ -290,6 +302,12 @@ export function getStandardPlanDescription(order: any): string {
 }
 
 export function calculateSavings(order: any): number {
+  // First priority: use database value if available
+  if (order.savings) {
+    return parseFloat(order.savings) || 0;
+  }
+  
+  // Fallback: calculate from pricing lookup
   const option = getPricingOptionById(order.priceId);
   if (!option || !option.originalPrice) return 0;
   return option.originalPrice - option.price;

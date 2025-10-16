@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { getPayPalClientId } from '@/utils/paypal-config';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 // Declare PayPal types for TypeScript
 declare global {
@@ -18,6 +19,10 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
   const [payPalError, setPayPalError] = useState<string | null>(null);
   const scriptLoadedRef = useRef(false);
   const isMountedRef = useRef(true);
+  const currentCurrencyRef = useRef<string>('');
+  
+  // Get user's currency from internationalization context
+  const { countryConfig } = useInternationalization();
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -29,16 +34,28 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
       
       try {
         const clientId = getPayPalClientId();
+        const currency = countryConfig.currency;
         
         console.log('🔧 PayPalContextWrapper: Loading PayPal SDK with client ID:', clientId?.substring(0, 10) + '...');
 
-        // Check if PayPal is already loaded
-        if (window.paypal) {
-          console.log('✅ PayPal SDK already loaded');
+        // Check if PayPal is already loaded with the same currency
+        if (window.paypal && currentCurrencyRef.current === currency) {
+          console.log('✅ PayPal SDK already loaded with correct currency:', currency);
           if (isMountedRef.current) {
             setIsPayPalLoaded(true);
           }
           return;
+        }
+        
+        // If currency changed, we need to reload the script
+        if (window.paypal && currentCurrencyRef.current !== currency) {
+          console.log(`🔄 Currency changed from ${currentCurrencyRef.current} to ${currency}, reloading PayPal SDK`);
+          // Remove existing PayPal scripts
+          const existingScripts = document.querySelectorAll('script[src*="paypal.com/sdk/js"]');
+          existingScripts.forEach(script => script.remove());
+          window.paypal = undefined;
+          scriptLoadedRef.current = false;
+          setIsPayPalLoaded(false);
         }
 
         // Validate client ID
@@ -51,15 +68,18 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        // Load PayPal SDK script
+        // Load PayPal SDK script with dynamic currency
         const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&disable-funding=card`;
         script.async = true;
         script.defer = true;
+        
+        console.log(`🌍 Loading PayPal SDK with currency: ${currency} for country: ${countryConfig.code}`);
         
         script.onload = () => {
           console.log('✅ PayPal SDK script loaded');
           scriptLoadedRef.current = true;
+          currentCurrencyRef.current = currency; // Store the current currency
           
           // Wait a bit for PayPal to initialize
           setTimeout(() => {
@@ -68,7 +88,7 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
             }
             
             if (window.paypal) {
-              console.log('✅ PayPal SDK initialized successfully');
+              console.log(`✅ PayPal SDK initialized successfully with currency: ${currency}`);
               setIsPayPalLoaded(true);
               setPayPalError(null);
             } else {
@@ -103,7 +123,7 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
       isMountedRef.current = false;
       clearTimeout(timer);
     };
-  }, []); // Empty dependency array - only run once
+  }, [countryConfig.currency]); // Reload when currency changes
 
   // Show error if PayPal failed to load
   if (payPalError) {

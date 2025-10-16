@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   detectUserCountry, 
+  detectUserCountryAsync,
   setUserCountry as setUserCountryUtil, 
   getLocalizedContent,
   formatPrice,
@@ -18,6 +19,8 @@ interface InternationalizationContextType {
   setCountry: (countryCode: string) => void;
   formatLocalPrice: (basePrice: number) => string;
   isLoading: boolean;
+  detectedCountry: string | null;
+  isDetected: boolean;
 }
 
 const InternationalizationContext = createContext<InternationalizationContextType | undefined>(undefined);
@@ -28,25 +31,45 @@ interface InternationalizationProviderProps {
 
 export function InternationalizationProvider({ children }: InternationalizationProviderProps) {
   const [selectedCountry, setSelectedCountry] = useState<string>('US');
+  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
+  const [isDetected, setIsDetected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize country detection
+  // Initialize country detection with geolocation API
   useEffect(() => {
-    const initializeCountry = () => {
+    const initializeCountry = async () => {
       try {
-        const detectedCountry = detectUserCountry();
-        setSelectedCountry(detectedCountry);
+        // Try async detection first (uses geolocation API)
+        const geoDetectedCountry = await detectUserCountryAsync();
         
-        // Track international user if not US
-        if (detectedCountry !== 'US') {
-          const config = SUPPORTED_COUNTRIES[detectedCountry];
-          if (config) {
-            trackInternationalUser(detectedCountry, config.currency, config.language);
+        console.log('[InternationalizationContext] Geo-detected country:', geoDetectedCountry);
+        setDetectedCountry(geoDetectedCountry);
+        setIsDetected(true);
+        
+        // Only auto-set if user hasn't already set a preference
+        const userPreference = localStorage.getItem('user_country');
+        if (!userPreference) {
+          setSelectedCountry(geoDetectedCountry);
+          setUserCountryUtil(geoDetectedCountry);
+          
+          // Track international user if not US
+          if (geoDetectedCountry !== 'US') {
+            const config = SUPPORTED_COUNTRIES[geoDetectedCountry];
+            if (config) {
+              trackInternationalUser(geoDetectedCountry, config.currency, config.language);
+            }
           }
+        } else {
+          // Use stored preference instead
+          setSelectedCountry(userPreference);
         }
       } catch (error) {
         console.error('Error initializing country:', error);
-        setSelectedCountry('US'); // Fallback to US
+        
+        // Fallback to sync detection
+        const syncCountry = detectUserCountry();
+        setSelectedCountry(syncCountry);
+        setDetectedCountry(syncCountry);
       } finally {
         setIsLoading(false);
       }
@@ -101,7 +124,9 @@ export function InternationalizationProvider({ children }: InternationalizationP
     localizedContent,
     setCountry,
     formatLocalPrice,
-    isLoading
+    isLoading,
+    detectedCountry,
+    isDetected
   };
 
   return (

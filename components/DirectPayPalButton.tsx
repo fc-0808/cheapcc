@@ -83,10 +83,14 @@ export default function DirectPayPalButton({
 
   /**
    * Render handler - called when PayPal button completes rendering
-   * Purely informational - PayPal manages the actual DOM
+   * This is the most reliable indicator that the button is ready
    */
   const handleRender = useCallback(() => {
     console.log('🎨 PayPal button rendered successfully');
+    if (isMountedRef.current) {
+      setIsLoading(false);
+      setError(null);
+    }
   }, []);
 
   /**
@@ -162,7 +166,15 @@ export default function DirectPayPalButton({
         const buttonInstance = window.paypal.Buttons({
           style,
           createOrder,
-          onApprove,
+          onApprove: async (data: any) => {
+            console.log('🎉🎉🎉 DirectPayPalButton: onApprove callback FIRED from PayPal SDK with data:', data);
+            try {
+              return await onApprove(data);
+            } catch (err) {
+              console.error('❌ DirectPayPalButton: Error in onApprove callback:', err);
+              throw err;
+            }
+          },
           onCancel,
           onError: handleError,
           onInit: handleInit,

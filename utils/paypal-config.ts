@@ -30,16 +30,16 @@ export const PAYPAL_CONFIG = {
   },
   
   // Get script URL with error handling
-  getScriptUrl(): string {
+  getScriptUrl(currency: string = 'USD'): string {
     const clientId = this.getClientId();
     
     // If client ID is invalid, return a URL that will fail gracefully
     if (!clientId || clientId === 'sb' || clientId.length < 50) {
       console.error('❌ Invalid PayPal Client ID, PayPal buttons will not load');
-      return `https://www.paypal.com/sdk/js?client-id=sb&currency=USD&intent=capture&components=buttons&disable-funding=card`;
+      return `https://www.paypal.com/sdk/js?client-id=sb&currency=${currency}&intent=capture&components=buttons&disable-funding=card`;
     }
     
-    return `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
+    return `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&disable-funding=card`;
   },
   
   // Check if we're in a valid environment for PayPal

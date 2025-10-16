@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import DirectPayPalButton from '../DirectPayPalButton';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 interface PayPalPaymentFormProps {
   selectedProduct: any; // You might want to define a more specific type for product
@@ -30,6 +31,7 @@ export default function PayPalPaymentForm({
 }: PayPalPaymentFormProps) {
   const uniqueContainerId = `paypal-button-${containerId}`;
   const [localError, setLocalError] = useState<string | null>(null);
+  const { countryConfig, formatLocalPrice, selectedCountry } = useInternationalization();
 
   const handleCreateOrder = async () => {
     setIsProcessing(true);
@@ -39,6 +41,9 @@ export default function PayPalPaymentForm({
         return await createPayPalOrderWithRetry(selectedProduct.id, name, email);
       } else {
         // Fallback if createPayPalOrderWithRetry is not provided
+        const basePrice = selectedProduct.price;
+        const displayPrice = parseFloat(formatLocalPrice(basePrice));
+        
         const response = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -48,6 +53,11 @@ export default function PayPalPaymentForm({
             email,
             activationType: selectedProduct.activationType,
             adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null,
+            // ✅ ADD: Country and currency information for multi-currency support
+            countryCode: selectedCountry,
+            currency: countryConfig.currency,
+            basePrice,
+            displayPrice,
           }),
         });
         const data = await response.json();
@@ -66,6 +76,7 @@ export default function PayPalPaymentForm({
   };
 
   const handleApprove = async (data: any) => {
+    console.log('🎉 PayPal handleApprove called with order data:', data);
     setIsProcessing(true);
     setLocalError(null);
     try {
@@ -75,12 +86,20 @@ export default function PayPalPaymentForm({
         body: JSON.stringify({ orderID: data.orderID }),
       });
       const details = await response.json();
+      console.log('📦 PayPal capture response:', details);
+      
       if (details.error) {
         throw new Error(details.error);
       }
+      
+      console.log('✅ Payment captured successfully, calling onPaymentSuccess');
+      // CRITICAL: Call this BEFORE setting processing to false
+      // This ensures the parent component receives the callback immediately
       onPaymentSuccess(details);
+      console.log('✅ onPaymentSuccess callback completed');
+      
     } catch (error: any) {
-      console.error('Error capturing PayPal order:', error);
+      console.error('❌ Error capturing PayPal order:', error);
       setLocalError(error.message || 'Failed to capture PayPal payment.');
       onPaymentError(error.message || 'Failed to capture PayPal payment.');
     } finally {

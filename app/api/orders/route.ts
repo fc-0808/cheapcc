@@ -288,6 +288,9 @@ export async function POST(request: NextRequest) {
     priceIdSubmitted = priceId;
     emailSubmitted = email;
 
+    // ✅ ADD: Extract country and currency information
+    const { countryCode = 'US', currency = 'USD', basePrice = 0, displayPrice = 0 } = validationResult.data;
+
     // Get pricing options dynamically
     const pricingOptions = await getPricingOptions();
     const selectedOption = pricingOptions.find(option => option.id === priceId);
@@ -317,7 +320,8 @@ export async function POST(request: NextRequest) {
     const adobeProductLine = getAdobeProductLine(selectedOption);
     const finalActivationType = getActivationTypeForProduct(selectedOption, activationType);
     const productId = getProductIdFromPriceId(priceId);
-    const finalPrice = selectedOption.price;
+    // ✅ USE: Display price from client (already calculated with currency conversion)
+    const finalPrice = displayPrice > 0 ? displayPrice : selectedOption.price;
 
     // Store order data in database before creating PayPal order
     // This allows the webhook to retrieve the form data later
@@ -332,7 +336,9 @@ export async function POST(request: NextRequest) {
       adobe_product_line: adobeProductLine,
       product_id: productId,
       amount: finalPrice,
-      currency: 'USD',
+      // ✅ ADD: Store currency for multi-currency support
+      currency: currency,
+      country_code: countryCode,
       status: 'PENDING',
       payment_processor: 'paypal',
       paypal_order_id: `pending-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -368,6 +374,12 @@ export async function POST(request: NextRequest) {
       adobeProductLine,
       finalActivationType,
       productId,
+      // ✅ ADD: Log currency information
+      countryCode,
+      currency,
+      finalPrice,
+      basePrice,
+      displayPrice,
       pendingOrderId: pendingOrder.id,
       environment: process.env.PAYPAL_API_MODE || 'sandbox (default)',
       source: "app/api/orders/route.ts POST"
@@ -388,12 +400,18 @@ export async function POST(request: NextRequest) {
       purchaseUnits: [
         {
           amount: {
-            currencyCode: 'USD',
+            // ✅ USE: Currency from client (dynamic, not hardcoded USD)
+            currencyCode: currency,
             value: finalPrice.toFixed(2),
           },
           description: productDescription,
           customId: JSON.stringify({ 
             priceId, 
+            // ✅ ADD: Store country and currency info in PayPal custom data
+            countryCode,
+            currency,
+            basePrice,
+            displayPrice,
             activationType: finalActivationType, 
             productType
           }),

@@ -111,56 +111,348 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     hreflang: 'sv-se',
     priceMultiplier: 10.8, // Approximate SEK conversion
     vatRate: 0.25, // 25% VAT
+  },
+  // Additional European Countries
+  CH: {
+    code: 'CH',
+    name: 'Switzerland',
+    currency: 'CHF',
+    currencySymbol: 'CHF',
+    language: 'de-CH',
+    hreflang: 'de-ch',
+    priceMultiplier: 0.95, // Approximate CHF conversion
+    vatRate: 0.077, // 7.7% VAT
+  },
+  NO: {
+    code: 'NO',
+    name: 'Norway',
+    currency: 'NOK',
+    currencySymbol: 'kr',
+    language: 'nb-NO',
+    hreflang: 'nb-no',
+    priceMultiplier: 11.2, // Approximate NOK conversion
+    vatRate: 0.25, // 25% VAT
+  },
+  DK: {
+    code: 'DK',
+    name: 'Denmark',
+    currency: 'DKK',
+    currencySymbol: 'kr',
+    language: 'da-DK',
+    hreflang: 'da-dk',
+    priceMultiplier: 6.8, // Approximate DKK conversion
+    vatRate: 0.25, // 25% VAT
+  },
+  PL: {
+    code: 'PL',
+    name: 'Poland',
+    currency: 'PLN',
+    currencySymbol: 'zł',
+    language: 'pl-PL',
+    hreflang: 'pl-pl',
+    priceMultiplier: 4.2, // Approximate PLN conversion
+    vatRate: 0.23, // 23% VAT
+  },
+  CZ: {
+    code: 'CZ',
+    name: 'Czech Republic',
+    currency: 'CZK',
+    currencySymbol: 'Kč',
+    language: 'cs-CZ',
+    hreflang: 'cs-cz',
+    priceMultiplier: 24.5, // Approximate CZK conversion
+    vatRate: 0.21, // 21% VAT
+  },
+  HU: {
+    code: 'HU',
+    name: 'Hungary',
+    currency: 'HUF',
+    currencySymbol: 'Ft',
+    language: 'hu-HU',
+    hreflang: 'hu-hu',
+    priceMultiplier: 380, // Approximate HUF conversion
+    vatRate: 0.27, // 27% VAT
+  },
+  // Asian Countries
+  JP: {
+    code: 'JP',
+    name: 'Japan',
+    currency: 'JPY',
+    currencySymbol: '¥',
+    language: 'ja-JP',
+    hreflang: 'ja-jp',
+    priceMultiplier: 150, // Approximate JPY conversion (no decimals)
+    vatRate: 0.10, // 10% consumption tax
+  },
+  HK: {
+    code: 'HK',
+    name: 'Hong Kong',
+    currency: 'HKD',
+    currencySymbol: 'HK$',
+    language: 'zh-HK',
+    hreflang: 'zh-hk',
+    priceMultiplier: 7.8, // Approximate HKD conversion
+  },
+  SG: {
+    code: 'SG',
+    name: 'Singapore',
+    currency: 'SGD',
+    currencySymbol: 'S$',
+    language: 'en-SG',
+    hreflang: 'en-sg',
+    priceMultiplier: 1.35, // Approximate SGD conversion
+    vatRate: 0.09, // 9% GST
+  },
+  KR: {
+    code: 'KR',
+    name: 'South Korea',
+    currency: 'KRW',
+    currencySymbol: '₩',
+    language: 'ko-KR',
+    hreflang: 'ko-kr',
+    priceMultiplier: 1350, // Approximate KRW conversion (no decimals)
+    vatRate: 0.10, // 10% VAT
+  },
+  // Americas
+  BR: {
+    code: 'BR',
+    name: 'Brazil',
+    currency: 'BRL',
+    currencySymbol: 'R$',
+    language: 'pt-BR',
+    hreflang: 'pt-br',
+    priceMultiplier: 5.2, // Approximate BRL conversion
+    vatRate: 0.17, // Approximate tax rate
+  },
+  MX: {
+    code: 'MX',
+    name: 'Mexico',
+    currency: 'MXN',
+    currencySymbol: '$',
+    language: 'es-MX',
+    hreflang: 'es-mx',
+    priceMultiplier: 18.5, // Approximate MXN conversion
+    vatRate: 0.16, // 16% IVA
+  },
+  NZ: {
+    code: 'NZ',
+    name: 'New Zealand',
+    currency: 'NZD',
+    currencySymbol: 'NZ$',
+    language: 'en-NZ',
+    hreflang: 'en-nz',
+    priceMultiplier: 1.65, // Approximate NZD conversion
+    vatRate: 0.15, // 15% GST
+  },
+  // Additional European Countries
+  BE: {
+    code: 'BE',
+    name: 'Belgium',
+    currency: 'EUR',
+    currencySymbol: '€',
+    language: 'nl-BE',
+    hreflang: 'nl-be',
+    priceMultiplier: 0.92, // EUR conversion
+    vatRate: 0.21, // 21% VAT
+  },
+  AT: {
+    code: 'AT',
+    name: 'Austria',
+    currency: 'EUR',
+    currencySymbol: '€',
+    language: 'de-AT',
+    hreflang: 'de-at',
+    priceMultiplier: 0.92, // EUR conversion
+    vatRate: 0.20, // 20% VAT
+  },
+  PT: {
+    code: 'PT',
+    name: 'Portugal',
+    currency: 'EUR',
+    currencySymbol: '€',
+    language: 'pt-PT',
+    hreflang: 'pt-pt',
+    priceMultiplier: 0.92, // EUR conversion
+    vatRate: 0.23, // 23% VAT
+  },
+  FI: {
+    code: 'FI',
+    name: 'Finland',
+    currency: 'EUR',
+    currencySymbol: '€',
+    language: 'fi-FI',
+    hreflang: 'fi-fi',
+    priceMultiplier: 0.92, // EUR conversion
+    vatRate: 0.24, // 24% VAT
+  },
+  IE: {
+    code: 'IE',
+    name: 'Ireland',
+    currency: 'EUR',
+    currencySymbol: '€',
+    language: 'en-IE',
+    hreflang: 'en-ie',
+    priceMultiplier: 0.92, // EUR conversion
+    vatRate: 0.23, // 23% VAT
   }
 };
 
-// Detect user's country from various sources
+// Detect user's country from various sources with geolocation API fallback
+export const detectUserCountryAsync = async (): Promise<string> => {
+  if (typeof window === 'undefined') return 'US';
+  
+  try {
+    // First check localStorage for cached preference
+    const cached = localStorage.getItem('user_country');
+    if (cached && SUPPORTED_COUNTRIES[cached]) {
+      return cached;
+    }
+
+    // Check URL parameters
+    const urlCountry = new URLSearchParams(window.location.search).get('country');
+    if (urlCountry && SUPPORTED_COUNTRIES[urlCountry]) {
+      return urlCountry;
+    }
+
+    // Try geolocation API endpoint (server-side IP detection)
+    try {
+      const geoResponse = await fetch('/api/geolocation', {
+        method: 'GET',
+        cache: 'force-cache' // Cache in browser
+      });
+
+      if (geoResponse.ok) {
+        const geoData = await geoResponse.json();
+        const detectedCountry = geoData.country;
+
+        console.log('[Internationalization] Detected country from IP:', detectedCountry);
+
+        // Validate the detected country
+        if (detectedCountry && SUPPORTED_COUNTRIES[detectedCountry]) {
+          return detectedCountry;
+        }
+      }
+    } catch (geoError) {
+      console.warn('[Internationalization] Geolocation API error:', geoError);
+      // Continue with fallback detection methods
+    }
+
+    // Fall back to navigator language
+    const lang = navigator.language || navigator.languages?.[0];
+    if (lang) {
+      const countryCode = lang.split('-')[1]?.toUpperCase();
+      if (countryCode && SUPPORTED_COUNTRIES[countryCode]) {
+        return countryCode;
+      }
+    }
+
+    // Fall back to timezone detection
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timezoneCountryMap: Record<string, string> = {
+      // North America
+      'America/New_York': 'US',
+      'America/Chicago': 'US',
+      'America/Denver': 'US',
+      'America/Los_Angeles': 'US',
+      'America/Toronto': 'CA',
+      'America/Vancouver': 'CA',
+      'America/Mexico_City': 'MX',
+      'America/Sao_Paulo': 'BR',
+      // Europe
+      'Europe/London': 'GB',
+      'Europe/Berlin': 'DE',
+      'Europe/Paris': 'FR',
+      'Europe/Madrid': 'ES',
+      'Europe/Rome': 'IT',
+      'Europe/Amsterdam': 'NL',
+      'Europe/Stockholm': 'SE',
+      'Europe/Zurich': 'CH',
+      'Europe/Oslo': 'NO',
+      'Europe/Copenhagen': 'DK',
+      'Europe/Warsaw': 'PL',
+      'Europe/Prague': 'CZ',
+      'Europe/Budapest': 'HU',
+      'Europe/Brussels': 'BE',
+      'Europe/Vienna': 'AT',
+      'Europe/Lisbon': 'PT',
+      'Europe/Helsinki': 'FI',
+      'Europe/Dublin': 'IE',
+      // Asia Pacific
+      'Asia/Tokyo': 'JP',
+      'Asia/Hong_Kong': 'HK',
+      'Asia/Singapore': 'SG',
+      'Asia/Seoul': 'KR',
+      'Australia/Sydney': 'AU',
+      'Australia/Melbourne': 'AU',
+      'Pacific/Auckland': 'NZ',
+    };
+    
+    if (timezone && timezoneCountryMap[timezone]) {
+      return timezoneCountryMap[timezone];
+    }
+
+    // Default to US
+    return 'US';
+  } catch (error) {
+    console.error('[Internationalization] Async detection error:', error);
+    return 'US';
+  }
+};
+
+// Synchronous country detection (backwards compatible - uses localStorage/navigator/timezone only)
 export const detectUserCountry = (): string => {
   if (typeof window === 'undefined') return 'US';
   
-  // Try to get country from various sources
-  const sources = [
-    // From URL parameters
-    () => new URLSearchParams(window.location.search).get('country'),
+  try {
     // From localStorage
-    () => localStorage.getItem('user_country'),
+    const cached = localStorage.getItem('user_country');
+    if (cached && SUPPORTED_COUNTRIES[cached]) {
+      return cached;
+    }
+    
+    // From URL parameters
+    const urlCountry = new URLSearchParams(window.location.search).get('country');
+    if (urlCountry && SUPPORTED_COUNTRIES[urlCountry]) {
+      return urlCountry;
+    }
+    
     // From navigator language
-    () => {
-      const lang = navigator.language || navigator.languages?.[0];
-      if (lang) {
-        const countryCode = lang.split('-')[1];
-        return countryCode && SUPPORTED_COUNTRIES[countryCode] ? countryCode : null;
+    const lang = navigator.language || navigator.languages?.[0];
+    if (lang) {
+      const countryCode = lang.split('-')[1]?.toUpperCase();
+      if (countryCode && SUPPORTED_COUNTRIES[countryCode]) {
+        return countryCode;
       }
-      return null;
-    },
+    }
+
     // From timezone (basic detection)
-    () => {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const timezoneCountryMap: Record<string, string> = {
-        'America/New_York': 'US',
-        'America/Los_Angeles': 'US',
-        'America/Toronto': 'CA',
-        'Europe/London': 'GB',
-        'Europe/Berlin': 'DE',
-        'Europe/Paris': 'FR',
-        'Europe/Madrid': 'ES',
-        'Europe/Rome': 'IT',
-        'Europe/Amsterdam': 'NL',
-        'Europe/Stockholm': 'SE',
-        'Australia/Sydney': 'AU',
-      };
-      return timezoneCountryMap[timezone] || null;
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const timezoneCountryMap: Record<string, string> = {
+      'America/New_York': 'US',
+      'America/Chicago': 'US',
+      'America/Denver': 'US',
+      'America/Los_Angeles': 'US',
+      'America/Toronto': 'CA',
+      'America/Vancouver': 'CA',
+      'Europe/London': 'GB',
+      'Europe/Berlin': 'DE',
+      'Europe/Paris': 'FR',
+      'Europe/Madrid': 'ES',
+      'Europe/Rome': 'IT',
+      'Europe/Amsterdam': 'NL',
+      'Europe/Stockholm': 'SE',
+      'Australia/Sydney': 'AU',
+      'Australia/Melbourne': 'AU',
+    };
+    if (timezone && timezoneCountryMap[timezone]) {
+      return timezoneCountryMap[timezone];
     }
-  ];
-  
-  for (const source of sources) {
-    const country = source();
-    if (country && SUPPORTED_COUNTRIES[country]) {
-      return country;
-    }
+    
+    return 'US'; // Default fallback
+  } catch (error) {
+    console.error('[Internationalization] Sync detection error:', error);
+    return 'US';
   }
-  
-  return 'US'; // Default fallback
 };
 
 // Format price for specific country
@@ -173,12 +465,16 @@ export const formatPrice = (basePrice: number, countryCode: string): string => {
     ? localPrice * (1 + country.vatRate)
     : localPrice;
   
+  // Currencies that don't use decimal places
+  const zeroDecimalCurrencies = ['JPY', 'KRW', 'HUF', 'CLP', 'ISK', 'TWD'];
+  const useDecimals = !zeroDecimalCurrencies.includes(country.currency);
+  
   // Use Intl.NumberFormat to get the formatted number
   const formattedNumber = new Intl.NumberFormat(country.language, {
     style: 'currency',
     currency: country.currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: useDecimals ? 2 : 0,
+    maximumFractionDigits: useDecimals ? 2 : 0,
   }).format(finalPrice);
   
   // For countries where Intl.NumberFormat doesn't use our preferred symbol,

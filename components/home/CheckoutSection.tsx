@@ -656,10 +656,14 @@ export default function CheckoutSection({
                         selectedProduct={{ id: selectedPrice, activationType: selectedActivationType }}
                         email={email}
                         onPaymentSuccess={(details) => {
+                          console.log('🎯 CheckoutSection MOBILE: PayPal onPaymentSuccess called with details:', details);
+                          console.log('🎯 CheckoutSection MOBILE: Setting payment status to "success"');
                           setPaymentStatus('success');
                           onPaymentSuccess?.(details);
+                          console.log('🎯 CheckoutSection MOBILE: Payment success callback completed');
                         }}
                         onPaymentError={(error) => {
+                          console.log('❌ CheckoutSection MOBILE: PayPal onPaymentError called:', error);
                           setPaymentStatus('error');
                           setCheckoutFormError(error);
                           onPaymentError?.(error);
@@ -990,10 +994,14 @@ export default function CheckoutSection({
                   selectedProduct={{ id: selectedPrice, activationType: selectedActivationType }}
                   email={email}
                   onPaymentSuccess={(details) => {
+                    console.log('🎯 CheckoutSection: PayPal onPaymentSuccess called with details:', details);
+                    console.log('🎯 CheckoutSection: Setting payment status to "success"');
                     setPaymentStatus('success');
                     onPaymentSuccess?.(details);
+                    console.log('🎯 CheckoutSection: Payment success callback completed');
                   }}
                   onPaymentError={(error) => {
+                    console.log('❌ CheckoutSection: PayPal onPaymentError called:', error);
                     setPaymentStatus('error');
                     setCheckoutFormError(error);
                     onPaymentError?.(error);

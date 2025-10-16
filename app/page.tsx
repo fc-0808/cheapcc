@@ -11,6 +11,7 @@ import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
 import { v4 as uuidv4 } from 'uuid';
 import { getPricingOptions, type PricingOption } from '@/utils/products-supabase';
 import dynamic from 'next/dynamic';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 // Import section components
 import HeroSection from "@/components/home/HeroSection";
@@ -72,6 +73,9 @@ export default function Home() {
   const [email, setEmail] = useState<string>(''); // Payment/billing email
   const [adobeEmail, setAdobeEmail] = useState<string>(''); // Adobe account email for self-activation
   const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
+  
+  // ✅ GET INTERNATIONALIZATION DATA
+  const { countryConfig, formatLocalPrice, selectedCountry } = useInternationalization();
   
   // Pricing options - loaded immediately
   const [pricingOptions, setPricingOptions] = useState<PricingOption[]>([]);
@@ -327,6 +331,26 @@ export default function Home() {
         // Always use payment email for the order, Adobe email is passed separately
         const emailForOrder = paymentEmail;
         
+        // Get the selected product to extract pricing info
+        const selectedProduct = pricingOptions.find(p => p.id === selectedPrice);
+        if (!selectedProduct) {
+          throw new Error('Product not found');
+        }
+
+        // ✅ Calculate display price using country config
+        const basePrice = selectedProduct.price;
+        // Calculate localized price with VAT
+        const localPriceMultiplier = countryConfig.priceMultiplier;
+        const vatRate = countryConfig.vatRate || 0;
+        const rawDisplayPrice = basePrice * localPriceMultiplier * (1 + vatRate);
+        
+        // Handle zero-decimal currencies (JPY, KRW, etc.)
+        const zeroDecimalCurrencies = ['JPY', 'KRW', 'HUF', 'CLP', 'ISK', 'TWD'];
+        const useDecimals = !zeroDecimalCurrencies.includes(countryConfig.currency);
+        const displayPrice = useDecimals 
+          ? parseFloat(rawDisplayPrice.toFixed(2))
+          : Math.round(rawDisplayPrice);
+        
         const response = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -335,7 +359,12 @@ export default function Home() {
             name, 
             email: emailForOrder, 
             activationType: selectedActivationType,
-            adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null
+            adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null,
+            // ✅ ADD: Country and currency information for multi-currency support
+            countryCode: selectedCountry,
+            currency: countryConfig.currency,
+            basePrice,
+            displayPrice,
           })
         });
 
@@ -374,7 +403,7 @@ export default function Home() {
     }
     
     throw new Error('Failed to create PayPal order after multiple attempts');
-  }, [selectedActivationType, adobeEmail]);
+  }, [selectedActivationType, adobeEmail, countryConfig, formatLocalPrice, pricingOptions, selectedCountry]);
   
   // Component initialization - use safer approach for PayPal
   useEffect(() => {

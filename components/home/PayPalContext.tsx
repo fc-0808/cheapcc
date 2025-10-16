@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
 import { PAYPAL_CONFIG } from '@/utils/paypal-config';
+import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 // No hardcoded fallback - rely on environment variables
 
@@ -28,6 +29,9 @@ const PayPalContext = createContext<PayPalContextType>({
 export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
   console.log('🚀 PayPalProvider initialized');
   const [isPayPalScriptLoaded, setIsPayPalScriptLoaded] = useState(false);
+  
+  // Get user's currency from internationalization context
+  const { countryConfig } = useInternationalization();
   const activeContainers = useRef<Set<string>>(new Set());
   const pendingRenders = useRef<Map<string, any>>(new Map());
   const buttonInstances = useRef<Map<string, any>>(new Map());
@@ -118,7 +122,9 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
     return null;
   }
 
-  const paypalScriptUrl = PAYPAL_CONFIG.getScriptUrl();
+  const paypalScriptUrl = PAYPAL_CONFIG.getScriptUrl(countryConfig.currency);
+  
+  console.log(`🌍 PayPal Context: Loading SDK with currency ${countryConfig.currency} for country ${countryConfig.code}`);
   
   // Additional validation for the URL
   if (!paypalScriptUrl.includes(clientId) || paypalScriptUrl.includes('undefined') || paypalScriptUrl.includes('null')) {

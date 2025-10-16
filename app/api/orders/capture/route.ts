@@ -107,6 +107,9 @@ export async function POST(request: NextRequest) {
         paypalOrderId: captureData.id,
         captureStatus: captureData.status,
         payerEmail: captureData.payer?.emailAddress, // Log PII carefully
+        // ✅ ADD: Log captured currency for audit trail
+        currency: captureData.purchaseUnits?.[0]?.amount?.currencyCode,
+        amount: captureData.purchaseUnits?.[0]?.amount?.value,
         durationMs,
         source: "app/api/orders/capture/route.ts POST"
     }, null, 2));
@@ -116,6 +119,9 @@ export async function POST(request: NextRequest) {
       status: captureData.status,
       payer: captureData.payer,
       purchase_units: captureData.purchaseUnits,
+      // ✅ ADD: Return currency and amount for client-side reconciliation
+      currency: captureData.purchaseUnits?.[0]?.amount?.currencyCode,
+      amount: captureData.purchaseUnits?.[0]?.amount?.value,
     });
 
   } catch (error: any) {

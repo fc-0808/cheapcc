@@ -71,6 +71,11 @@ export const CreateOrderSchema = z.object({
   email: z.string().email({ message: "A valid email is required for the order." }),
   activationType: z.enum(['pre-activated', 'self-activation', 'redemption-required']).optional().default('pre-activated'),
   adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional().or(z.literal("")).nullable(),
+  // ✅ ADD: Country and currency information for multi-currency support
+  countryCode: z.string().length(2).toUpperCase().default('US'),
+  currency: z.string().length(3).toUpperCase().default('USD'),
+  basePrice: z.number().positive({ message: "Base price must be a positive number." }).default(0),
+  displayPrice: z.number().positive({ message: "Display price must be a positive number." }).default(0),
 });
 export type CreateOrderPayload = z.infer<typeof CreateOrderSchema>;
 
