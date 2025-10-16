@@ -217,9 +217,20 @@ export async function calculateExpiryDate(order: any): Promise<Date | null> {
 }
 
 export async function isActiveSubscription(order: any): Promise<boolean> {
-  const option = await getPricingOptionById(order.priceId);
-  if (!option) return false;
-  return option.productType === 'subscription';
+  // Check if it's a subscription product type
+  if (order.product_type !== 'subscription') return false;
+  
+  // Check if the order status is active
+  if (order.status !== 'ACTIVE') return false;
+  
+  // Check if the order hasn't expired (if expiry_date exists)
+  if (order.expiry_date) {
+    const now = new Date();
+    const expiryDate = new Date(order.expiry_date);
+    if (expiryDate <= now) return false;
+  }
+  
+  return true;
 }
 
 export function getRedemptionInstructions(option: PricingOption | null | undefined): string {

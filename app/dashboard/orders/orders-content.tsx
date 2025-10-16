@@ -59,7 +59,7 @@ export default function OrdersContent({ user }: OrdersContentProps) {
 
   const hasActiveSubscriptions = useMemo(() => {
     if (!orders) return false;
-    return orders.some(order => order.status === 'active');
+    return orders.some(order => order.status === 'ACTIVE');
   }, [orders]);
 
   const calculateDaysLeft = (endDate: string | null) => {

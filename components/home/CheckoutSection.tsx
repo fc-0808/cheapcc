@@ -15,7 +15,9 @@ import { useInternationalization } from '@/contexts/InternationalizationContext'
 import Script from 'next/script';
 
 // Success message component to show after successful payment
-const PaymentSuccessMessage = ({ email }: { email: string }) => (
+const PaymentSuccessMessage = ({ email }: { email: string }) => {
+  console.log('🎉 PaymentSuccessMessage rendering with email:', email);
+  return (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
     <motion.div 
       initial={{ opacity: 0, scale: 0.9 }} 
@@ -55,7 +57,8 @@ const PaymentSuccessMessage = ({ email }: { email: string }) => (
       </div>
     </motion.div>
   </div>
-);
+  );
+};
 
 // Simple requestIdleCallback polyfill - IMPORTANT: Must be outside the component
 const scheduleIdleTask = (callback: Function): any => {
@@ -658,8 +661,14 @@ export default function CheckoutSection({
                         onPaymentSuccess={(details) => {
                           console.log('🎯 CheckoutSection MOBILE: PayPal onPaymentSuccess called with details:', details);
                           console.log('🎯 CheckoutSection MOBILE: Setting payment status to "success"');
+                          console.log('🎯 CheckoutSection MOBILE: Current paymentStatus before set:', paymentStatus);
+                          
+                          // Force immediate state update
                           setPaymentStatus('success');
+                          
+                          // Also call the parent callback
                           onPaymentSuccess?.(details);
+                          
                           console.log('🎯 CheckoutSection MOBILE: Payment success callback completed');
                         }}
                         onPaymentError={(error) => {
@@ -996,8 +1005,14 @@ export default function CheckoutSection({
                   onPaymentSuccess={(details) => {
                     console.log('🎯 CheckoutSection: PayPal onPaymentSuccess called with details:', details);
                     console.log('🎯 CheckoutSection: Setting payment status to "success"');
+                    console.log('🎯 CheckoutSection: Current paymentStatus before set:', paymentStatus);
+                    
+                    // Force immediate state update
                     setPaymentStatus('success');
+                    
+                    // Also call the parent callback
                     onPaymentSuccess?.(details);
+                    
                     console.log('🎯 CheckoutSection: Payment success callback completed');
                   }}
                   onPaymentError={(error) => {
@@ -1144,6 +1159,14 @@ export default function CheckoutSection({
     formatLocalPrice,
     countryConfig.currency
   ]);
+
+  // Debug effect to track payment status changes
+  useEffect(() => {
+    console.log('🔍 Payment status changed to:', paymentStatus);
+    if (paymentStatus === 'success') {
+      console.log('🎉 SUCCESS STATUS DETECTED - Should show PaymentSuccessMessage');
+    }
+  }, [paymentStatus]);
 
   // No loading state - show content immediately
 

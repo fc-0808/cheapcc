@@ -250,8 +250,24 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
 
     // Try to get order data from database first (for form data)
     let orderDataFromDb = null;
-    if (priceId) {
-        const { data: existingOrderData } = await supabaseClient
+    
+    // First try to find by paypal_order_id (most reliable)
+    const { data: existingOrderData } = await supabaseClient
+        .from('orders')
+        .select('name, email, adobe_email, activation_type, product_type, product_id, amount, currency, price_id')
+        .eq('paypal_order_id', orderId)
+        .maybeSingle();
+    
+    if (existingOrderData) {
+        orderDataFromDb = existingOrderData;
+        name = existingOrderData.name || '';
+        email = existingOrderData.email || '';
+        adobeEmail = existingOrderData.adobe_email;
+        activationType = existingOrderData.activation_type || 'pre-activated';
+        priceId = existingOrderData.price_id || priceId; // Use priceId from DB if available
+    } else if (priceId) {
+        // Fallback: try to find by price_id and PENDING status
+        const { data: fallbackOrderData } = await supabaseClient
             .from('orders')
             .select('name, email, adobe_email, activation_type, product_type, product_id, amount, currency')
             .eq('price_id', priceId)
@@ -260,17 +276,18 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
             .limit(1)
             .maybeSingle();
         
-        if (existingOrderData) {
-            orderDataFromDb = existingOrderData;
-            name = existingOrderData.name || '';
-            email = existingOrderData.email || '';
-            adobeEmail = existingOrderData.adobe_email;
-            activationType = existingOrderData.activation_type || 'pre-activated';
+        if (fallbackOrderData) {
+            orderDataFromDb = fallbackOrderData;
+            name = fallbackOrderData.name || '';
+            email = fallbackOrderData.email || '';
+            adobeEmail = fallbackOrderData.adobe_email;
+            activationType = fallbackOrderData.activation_type || 'pre-activated';
         }
     }
 
     // Fallback to PayPal payer information if no database data found
     if (!orderDataFromDb && resource.payer) {
+        console.warn(JSON.stringify({ ...logBase, message: `No database order found, using PayPal payer data`, paypalName: `${resource.payer.name?.given_name || ''} ${resource.payer.name?.surname || ''}`.trim(), paypalEmail: resource.payer.email_address }, null, 2));
         if (resource.payer.name) {
             name = `${resource.payer.name.given_name || ''} ${resource.payer.name.surname || ''}`.trim();
         }
@@ -377,8 +394,24 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
 
     // Try to get order data from database first (for form data)
     let orderDataFromDb = null;
-    if (priceId) {
-        const { data: existingOrderData } = await supabaseClient
+    
+    // First try to find by paypal_order_id (most reliable)
+    const { data: existingOrderData } = await supabaseClient
+        .from('orders')
+        .select('name, email, adobe_email, activation_type, product_type, product_id, amount, currency, price_id')
+        .eq('paypal_order_id', orderId)
+        .maybeSingle();
+    
+    if (existingOrderData) {
+        orderDataFromDb = existingOrderData;
+        name = existingOrderData.name || '';
+        email = existingOrderData.email || '';
+        adobeEmail = existingOrderData.adobe_email;
+        activationType = existingOrderData.activation_type || 'pre-activated';
+        priceId = existingOrderData.price_id || priceId; // Use priceId from DB if available
+    } else if (priceId) {
+        // Fallback: try to find by price_id and PENDING status
+        const { data: fallbackOrderData } = await supabaseClient
             .from('orders')
             .select('name, email, adobe_email, activation_type, product_type, product_id, amount, currency')
             .eq('price_id', priceId)
@@ -387,17 +420,18 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
             .limit(1)
             .maybeSingle();
         
-        if (existingOrderData) {
-            orderDataFromDb = existingOrderData;
-            name = existingOrderData.name || '';
-            email = existingOrderData.email || '';
-            adobeEmail = existingOrderData.adobe_email;
-            activationType = existingOrderData.activation_type || 'pre-activated';
+        if (fallbackOrderData) {
+            orderDataFromDb = fallbackOrderData;
+            name = fallbackOrderData.name || '';
+            email = fallbackOrderData.email || '';
+            adobeEmail = fallbackOrderData.adobe_email;
+            activationType = fallbackOrderData.activation_type || 'pre-activated';
         }
     }
 
     // Fallback to PayPal payer information if no database data found
     if (!orderDataFromDb && resource.payer) {
+        console.warn(JSON.stringify({ ...logBase, message: `No database order found, using PayPal payer data`, paypalName: `${resource.payer.name?.given_name || ''} ${resource.payer.name?.surname || ''}`.trim(), paypalEmail: resource.payer.email_address }, null, 2));
         if (resource.payer.name) {
             name = `${resource.payer.name.given_name || ''} ${resource.payer.name.surname || ''}`.trim();
         }

@@ -12,11 +12,13 @@ interface ProcessedOrder {
   status?: string;
   amount?: string;
   expiryDate?: string | null;
+  expiry_date?: string | null;
   daysLeft?: number;
   planDuration?: string;
   formattedAmount?: string;
   formattedDate?: string;
   isActive?: boolean;
+  product_type?: string;
 }
 
 interface Stat {
@@ -321,14 +323,6 @@ export default function ClientDashboard({
               Recent Order History
             </span>
           </h2>
-          <Link 
-            href="/dashboard/orders" 
-            prefetch={false} 
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/20 bg-white/5 text-white text-sm font-medium hover:bg-white/10 transition-all duration-300"
-          >
-            View All
-            <i className="fas fa-arrow-right text-xs"></i>
-          </Link>
         </motion.div>
         
         <div className="p-5">
@@ -351,13 +345,26 @@ export default function ClientDashboard({
                   <tbody className="divide-y divide-white/5">
                     {recentOrders.map((order: ProcessedOrder, index: number) => {
                       const isActive = order.isActive;
-                      const statusText = isActive ? 'Active' : (order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase() : 'Expired');
                       
+                      // Determine status text and class based on isActive and product type
+                      let statusText = '';
                       let statusClass = '';
-                      if (isActive) statusClass = 'bg-green-500/20 text-green-300';
-                      else if (order.status?.toLowerCase() === 'completed') statusClass = 'bg-blue-500/20 text-blue-300';
-                      else if (order.status?.toLowerCase() === 'pending') statusClass = 'bg-amber-500/20 text-amber-300';
-                      else statusClass = 'bg-gray-500/20 text-gray-300';
+                      
+                      if (isActive) {
+                        statusText = 'Active';
+                        statusClass = 'bg-green-500/20 text-green-300';
+                      } else if (order.product_type === 'subscription') {
+                        // For subscriptions that are not active, show as expired
+                        statusText = 'Expired';
+                        statusClass = 'bg-red-500/20 text-red-300';
+                      } else {
+                        // For non-subscriptions (like redemption codes), show the actual status
+                        statusText = order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase() : 'Unknown';
+                        if (order.status?.toLowerCase() === 'completed') statusClass = 'bg-blue-500/20 text-blue-300';
+                        else if (order.status?.toLowerCase() === 'pending') statusClass = 'bg-amber-500/20 text-amber-300';
+                        else if (order.status?.toLowerCase() === 'inactive') statusClass = 'bg-gray-500/20 text-gray-300';
+                        else statusClass = 'bg-gray-500/20 text-gray-300';
+                      }
                       
                       return (
                         <motion.tr 

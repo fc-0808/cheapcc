@@ -65,7 +65,7 @@ export default function EmailInputField({
   }, [email]);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isUserSignedIn) {
+    if (!isUserSignedIn || isSelfActivation) {
       setEmail(e.target.value);
     }
   };
@@ -276,13 +276,13 @@ export default function EmailInputField({
                 Adobe Account Email Required
               </p>
               <p className="hidden md:block text-left">
-                Enter your Adobe account email address. CheapCC will authorize your account and add it to an educational organization for Adobe Creative Cloud access.
+                Enter your Adobe account email address. CheapCC will authorize your account for Adobe Creative Cloud access.
               </p>
               <p className="text-left hidden md:block">
                 This preserves your existing settings, files, and preferences.
               </p>
               <p className="md:hidden text-left">
-                CheapCC will authorize your Adobe account via educational organization.
+                CheapCC will authorize your Adobe account for Creative Cloud access.
               </p>
             </>
           ) : (
