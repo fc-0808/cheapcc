@@ -339,10 +339,10 @@ export default function Home() {
 
         // ✅ Calculate display price using country config
         const basePrice = selectedProduct.price;
-        // Calculate localized price with VAT
+        // Calculate localized price WITHOUT VAT (VAT should not be included in PayPal amount)
         const localPriceMultiplier = countryConfig.priceMultiplier;
         const vatRate = countryConfig.vatRate || 0;
-        const rawDisplayPrice = basePrice * localPriceMultiplier * (1 + vatRate);
+        const rawDisplayPrice = basePrice * localPriceMultiplier;
         
         // Handle zero-decimal currencies (JPY, KRW, etc.)
         const zeroDecimalCurrencies = ['JPY', 'KRW', 'HUF', 'CLP', 'ISK', 'TWD'];
