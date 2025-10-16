@@ -59,7 +59,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'de-DE',
     hreflang: 'de-de',
-    priceMultiplier: 0.92, // Approximate EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR (prices in EUR should be LESS than USD)
     vatRate: 0.19, // 19% VAT
   },
   FR: {
@@ -69,7 +69,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'fr-FR',
     hreflang: 'fr-fr',
-    priceMultiplier: 0.92, // Approximate EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.20, // 20% VAT
   },
   ES: {
@@ -79,7 +79,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'es-ES',
     hreflang: 'es-es',
-    priceMultiplier: 0.92, // Approximate EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.21, // 21% VAT
   },
   IT: {
@@ -89,7 +89,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'it-IT',
     hreflang: 'it-it',
-    priceMultiplier: 0.92, // Approximate EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.22, // 22% VAT
   },
   NL: {
@@ -99,7 +99,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'nl-NL',
     hreflang: 'nl-nl',
-    priceMultiplier: 0.92, // Approximate EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.21, // 21% VAT
   },
   SE: {
@@ -252,7 +252,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'nl-BE',
     hreflang: 'nl-be',
-    priceMultiplier: 0.92, // EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.21, // 21% VAT
   },
   AT: {
@@ -262,7 +262,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'de-AT',
     hreflang: 'de-at',
-    priceMultiplier: 0.92, // EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.20, // 20% VAT
   },
   PT: {
@@ -272,7 +272,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'pt-PT',
     hreflang: 'pt-pt',
-    priceMultiplier: 0.92, // EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.23, // 23% VAT
   },
   FI: {
@@ -282,7 +282,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'fi-FI',
     hreflang: 'fi-fi',
-    priceMultiplier: 0.92, // EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.24, // 24% VAT
   },
   IE: {
@@ -292,7 +292,7 @@ export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
     currencySymbol: '€',
     language: 'en-IE',
     hreflang: 'en-ie',
-    priceMultiplier: 0.92, // EUR conversion
+    priceMultiplier: 0.86, // Corrected: 1 USD = ~0.86 EUR
     vatRate: 0.23, // 23% VAT
   }
 };
@@ -460,10 +460,8 @@ export const formatPrice = (basePrice: number, countryCode: string): string => {
   const country = SUPPORTED_COUNTRIES[countryCode] || SUPPORTED_COUNTRIES.US;
   const localPrice = basePrice * country.priceMultiplier;
   
-  // Add VAT if applicable
-  const finalPrice = country.vatRate 
-    ? localPrice * (1 + country.vatRate)
-    : localPrice;
+  // NOTE: VAT is not added to the display price. Regional pricing multipliers already account for local market pricing.
+  // VAT information is shown separately via vatNotice in localized content.
   
   // Currencies that don't use decimal places
   const zeroDecimalCurrencies = ['JPY', 'KRW', 'HUF', 'CLP', 'ISK', 'TWD'];
@@ -475,7 +473,7 @@ export const formatPrice = (basePrice: number, countryCode: string): string => {
     currency: country.currency,
     minimumFractionDigits: useDecimals ? 2 : 0,
     maximumFractionDigits: useDecimals ? 2 : 0,
-  }).format(finalPrice);
+  }).format(localPrice);
   
   // For countries where Intl.NumberFormat doesn't use our preferred symbol,
   // replace with our custom currency symbol

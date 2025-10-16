@@ -146,7 +146,7 @@ export default function EmailInputField({
             onChange={handleEmailChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            disabled={isUserSignedIn}
+            disabled={isUserSignedIn && !isSelfActivation}
             placeholder={isSelfActivation ? 
               (isDesktop ? "Enter your Adobe account email" : "your.email@adobe.com") : 
               (isDesktop ? "Enter your email address" : "your.email@example.com")
@@ -164,7 +164,7 @@ export default function EmailInputField({
                   ? 'md:border-fuchsia-400/50 border-fuchsia-400' 
                   : 'border-white/20 hover:border-white/30'
               }
-              ${isUserSignedIn 
+              ${isUserSignedIn && !isSelfActivation
                 ? 'cursor-not-allowed md:bg-[rgba(17,17,40,0.6)] opacity-60' 
                 : 'cursor-text'
               }
@@ -230,7 +230,7 @@ export default function EmailInputField({
             </AnimatePresence>
 
             {/* Auto-filled Badge */}
-            {isUserSignedIn && (
+            {isUserSignedIn && !isSelfActivation && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}

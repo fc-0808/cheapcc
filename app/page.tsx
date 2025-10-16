@@ -461,7 +461,6 @@ export default function Home() {
         setIsUserSignedIn(true);
         const userEmail = user.email || '';
         setEmail(userEmail); // Set payment email
-        setAdobeEmail(userEmail); // Also set Adobe email for convenience
         let userName = user.user_metadata?.name || '';
         if (!userName) {
           const { data: profileData } = await supabase
