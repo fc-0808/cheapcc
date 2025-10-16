@@ -80,7 +80,7 @@ const INTERNAL_LINKS: InternalLink[] = [
   },
   {
     href: '/cheapcc-testimonials',
-    title: 'CheapCC Customer Testimonials - 10,000+ Reviews',
+    title: 'CheapCC Customer Testimonials - 500+ Reviews',
     description: 'Read real CheapCC customer testimonials and success stories. See why creatives worldwide trust CheapCC',
     category: 'support',
     priority: 'medium'

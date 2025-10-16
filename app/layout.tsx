@@ -76,6 +76,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         
+        {/* reCAPTCHA Resource Hints */}
+        <link rel="preconnect" href="https://www.google.com" />
+        <link rel="preconnect" href="https://www.gstatic.com" />
+        <link rel="dns-prefetch" href="https://www.google.com" />
+        <link rel="dns-prefetch" href="https://www.gstatic.com" />
+        
         {/* Tawk.to Resource Hints */}
         <link rel="preconnect" href="https://embed.tawk.to" />
         <link rel="dns-prefetch" href="https://tawk.to" />
@@ -143,6 +149,13 @@ export default function RootLayout({
               })(window,document,'script','dataLayer','GTM-M6P65BTX');
             `,
           }}
+        />
+        
+        {/* Google reCAPTCHA v2 Script */}
+        <Script
+          src="https://www.google.com/recaptcha/api.js"
+          strategy="lazyOnload"
+          id="recaptcha-script"
         />
       </head>
       <body className="font-sans antialiased bg-white text-[#171717] relative">

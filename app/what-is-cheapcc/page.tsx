@@ -4,14 +4,14 @@ import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'What is CheapCC? - Adobe Creative Cloud Discount Service Explained',
-  description: 'What is CheapCC? CheapCC is a service that provides genuine Adobe Creative Cloud subscriptions at 83% off official pricing. Learn how CheapCC works and why it\'s trusted by 10,000+ customers.',
+  description: 'What is CheapCC? CheapCC is a service that provides genuine Adobe Creative Cloud subscriptions at 83% off official pricing. Learn how CheapCC works and why it\'s trusted by 500+ customers.',
   keywords: 'what is cheapcc, cheapcc explained, cheapcc service, how does cheapcc work, cheapcc adobe creative cloud',
   alternates: {
     canonical: 'https://cheapcc.online/what-is-cheapcc'
   },
   openGraph: {
     title: 'What is CheapCC? Adobe CC Discount Service Explained',
-    description: 'CheapCC provides genuine Adobe Creative Cloud subscriptions at 83% off official pricing. Trusted by 10,000+ customers worldwide.',
+    description: 'CheapCC provides genuine Adobe Creative Cloud subscriptions at 83% off official pricing. Trusted by 500+ customers worldwide.',
     url: 'https://cheapcc.online/what-is-cheapcc',
     siteName: 'CheapCC',
     locale: 'en_US',
@@ -48,7 +48,7 @@ const faqSchema = {
       "name": "Is CheapCC safe and legitimate?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, CheapCC is safe and legitimate. The service has over 10,000 satisfied customers and maintains a 4.8/5 customer rating. CheapCC provides genuine Adobe Creative Cloud subscriptions with full functionality, regular updates, and commercial usage rights."
+        "text": "Yes, CheapCC is safe and legitimate. The service has over 500 satisfied customers and maintains a 4.8/5 customer rating. CheapCC provides genuine Adobe Creative Cloud subscriptions with full functionality, regular updates, and commercial usage rights."
       }
     }
   ]
@@ -85,7 +85,7 @@ export default function WhatIsCheapCCPage() {
                   <div className="text-white/70">Adobe Official Pricing</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-400">10,000+</div>
+                  <div className="text-3xl font-bold text-blue-400">500+</div>
                   <div className="text-white/70">Happy Customers</div>
                 </div>
                 <div className="text-center">
@@ -199,7 +199,7 @@ export default function WhatIsCheapCCPage() {
                     <i className="fas fa-users text-green-400 mr-3 mt-1"></i>
                     <div>
                       <h4 className="font-semibold text-white">Trusted Service</h4>
-                      <p className="text-white/80">10,000+ satisfied customers worldwide</p>
+                      <p className="text-white/80">500+ satisfied customers worldwide</p>
                     </div>
                   </div>
                   
@@ -226,7 +226,7 @@ export default function WhatIsCheapCCPage() {
             <div className="text-center">
               <h2 className="text-3xl font-bold text-white mb-6">Ready to Experience CheapCC?</h2>
               <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-                Join thousands of creatives who've discovered the smart way to get Adobe Creative Cloud for less.
+                Join hundreds of creatives who've discovered the smart way to get Adobe Creative Cloud for less.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

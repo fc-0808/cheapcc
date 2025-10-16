@@ -84,7 +84,7 @@ export default function CheapCCNetPage() {
                   500+ Happy Customers
                 </h3>
                 <p className="text-white/70">
-                  Join thousands of satisfied creatives who've made the switch to CheapCC for their Adobe Creative Cloud needs.
+                  Join hundreds of satisfied creatives who've made the switch to CheapCC for their Adobe Creative Cloud needs.
                 </p>
               </div>
             </div>

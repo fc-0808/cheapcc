@@ -528,7 +528,7 @@ export default function Header() {
                     <i className="fas fa-users text-purple-400"></i>
                     <div>
                       <div className="font-medium">Customer Stories</div>
-                      <div className="text-xs text-white/60">10,000+ testimonials</div>
+                      <div className="text-xs text-white/60">500+ testimonials</div>
                     </div>
                   </Link>
                 </div>

@@ -41,7 +41,7 @@ const reviewSchema = {
     "bestRating": "5",
     "worstRating": "1"
   },
-  "reviewBody": "CheapCC provides genuine Adobe Creative Cloud subscriptions at significant discounts. Based on 10,000+ customer reviews, CheapCC maintains a 4.8/5 rating with excellent customer service and instant delivery.",
+  "reviewBody": "CheapCC provides genuine Adobe Creative Cloud subscriptions at significant discounts. Based on 500+ customer reviews, CheapCC maintains a 4.8/5 rating with excellent customer service and instant delivery.",
   "datePublished": "2025-01-01"
 };
 
@@ -64,7 +64,7 @@ export default function CheapCCReviewPage() {
                 <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">CheapCC Review</span> 2025
               </h1>
               <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
-                Is CheapCC legit? We've analyzed 10,000+ customer reviews, tested the service, and compiled this honest review of CheapCC's Adobe Creative Cloud discounts.
+                Is CheapCC legit? We've analyzed 500+ customer reviews, tested the service, and compiled this honest review of CheapCC's Adobe Creative Cloud discounts.
               </p>
               
               <div className="flex flex-wrap justify-center gap-4 mb-8">
@@ -72,7 +72,7 @@ export default function CheapCCReviewPage() {
                   <i className="fas fa-star mr-2"></i>4.8/5 Customer Rating
                 </div>
                 <div className="bg-blue-500/20 border border-blue-500/50 rounded-full px-6 py-2 text-blue-400 font-medium">
-                  <i className="fas fa-users mr-2"></i>10,000+ Customers
+                  <i className="fas fa-users mr-2"></i>500+ Customers
                 </div>
                 <div className="bg-purple-500/20 border border-purple-500/50 rounded-full px-6 py-2 text-purple-400 font-medium">
                   <i className="fas fa-shield-check mr-2"></i>Verified Legit
@@ -87,7 +87,7 @@ export default function CheapCCReviewPage() {
                 Quick Answer: Is CheapCC Legit?
               </h2>
               <p className="text-lg text-white/90 mb-4">
-                <strong>Yes, CheapCC is legitimate.</strong> After extensive testing and analysis of thousands of customer reviews, CheapCC provides genuine Adobe Creative Cloud subscriptions at discounted prices. The service has maintained a 4.8/5 customer satisfaction rating since 2023.
+                <strong>Yes, CheapCC is legitimate.</strong> After extensive testing and analysis of hundreds of customer reviews, CheapCC provides genuine Adobe Creative Cloud subscriptions at discounted prices. The service has maintained a 4.8/5 customer satisfaction rating since 2023.
               </p>
               <div className="grid md:grid-cols-3 gap-4 mt-6">
                 <div className="text-center">
@@ -238,7 +238,7 @@ export default function CheapCCReviewPage() {
                 <h2 className="text-3xl font-bold text-white mb-6">Final Verdict: Is CheapCC Worth It?</h2>
                 <div className="text-lg text-white/90 space-y-4">
                   <p>
-                    <strong>For most users: Yes, CheapCC is worth it.</strong> The service provides genuine Adobe Creative Cloud access at a fraction of the official cost, with thousands of satisfied customers and a proven track record.
+                    <strong>For most users: Yes, CheapCC is worth it.</strong> The service provides genuine Adobe Creative Cloud access at a fraction of the official cost, with hundreds of satisfied customers and a proven track record.
                   </p>
                   <p>
                     <strong>Best for:</strong> Freelancers, students, small agencies, and anyone who needs Adobe CC but wants to save money.
@@ -255,7 +255,7 @@ export default function CheapCCReviewPage() {
                       <i key={i} className={`fas fa-star text-2xl ${i < 4 || (i === 4) ? 'text-yellow-400' : 'text-gray-400'}`}></i>
                     ))}
                   </div>
-                  <p className="text-white/70">Based on 10,000+ customer reviews</p>
+                  <p className="text-white/70">Based on 500+ customer reviews</p>
                 </div>
               </section>
             </div>
@@ -264,7 +264,7 @@ export default function CheapCCReviewPage() {
             <div className="text-center mt-16">
               <h2 className="text-3xl font-bold text-white mb-6">Ready to Try CheapCC?</h2>
               <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-                Join thousands of satisfied customers who've made the switch to affordable Adobe Creative Cloud.
+                Join hundreds of satisfied customers who've made the switch to affordable Adobe Creative Cloud.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

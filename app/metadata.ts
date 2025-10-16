@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: 'CheapCC - Adobe Creative Cloud Discount | 83% Off Official Pricing',
-  description: '🎯 CheapCC: Get genuine Adobe Creative Cloud for 83% less than official pricing! All CC apps included: Photoshop, Illustrator, Premiere Pro, After Effects. Instant delivery, 10,000+ satisfied customers worldwide.',
+  description: '🎯 CheapCC: Get genuine Adobe Creative Cloud for 83% less than official pricing! All CC apps included: Photoshop, Illustrator, Premiere Pro, After Effects. Instant delivery, 500+ satisfied customers worldwide.',
   keywords: 'cheapcc, cheapcc adobe, adobe creative cloud discount, cheap adobe cc, adobe cc alternative, adobe subscription discount, photoshop discount, illustrator discount, premiere pro discount, adobe cc pricing, adobe creative cloud cost, how much is adobe creative cloud, cancel adobe subscription, adobe student discount',
   metadataBase: new URL('https://cheapcc.online'),
   authors: [
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'CheapCC - Adobe Creative Cloud Discount | 83% Off Official Pricing',
-    description: '🎯 CheapCC: Why pay $79.99/month for Adobe CC when you can get it for $14.99? Same apps, same features, 83% less cost. Join 10,000+ creatives who switched to CheapCC.',
+    description: '🎯 CheapCC: Why pay $79.99/month for Adobe CC when you can get it for $14.99? Same apps, same features, 83% less cost. Join 500+ creatives who switched to CheapCC.',
     url: 'https://cheapcc.online',
     siteName: 'CheapCC',
     locale: 'en_US',

@@ -24,7 +24,7 @@ const voiceSearchFAQSchema = {
       "name": "Is CheapCC legitimate?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, CheapCC is completely legitimate. We provide genuine Adobe Creative Cloud subscriptions with over 10,000 satisfied customers and a 4.8 out of 5 star rating. All accounts are authentic Adobe subscriptions with full functionality."
+        "text": "Yes, CheapCC is completely legitimate. We provide genuine Adobe Creative Cloud subscriptions with over 500 satisfied customers and a 4.8 out of 5 star rating. All accounts are authentic Adobe subscriptions with full functionality."
       }
     },
     {

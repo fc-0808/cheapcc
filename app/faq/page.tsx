@@ -29,7 +29,7 @@ const faqStructuredData = {
       "name": "Is CheapCC legit and safe to use?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, CheapCC is a legitimate service with over 10,000 satisfied customers and a 4.8/5 rating. We provide genuine Adobe Creative Cloud subscriptions with secure payment processing and reliable customer support. All accounts are authentic Adobe subscriptions with full functionality."
+        "text": "Yes, CheapCC is a legitimate service with over 500 satisfied customers and a 4.8/5 rating. We provide genuine Adobe Creative Cloud subscriptions with secure payment processing and reliable customer support. All accounts are authentic Adobe subscriptions with full functionality."
       }
     },
     {

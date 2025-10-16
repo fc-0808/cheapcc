@@ -228,7 +228,7 @@ export default function CheapCCVsAdobeOfficialPage() {
                   </li>
                   <li className="flex items-start">
                     <i className="fas fa-check text-green-400 mr-3 mt-1"></i>
-                    <span><strong>10,000+ Customers:</strong> Trusted by creatives worldwide</span>
+                    <span><strong>500+ Customers:</strong> Trusted by creatives worldwide</span>
                   </li>
                   <li className="flex items-start">
                     <i className="fas fa-check text-green-400 mr-3 mt-1"></i>
@@ -298,7 +298,7 @@ export default function CheapCCVsAdobeOfficialPage() {
             <div className="text-center bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-12">
               <h2 className="text-3xl font-bold text-white mb-6">Ready to Save 83% on Adobe Creative Cloud?</h2>
               <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-                Join thousands of creatives who've made the smart switch to CheapCC. Same Adobe apps, massive savings.
+                Join hundreds of creatives who've made the smart switch to CheapCC. Same Adobe apps, massive savings.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

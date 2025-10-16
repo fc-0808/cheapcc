@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { signup } from './actions';
 import { useEffect, useState, useRef, Suspense } from 'react';
-import ReCAPTCHA from "react-google-recaptcha";
+import ReCaptchaWrapper, { ReCaptchaWrapperRef } from '@/components/ReCaptchaWrapper';
 import RegisterPageURLMessages from '@/components/RegisterPageURLMessages';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
+import { getRecaptchaConfig } from '@/utils/recaptcha-client';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
 export default function RegisterPage() {
@@ -18,11 +19,13 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const recaptchaRef = useRef<ReCaptchaWrapperRef>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [particles, setParticles] = useState<Array<{top: number, left: number, size: number, delay: number}>>([]);
   // New state to toggle email registration form visibility
   const [showEmailForm, setShowEmailForm] = useState(false);
+  // reCAPTCHA configuration
+  const recaptchaConfig = getRecaptchaConfig();
 
   // Password strength validation
   const [passwordRequirements, setPasswordRequirements] = useState({
@@ -102,7 +105,7 @@ export default function RegisterPage() {
     event.preventDefault();
     
     // Check if reCAPTCHA is required and available
-    if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !recaptchaToken) {
+    if (recaptchaConfig && !recaptchaToken) {
       setErrorMessage("Please complete the reCAPTCHA.");
       return;
     }
@@ -499,15 +502,15 @@ export default function RegisterPage() {
                   </label>
                 </motion.div>
 
-                {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+                {recaptchaConfig && (
                   <motion.div className="flex justify-center w-full">
                     <div className="w-full max-w-md overflow-hidden">
-                      <ReCAPTCHA
+                      <ReCaptchaWrapper
                         ref={recaptchaRef}
-                        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                        sitekey={recaptchaConfig.siteKey}
                         onChange={handleRecaptchaChange}
-                        theme="dark"
-                        size="normal"
+                        theme={recaptchaConfig.theme}
+                        size={recaptchaConfig.size}
                         className="transform scale-[1.03] origin-left"
                       />
                     </div>
@@ -519,7 +522,7 @@ export default function RegisterPage() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   className="w-full py-2.5 px-4 bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 text-white font-semibold rounded-lg transition focus:ring-2 focus:ring-white/25 focus:outline-none cursor-pointer disabled:opacity-60 shadow-lg relative overflow-hidden"
-                  disabled={isSubmitting || !passwordsMatch || !isPasswordValid || (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && !recaptchaToken)}
+                  disabled={isSubmitting || !passwordsMatch || !isPasswordValid || (recaptchaConfig && !recaptchaToken)}
                 >
                   {/* Animated shine effect */}
                   <motion.span 

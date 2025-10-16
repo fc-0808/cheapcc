@@ -281,7 +281,7 @@ const MobileMenu = memo(({
                 </span>
                 <div>
                   <div className="font-medium">Customer Stories</div>
-                  <div className="text-xs text-white/60">10,000+ testimonials</div>
+                  <div className="text-xs text-white/60">500+ testimonials</div>
                 </div>
               </Link>
             </div>

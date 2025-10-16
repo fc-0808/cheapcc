@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'CheapCC Customer Testimonials - Real Reviews from 10,000+ Users',
-  description: 'Read real CheapCC customer testimonials and reviews. See why 10,000+ creatives trust CheapCC for Adobe Creative Cloud discounts. 4.8/5 rating.',
+  title: 'CheapCC Customer Testimonials - Real Reviews from 500+ Users',
+  description: 'Read real CheapCC customer testimonials and reviews. See why 500+ creatives trust CheapCC for Adobe Creative Cloud discounts. 4.8/5 rating.',
   keywords: 'cheapcc testimonials, cheapcc customer reviews, cheapcc success stories, cheapcc feedback, is cheapcc legit',
   alternates: {
     canonical: 'https://cheapcc.online/cheapcc-testimonials'
@@ -176,7 +176,7 @@ export default function CheapCCTestimonialsPage() {
                 <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">CheapCC</span> Customer Stories
               </h1>
               <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
-                Real testimonials from 10,000+ satisfied customers who've made the smart switch to CheapCC for their Adobe Creative Cloud needs.
+                Real testimonials from 500+ satisfied customers who've made the smart switch to CheapCC for their Adobe Creative Cloud needs.
               </p>
               
               <div className="flex flex-wrap justify-center gap-6 mb-8">
@@ -185,7 +185,7 @@ export default function CheapCCTestimonialsPage() {
                   <div className="text-white/70">Average Rating</div>
                 </div>
                 <div className="bg-blue-500/20 border border-blue-500/50 rounded-2xl px-8 py-4 text-center">
-                  <div className="text-3xl font-bold text-blue-400">10,247</div>
+                  <div className="text-3xl font-bold text-blue-400">500+</div>
                   <div className="text-white/70">Happy Customers</div>
                 </div>
                 <div className="bg-purple-500/20 border border-purple-500/50 rounded-2xl px-8 py-4 text-center">
@@ -234,7 +234,7 @@ export default function CheapCCTestimonialsPage() {
               
               <div className="grid md:grid-cols-4 gap-8 text-center">
                 <div>
-                  <div className="text-4xl font-bold text-blue-400 mb-2">10,247</div>
+                  <div className="text-4xl font-bold text-blue-400 mb-2">500+</div>
                   <div className="text-white/70">Total Customers</div>
                 </div>
                 <div>
@@ -285,9 +285,9 @@ export default function CheapCCTestimonialsPage() {
 
             {/* CTA Section */}
             <div className="text-center bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl p-12">
-              <h2 className="text-3xl font-bold text-white mb-6">Join 10,000+ Happy CheapCC Customers</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Join 500+ Happy CheapCC Customers</h2>
               <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
-                Ready to save 83% on Adobe Creative Cloud? Join thousands of satisfied customers who've made the smart choice.
+                Ready to save 83% on Adobe Creative Cloud? Join hundreds of satisfied customers who've made the smart choice.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
