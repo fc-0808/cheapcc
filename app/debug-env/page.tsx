@@ -3,16 +3,12 @@
 export default function DebugEnvPage() {
   const envVars = {
     NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
-    NEXT_PUBLIC_PAYPAL_CLIENT_ID_LENGTH: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.length || 0,
     PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
     PAYPAL_CLIENT_ID_LENGTH: process.env.PAYPAL_CLIENT_ID?.length || 0,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-    // Test if the fallback is working
-    PAYPAL_CLIENT_ID_VALID: (process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.length || 0) > 50,
-    FALLBACK_CLIENT_ID: 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe',
-    FALLBACK_LENGTH: 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe'.length,
+    // Test if the environment variable is valid
+    PAYPAL_CLIENT_ID_VALID: (process.env.PAYPAL_CLIENT_ID?.length || 0) > 50,
   };
 
   const allPaypalVars = Object.keys(process.env).filter(key => key.includes('PAYPAL'));

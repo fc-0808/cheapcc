@@ -9,8 +9,8 @@ export default function PayPalDebugger() {
     const checkPayPalStatus = () => {
       const info = {
         timestamp: new Date().toISOString(),
-        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
-        clientIdLength: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.length || 0,
+        clientId: process.env.PAYPAL_CLIENT_ID,
+        clientIdLength: process.env.PAYPAL_CLIENT_ID?.length || 0,
         windowPayPal: typeof window !== 'undefined' ? !!window.paypal : false,
         payPalButtons: typeof window !== 'undefined' ? !!window.paypal?.Buttons : false,
         scriptElements: typeof document !== 'undefined' ? 

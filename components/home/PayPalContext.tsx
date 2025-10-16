@@ -4,8 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import Script from 'next/script';
 import { PAYPAL_CONFIG } from '@/utils/paypal-config';
 
-// Hardcoded fallback Client ID - guaranteed to work
-const FALLBACK_PAYPAL_CLIENT_ID = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
+// No hardcoded fallback - rely on environment variables
 
 type PayPalContextType = {
   isPayPalScriptLoaded: boolean;
@@ -97,14 +96,14 @@ export const PayPalProvider = ({ children }: { children: React.ReactNode }) => {
   
   // Final safety check - if somehow we still don't have a valid client ID, use hardcoded
   if (!clientId || clientId.length < 50) {
-    console.error('❌ All PayPal Client ID methods failed, using hardcoded fallback');
-    clientId = FALLBACK_PAYPAL_CLIENT_ID;
+    console.error('❌ All PayPal Client ID methods failed, PayPal will not load');
+    clientId = 'sb'; // Use invalid client ID to trigger error boundary
   }
   
   // Debug logging for production
   console.log('PayPal Client ID Debug:', {
-    envClientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
-    envClientIdLength: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.length || 0,
+    envClientId: process.env.PAYPAL_CLIENT_ID,
+    envClientIdLength: process.env.PAYPAL_CLIENT_ID?.length || 0,
     finalClientId: clientId,
     finalClientIdLength: clientId?.length || 0,
     environment: process.env.NODE_ENV,

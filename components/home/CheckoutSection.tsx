@@ -115,6 +115,8 @@ interface CheckoutSectionProps {
     maxRetries?: number
   ) => Promise<string>;
   onRefreshPaymentIntent?: () => void;
+  onPaymentSuccess?: (details: any) => void;
+  onPaymentError?: (error: string) => void;
 }
 
 const isValidEmail = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -124,7 +126,7 @@ export default function CheckoutSection({
   paymentStatus, setPaymentStatus, checkoutFormError, setCheckoutFormError,
   paypalButtonContainerRef, sdkReady, onPayPalLoad, onPayPalError,
   renderPayPalButton, clientSecret, selectedActivationType, adobeEmail,
-  createPayPalOrderWithRetry, onRefreshPaymentIntent,
+  createPayPalOrderWithRetry, onRefreshPaymentIntent, onPaymentSuccess, onPaymentError,
 }: CheckoutSectionProps) {
   
   // Get internationalization context
@@ -651,87 +653,23 @@ export default function CheckoutSection({
                       />
                     ) : (
                       <PayPalPaymentForm 
-                        paypalButtonContainerRef={paypalButtonContainerRef}
-                        onPayPalLoad={onPayPalLoad}
-                        onPayPalError={onPayPalError}
-                        paymentStatus={paymentStatus}
+                        selectedProduct={{ id: selectedPrice, activationType: selectedActivationType }}
+                        email={email}
+                        onPaymentSuccess={(details) => {
+                          setPaymentStatus('success');
+                          onPaymentSuccess?.(details);
+                        }}
+                        onPaymentError={(error) => {
+                          setPaymentStatus('error');
+                          setCheckoutFormError(error);
+                          onPaymentError?.(error);
+                        }}
+                        isProcessing={paymentStatus === 'loading'}
+                        setIsProcessing={(processing) => setPaymentStatus(processing ? 'loading' : 'idle')}
                         containerId="mobile-paypal-container"
-                        createOrder={() => {
-                          // If we have the retry function, use it
-                          if (createPayPalOrderWithRetry) {
-                            return createPayPalOrderWithRetry(selectedPrice, name, email);
-                          }
-                          
-                          // Otherwise use the original implementation as fallback
-                          return new Promise((resolve, reject) => {
-                            try {
-                              setPaymentStatus('loading');
-                              fetch('/api/orders', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ 
-                                  priceId: selectedPrice, 
-                                  name, 
-                                  email, 
-                                  activationType: selectedActivationType,
-                                  adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null
-                                })
-                              })
-                              .then(res => res.json())
-                              .then(data => {
-                                if (data.error) {
-                                  setPaymentStatus('error');
-                                  setCheckoutFormError(data.error);
-                                  reject(new Error(data.error));
-                                } else {
-                                  resolve(data.id);
-                                }
-                              })
-                              .catch((error: unknown) => {
-                                console.error('Error creating PayPal order:', error);
-                                setPaymentStatus('error');
-                                setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                                reject(error);
-                              });
-                            } catch (error: unknown) {
-                              console.error('Exception in createOrder:', error);
-                              setPaymentStatus('error');
-                              setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                              reject(error);
-                            }
-                          });
-                        }}
-                        onApprove={(data) => {
-                          return new Promise((resolve, reject) => {
-                            fetch('/api/orders/capture', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ orderID: data.orderID })
-                            })
-                            .then(res => res.json())
-                            .then(details => {
-                              if (details.error) {
-                                console.error('Error capturing PayPal order:', details);
-                                setPaymentStatus('error');
-                                setCheckoutFormError(details.error);
-                                reject(new Error(details.error));
-                              } else {
-                                setPaymentStatus('success');
-                                resolve();
-                              }
-                            })
-                            .catch((error: unknown) => {
-                              console.error('Error capturing PayPal payment:', error);
-                              setPaymentStatus('error');
-                              setCheckoutFormError(error instanceof Error ? error.message : 'Failed to capture payment');
-                              reject(error);
-                            });
-                          });
-                        }}
-                        onCancel={() => {
-                          console.log('PayPal payment cancelled');
-                          setPaymentStatus('cancel');
-                        }}
+                        createPayPalOrderWithRetry={createPayPalOrderWithRetry}
+                        adobeEmail={adobeEmail}
+                        name={name}
                       />
                     )}
                   </motion.div>
@@ -1049,85 +987,23 @@ export default function CheckoutSection({
             ) : (
               <PayPalErrorBoundary>
                 <PayPalPaymentForm 
-                  paypalButtonContainerRef={paypalButtonContainerRef}
-                  onPayPalLoad={onPayPalLoad}
-                  onPayPalError={onPayPalError}
-                  paymentStatus={paymentStatus}
+                  selectedProduct={{ id: selectedPrice, activationType: selectedActivationType }}
+                  email={email}
+                  onPaymentSuccess={(details) => {
+                    setPaymentStatus('success');
+                    onPaymentSuccess?.(details);
+                  }}
+                  onPaymentError={(error) => {
+                    setPaymentStatus('error');
+                    setCheckoutFormError(error);
+                    onPaymentError?.(error);
+                  }}
+                  isProcessing={paymentStatus === 'loading'}
+                  setIsProcessing={(processing) => setPaymentStatus(processing ? 'loading' : 'idle')}
                   containerId="desktop-paypal-container"
-                  createOrder={() => {
-                    if (createPayPalOrderWithRetry) {
-                      return createPayPalOrderWithRetry(selectedPrice, name, email);
-                    }
-                    
-                    return new Promise((resolve, reject) => {
-                      try {
-                        setPaymentStatus('loading');
-                        fetch('/api/orders', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ 
-                            priceId: selectedPrice, 
-                            name, 
-                            email, 
-                            activationType: selectedActivationType,
-                            adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null
-                          })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                          if (data.error) {
-                            setPaymentStatus('error');
-                            setCheckoutFormError(data.error);
-                            reject(new Error(data.error));
-                          } else {
-                            resolve(data.id);
-                          }
-                        })
-                        .catch((error: unknown) => {
-                          console.error('Error creating PayPal order:', error);
-                          setPaymentStatus('error');
-                          setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                          reject(error);
-                        });
-                      } catch (error: unknown) {
-                        console.error('Exception in createOrder:', error);
-                        setPaymentStatus('error');
-                        setCheckoutFormError(error instanceof Error ? error.message : 'Failed to create order');
-                        reject(error);
-                      }
-                    });
-                  }}
-                  onApprove={(data) => {
-                    return new Promise((resolve, reject) => {
-                      fetch('/api/orders/capture', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderID: data.orderID })
-                      })
-                      .then(res => res.json())
-                      .then(details => {
-                        if (details.error) {
-                          console.error('Error capturing PayPal order:', details);
-                          setPaymentStatus('error');
-                          setCheckoutFormError(details.error);
-                          reject(new Error(details.error));
-                        } else {
-                          setPaymentStatus('success');
-                          resolve();
-                        }
-                      })
-                      .catch((error: unknown) => {
-                        console.error('Error capturing PayPal payment:', error);
-                        setPaymentStatus('error');
-                        setCheckoutFormError(error instanceof Error ? error.message : 'Failed to capture payment');
-                        reject(error);
-                      });
-                    });
-                  }}
-                  onCancel={() => {
-                    console.log('PayPal payment cancelled');
-                    setPaymentStatus('cancel');
-                  }}
+                  createPayPalOrderWithRetry={createPayPalOrderWithRetry}
+                  adobeEmail={adobeEmail}
+                  name={name}
                 />
               </PayPalErrorBoundary>
             )}

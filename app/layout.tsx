@@ -49,16 +49,6 @@ export default function RootLayout({
         {/* Safari Pinned Tab Icon */}
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#2c2d5a" />
         
-        {/* PayPal Client ID Runtime Injection */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.PAYPAL_CLIENT_ID = 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe';
-              console.log('🔧 PayPal Client ID injected at runtime:', window.PAYPAL_CLIENT_ID);
-            `,
-          }}
-        />
-        
         {/* Meta tag to allow PayPal scripts */}
         <meta httpEquiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: data: blob:; style-src 'self' 'unsafe-inline' https: http: data:; font-src 'self' data: https: http:; img-src 'self' data: https: http: blob:; connect-src 'self' https: http: wss: ws:; frame-src 'self' https: http:; media-src 'self' https: http: data: blob:; object-src 'none'; base-uri 'self';" />
         

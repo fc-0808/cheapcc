@@ -1,14 +1,12 @@
-// PayPal configuration with guaranteed fallback
+// PayPal configuration - no hardcoded values
 export const PAYPAL_CONFIG = {
-  // Always use this fallback Client ID if environment variable fails
-  CLIENT_ID: 'AdnhpzgXSmFsoZv7VDuwS9wJo8czKZy6hBPFMqFuRpgglopk5bT-_tQLsM4hwiHtt_MZOB7Fup4MNTWe',
-  
-  // Get the actual client ID with fallback
+  // Get the actual client ID from environment variables
   getClientId(): string {
-    const envClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    // Try environment variable first (works on both server and client due to next.config.js env mapping)
+    const envClientId = process.env.PAYPAL_CLIENT_ID;
     const isProduction = process.env.NODE_ENV === 'production';
     
-    // More robust validation
+    // Validate environment variable
     if (envClientId && 
         typeof envClientId === 'string' &&
         envClientId.length > 50 && 
@@ -22,38 +20,23 @@ export const PAYPAL_CONFIG = {
       return envClientId;
     }
     
-    console.warn('⚠️ Environment PayPal Client ID is invalid');
-    console.warn('⚠️ Original value:', JSON.stringify(envClientId));
-    console.warn('⚠️ Is production:', isProduction);
+    console.error('❌ PayPal Client ID not configured properly');
+    console.error('❌ Environment variable value:', JSON.stringify(envClientId));
+    console.error('❌ Is production:', isProduction);
     
-    // In production, if environment variable is not properly set, return 'sb' to trigger error boundary
-    if (isProduction) {
-      console.error('❌ Production mode: PayPal Client ID not configured properly, returning sb');
-      return 'sb';
-    }
-    
-    // Try window object as backup for development
-    if (typeof window !== 'undefined' && (window as any).PAYPAL_CLIENT_ID) {
-      const windowClientId = (window as any).PAYPAL_CLIENT_ID;
-      if (windowClientId && windowClientId.length > 50) {
-        console.log('✅ Using window PayPal Client ID');
-        return windowClientId;
-      }
-    }
-    
-    // For development, use fallback
-    console.log('🔧 Development mode: Using hardcoded fallback Client ID');
-    return this.CLIENT_ID;
+    // Return 'sb' to trigger error boundary when environment variable is missing
+    console.error('❌ Returning invalid client ID to trigger error boundary');
+    return 'sb';
   },
   
-  // Get script URL with better error handling
+  // Get script URL with error handling
   getScriptUrl(): string {
     const clientId = this.getClientId();
     
-    // Validate client ID before creating URL
-    if (!clientId || clientId.length < 50) {
-      console.error('❌ Invalid PayPal Client ID, using fallback');
-      return `https://www.paypal.com/sdk/js?client-id=${this.CLIENT_ID}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
+    // If client ID is invalid, return a URL that will fail gracefully
+    if (!clientId || clientId === 'sb' || clientId.length < 50) {
+      console.error('❌ Invalid PayPal Client ID, PayPal buttons will not load');
+      return `https://www.paypal.com/sdk/js?client-id=sb&currency=USD&intent=capture&components=buttons&disable-funding=card`;
     }
     
     return `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&intent=capture&components=buttons&disable-funding=card`;
@@ -62,7 +45,7 @@ export const PAYPAL_CONFIG = {
   // Check if we're in a valid environment for PayPal
   isEnvironmentValid(): boolean {
     const clientId = this.getClientId();
-    return !!(clientId && clientId.length > 50);
+    return !!(clientId && clientId !== 'sb' && clientId.length > 50);
   }
 };
 

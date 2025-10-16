@@ -185,7 +185,6 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 # PayPal
 PAYPAL_CLIENT_ID=your_paypal_client_id
 PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_paypal_client_id
 NEXT_PUBLIC_PAYPAL_API_MODE=sandbox
 
 # Stripe
