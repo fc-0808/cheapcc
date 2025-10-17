@@ -40,7 +40,7 @@ export default async function DashboardPage() {
   const processedActiveOrders = activeOrders.map(order => {
     const expiryDate = order.expiry_date 
       ? new Date(order.expiry_date).toISOString()
-      : calculateExpiryDate(order)?.toISOString() || null;
+      : calculateExpiryDate(order) || null;
     
     const daysLeft = expiryDate 
       ? calculateDaysLeftHelper(new Date(expiryDate)) 

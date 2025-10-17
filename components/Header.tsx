@@ -29,6 +29,7 @@ export default function Header() {
   const [userName, setUserName] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
+  const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -223,6 +224,9 @@ export default function Header() {
           setIsMobileMenuOpen(false);
         }
       }
+      // Close dropdowns when clicking outside
+      setIsBrandDropdownOpen(false);
+      setIsProductsDropdownOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
 
@@ -235,6 +239,8 @@ export default function Header() {
   useEffect(() => {
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
+    setIsBrandDropdownOpen(false);
+    setIsProductsDropdownOpen(false);
   }, [pathname]);
   
   // Add touch event handlers for the mobile menu
@@ -423,7 +429,6 @@ export default function Header() {
         <div className="hidden md:flex md:items-center md:space-x-8">
           {/* Navigation Links */}
           <div className="flex items-center space-x-6">
-            {/* Simplified navigation: Blog -> CheapCC dropdown */}
             <Link 
               href="/blog" 
               prefetch={false}
@@ -437,6 +442,144 @@ export default function Header() {
               )}
             </Link>
             
+            {/* Products Dropdown - Hidden for now */}
+            {/* <div className="relative group">
+              <button 
+                className={`${navLinkClasses} relative group text-white/90 hover:text-white flex items-center gap-1`}
+                onMouseEnter={() => setIsProductsDropdownOpen(true)}
+                onMouseLeave={() => setIsProductsDropdownOpen(false)}
+              >
+                <span className="relative z-10">Products</span>
+                <i className="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
+                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
+              </button>
+              
+              <div 
+                className={`absolute top-full left-0 mt-2 w-80 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-50 ${
+                  isProductsDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+                }`}
+                onMouseEnter={() => setIsProductsDropdownOpen(true)}
+                onMouseLeave={() => setIsProductsDropdownOpen(false)}
+              >
+                <div className="p-2">
+                  <div className="px-3 py-2">
+                    <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2">Adobe Creative Cloud</div>
+                    <div className="space-y-1">
+                      <Link
+                        href="/adobe-creative-cloud"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-palette text-purple-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">All Creative Cloud Options</div>
+                          <div className="text-xs text-white/60">Compare all solutions</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/pre-activated-adobe-creative-cloud"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-bolt text-purple-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Pre-activated Accounts</div>
+                          <div className="text-xs text-white/60">Instant access</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/self-activated-adobe-creative-cloud"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-user-cog text-blue-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Self-activation</div>
+                          <div className="text-xs text-white/60">Use your Adobe ID</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/adobe-creative-cloud-redemption-codes"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-gift text-emerald-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Redemption Codes</div>
+                          <div className="text-xs text-white/60">Official Adobe codes</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-white/10 my-2"></div>
+                  
+                  <div className="px-3 py-2">
+                    <div className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2">Adobe Acrobat Pro</div>
+                    <div className="space-y-1">
+                      <Link
+                        href="/adobe-acrobat-pro"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-file-pdf text-red-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">All Acrobat Pro Options</div>
+                          <div className="text-xs text-white/60">Professional PDF tools</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/adobe-acrobat-pro-redemption-codes"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-gift text-red-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Redemption Codes</div>
+                          <div className="text-xs text-white/60">Official Adobe codes</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-white/10 my-2"></div>
+                  
+                  <div className="px-3 py-2">
+                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tools & Resources</div>
+                    <div className="space-y-1">
+                      <Link
+                        href="/compare"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-balance-scale text-yellow-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Compare Options</div>
+                          <div className="text-xs text-white/60">Feature comparison</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/adobe-pricing-calculator"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-calculator text-indigo-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Pricing Calculator</div>
+                          <div className="text-xs text-white/60">Calculate your savings</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> */}
+            
             {/* CheapCC Brand Pages Dropdown */}
             <div className="relative group">
               <button 
@@ -449,9 +592,9 @@ export default function Header() {
                 <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
               </button>
               
-              {/* Dropdown Menu */}
+              {/* CheapCC Dropdown Menu */}
               <div 
-                className={`absolute top-full left-0 mt-2 w-64 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 ${
+                className={`absolute top-full left-0 mt-2 w-64 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-50 ${
                   isBrandDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
                 }`}
                 onMouseEnter={() => setIsBrandDropdownOpen(true)}
@@ -866,6 +1009,59 @@ export default function Header() {
               
               {/* Common links for both logged in and non-logged in users */}
               <div className="py-1">
+                {/* Products Section */}
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2 px-3">Products</div>
+                  <div className="space-y-1">
+                    <Link 
+                      href="/adobe-creative-cloud"
+                      prefetch={false}
+                      onClick={handleNavLinkClick}
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                    >
+                      <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                        background: "rgba(168, 85, 247, 0.15)",
+                        boxShadow: "0 2px 5px rgba(168, 85, 247, 0.1)"
+                      }}>
+                        <i className="fas fa-palette text-purple-400"></i>
+                      </span>
+                      Creative Cloud
+                    </Link>
+                    
+                    <Link 
+                      href="/adobe-acrobat-pro"
+                      prefetch={false}
+                      onClick={handleNavLinkClick}
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                    >
+                      <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                        background: "rgba(239, 68, 68, 0.15)",
+                        boxShadow: "0 2px 5px rgba(239, 68, 68, 0.1)"
+                      }}>
+                        <i className="fas fa-file-pdf text-red-400"></i>
+                      </span>
+                      Acrobat Pro
+                    </Link>
+                    
+                    <Link 
+                      href="/compare"
+                      prefetch={false}
+                      onClick={handleNavLinkClick}
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                    >
+                      <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+                        background: "rgba(234, 179, 8, 0.15)",
+                        boxShadow: "0 2px 5px rgba(234, 179, 8, 0.1)"
+                      }}>
+                        <i className="fas fa-balance-scale text-yellow-400"></i>
+                      </span>
+                      Compare Options
+                    </Link>
+                  </div>
+                </div>
+                
+                <div className="border-t border-white/10 my-3"></div>
+                
                 <Link 
                   href="/blog"
                   prefetch={false}
@@ -915,8 +1111,6 @@ export default function Header() {
                   </span>
                   <span>Support</span>
                 </Link>
-                
-                {/* Remove FAQ link here */}
               </div>
             </div>
           </div>

@@ -11,8 +11,12 @@ declare global {
       Buttons: any;
       version: string;
     };
+    __paypalLoadingPromise?: Promise<void>;
   }
 }
+
+// Global tracking to prevent multiple simultaneous loads
+let globalPayPalLoadingPromise: Promise<void> | null = null;
 
 const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
   const [isPayPalLoaded, setIsPayPalLoaded] = useState(false);
@@ -27,7 +31,7 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     isMountedRef.current = true;
     
-    const loadPayPalSDK = () => {
+    const loadPayPalSDK = async () => {
       if (!isMountedRef.current) {
         return;
       }
@@ -56,6 +60,7 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
           window.paypal = undefined;
           scriptLoadedRef.current = false;
           setIsPayPalLoaded(false);
+          globalPayPalLoadingPromise = null;
         }
 
         // Validate client ID
@@ -63,56 +68,111 @@ const PayPalContextWrapper = ({ children }: { children: React.ReactNode }) => {
           throw new Error('Invalid PayPal Client ID');
         }
 
-        // Check if script is already being loaded
+        // Check if script is already being loaded globally
+        if (globalPayPalLoadingPromise) {
+          console.log('⏳ Waiting for PayPal SDK that is currently loading...');
+          await globalPayPalLoadingPromise;
+          if (isMountedRef.current && window.paypal) {
+            setIsPayPalLoaded(true);
+            setPayPalError(null);
+          }
+          return;
+        }
+
+        // Check if this instance already loaded the script
         if (scriptLoadedRef.current) {
           return;
         }
 
-        // Load PayPal SDK script with dynamic currency
-        const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&disable-funding=card`;
-        script.async = true;
-        script.defer = true;
-        
-        console.log(`🌍 Loading PayPal SDK with currency: ${currency} for country: ${countryConfig.code}`);
-        
-        script.onload = () => {
-          console.log('✅ PayPal SDK script loaded');
-          scriptLoadedRef.current = true;
-          currentCurrencyRef.current = currency; // Store the current currency
-          
-          // Wait a bit for PayPal to initialize
-          setTimeout(() => {
-            if (!isMountedRef.current) {
-              return;
-            }
+        // Create the loading promise
+        globalPayPalLoadingPromise = new Promise<void>((resolve, reject) => {
+          // Check if PayPal script already exists in DOM to avoid duplicates
+          const existingPayPalScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
+          if (existingPayPalScript) {
+            console.log('✅ PayPal SDK script already exists in DOM');
+            scriptLoadedRef.current = true;
+            currentCurrencyRef.current = currency;
             
-            if (window.paypal) {
-              console.log(`✅ PayPal SDK initialized successfully with currency: ${currency}`);
-              setIsPayPalLoaded(true);
-              setPayPalError(null);
-            } else {
-              console.error('❌ PayPal SDK not available after script load');
-              setPayPalError('PayPal SDK failed to initialize');
-            }
-          }, 100);
-        };
-        
-        script.onerror = (error) => {
-          console.error('❌ Failed to load PayPal SDK script:', error);
-          if (isMountedRef.current) {
-            setPayPalError('Failed to load PayPal SDK');
+            // Wait for PayPal to be available
+            const checkPayPal = setInterval(() => {
+              if (window.paypal) {
+                clearInterval(checkPayPal);
+                if (isMountedRef.current) {
+                  setIsPayPalLoaded(true);
+                  setPayPalError(null);
+                }
+                globalPayPalLoadingPromise = null;
+                resolve();
+              }
+            }, 100);
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
+              clearInterval(checkPayPal);
+              globalPayPalLoadingPromise = null;
+              if (isMountedRef.current) {
+                setPayPalError('PayPal SDK timeout');
+              }
+              reject(new Error('PayPal SDK timeout'));
+            }, 5000);
+            return;
           }
-        };
 
-        document.head.appendChild(script);
-        scriptLoadedRef.current = true;
+          // Load PayPal SDK script with dynamic currency
+          const script = document.createElement('script');
+          script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}&intent=capture&components=buttons&disable-funding=card`;
+          script.async = true;
+          script.defer = true;
+          
+          console.log(`🌍 Loading PayPal SDK with currency: ${currency} for country: ${countryConfig.code}`);
+          
+          script.onload = () => {
+            console.log('✅ PayPal SDK script loaded');
+            scriptLoadedRef.current = true;
+            currentCurrencyRef.current = currency; // Store the current currency
+            
+            // Wait a bit for PayPal to initialize
+            setTimeout(() => {
+              if (!isMountedRef.current) {
+                globalPayPalLoadingPromise = null;
+                resolve();
+                return;
+              }
+              
+              if (window.paypal) {
+                console.log(`✅ PayPal SDK initialized successfully with currency: ${currency}`);
+                setIsPayPalLoaded(true);
+                setPayPalError(null);
+              } else {
+                console.error('❌ PayPal SDK not available after script load');
+                setPayPalError('PayPal SDK failed to initialize');
+              }
+              globalPayPalLoadingPromise = null;
+              resolve();
+            }, 100);
+          };
+          
+          script.onerror = (error) => {
+            console.error('❌ Failed to load PayPal SDK script:', error);
+            if (isMountedRef.current) {
+              setPayPalError('Failed to load PayPal SDK');
+            }
+            globalPayPalLoadingPromise = null;
+            reject(error);
+          };
+
+          document.head.appendChild(script);
+        });
+
+        // Wait for the promise to complete
+        await globalPayPalLoadingPromise;
 
       } catch (error) {
         console.error('❌ Error loading PayPal SDK:', error);
         if (isMountedRef.current) {
           setPayPalError(error instanceof Error ? error.message : 'Unknown error');
         }
+        globalPayPalLoadingPromise = null;
       }
     };
 

@@ -19,6 +19,8 @@ type StripeContextType = {
 
 const StripePaymentContext = createContext<StripeContextType | null>(null);
 
+export { StripePaymentContext };
+
 export const StripePaymentProvider = ({ children }: { children: React.ReactNode }) => {
   const [renderedId, setRenderedId] = useState<string | null>(null);
 
