@@ -24,9 +24,9 @@ export async function fetchPricingOptionsFromDatabase(): Promise<PricingOption[]
     }
 
     const pricingOptions: PricingOption[] = products.map((product: any) => {
-      let activationType: 'pre-activated' | 'self-activation' | 'redemption-required' = 'pre-activated';
-      if (product.name.includes('(Self-Activation)')) {
-        activationType = 'self-activation';
+      let activationType: 'pre-activated' | 'email-activation' | 'redemption-required' = 'pre-activated';
+      if (product.name.includes('(Email Activation)')) {
+        activationType = 'email-activation';
       } else if (product.product_type === 'redemption_code') {
         activationType = 'redemption-required'; // Redemption codes require redemption
       }

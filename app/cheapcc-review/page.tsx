@@ -41,7 +41,7 @@ const reviewSchema = {
     "bestRating": "5",
     "worstRating": "1"
   },
-  "reviewBody": "CheapCC provides genuine Adobe Creative Cloud subscriptions at significant discounts. Based on 500+ customer reviews, CheapCC maintains a 4.8/5 rating with excellent customer service and instant delivery.",
+  "reviewBody": "CheapCC provides genuine Adobe Creative Cloud subscriptions at significant discounts. Based on 500+ customer reviews, CheapCC maintains a 4.8/5 rating with excellent customer service and fast delivery.",
   "datePublished": "2025-01-01"
 };
 
@@ -178,7 +178,7 @@ export default function CheapCCReviewPage() {
                       ))}
                       <i className="fas fa-star text-gray-400"></i>
                     </div>
-                    <p className="text-white/80 mb-3">"Good service overall. Setup was instant, everything works. Only minor issue was a billing question that took a day to resolve, but support was helpful."</p>
+                    <p className="text-white/80 mb-3">"Good service overall. Setup was immediate, everything works. Only minor issue was a billing question that took a day to resolve, but support was helpful."</p>
                     <div className="text-blue-400 font-medium">- Emma T., Photographer</div>
                   </div>
                 </div>

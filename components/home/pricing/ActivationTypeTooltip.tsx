@@ -73,7 +73,7 @@ export default function ActivationTypeTooltip({ className = "" }: ActivationType
                     <div className="flex-1">
                       <div className="font-semibold text-white text-sm mb-2 text-left">Pre-Activated</div>
                       <div className="text-gray-300 leading-relaxed text-sm text-left">
-                        We provide you with a ready-to-use Adobe account. You'll receive login credentials immediately after payment. Perfect for quick setup and immediate access.
+                        We provide you with a ready-to-use Adobe account. You'll receive login credentials immediately after payment. Perfect for quick setup and quick access.
                       </div>
                     </div>
                   </div>
@@ -118,7 +118,7 @@ export default function ActivationTypeTooltip({ className = "" }: ActivationType
                     <div className="flex-1">
                       <div className="font-semibold text-white text-sm mb-1">Pre-Activated</div>
                       <div className="text-gray-300 leading-relaxed text-xs">
-                        Ready-to-use Adobe account with instant access.
+                        Ready-to-use Adobe account with quick access.
                       </div>
                     </div>
                   </div>

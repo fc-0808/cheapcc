@@ -1,0 +1,5 @@
+sb-rpc6934527515@personal.example.com
+eg,_U5T/
+
+npm run clean 2>$null; Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force node_modules/.cache -ErrorAction SilentlyContinue; Remove-Item -Recurse -Force .vercel -ErrorAction SilentlyContinue; npm cache clean --force; Clear-Host; Write-Host "✅ All caches cleaned successfully!" -ForegroundColor Green
+

@@ -18,7 +18,7 @@ const AdobeCreativeCloudPage = () => {
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Breadcrumb Navigation - Fixed at top with proper z-index and pushed below header */}
-        <div className="relative z-20 pt-6 pb-4 mt-20">
+        <div className="relative z-20 pt-6 pb-4 mt-20 hidden md:block">
           <Breadcrumb
             items={[]}
             currentPage="Adobe Creative Cloud"
@@ -41,7 +41,7 @@ const AdobeCreativeCloudPage = () => {
           className="text-xl text-center max-w-3xl mx-auto mb-12 text-gray-300"
         >
           Explore our range of Adobe Creative Cloud offerings, tailored to your needs.
-          From instant access to flexible self-activation and official redemption codes, we have you covered.
+          From quick access to flexible email-activation and official redemption codes, we have you covered.
         </motion.p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto mt-12">
@@ -58,12 +58,12 @@ const AdobeCreativeCloudPage = () => {
               <h2 className="text-3xl font-bold text-purple-400">Pre-activated Accounts</h2>
             </div>
             <p className="text-gray-300 mb-6">
-              Get instant access to Adobe Creative Cloud with accounts that are ready to use. No setup, no hassle – just pure creativity from the moment you log in.
+              Get quick access to Adobe Creative Cloud with accounts that are ready to use. No setup, no hassle – just pure creativity from the moment you log in.
             </p>
             <div className="space-y-2 mb-6 text-sm text-gray-300">
               <div className="flex items-center gap-2">
                 <i className="fas fa-check text-green-400"></i>
-                <span>Instant Access</span>
+                <span>Quick Access</span>
               </div>
               <div className="flex items-center gap-2">
                 <i className="fas fa-check text-green-400"></i>
@@ -89,7 +89,7 @@ const AdobeCreativeCloudPage = () => {
               <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mr-4">
                 <i className="fas fa-user-cog text-white text-xl"></i>
               </div>
-              <h2 className="text-3xl font-bold text-blue-400">Self-activated Subscriptions</h2>
+              <h2 className="text-3xl font-bold text-blue-400">Email-activated Subscriptions</h2>
             </div>
             <p className="text-gray-300 mb-6">
               Activate Adobe Creative Cloud on your existing Adobe ID. Enjoy maximum savings and full control over your subscription with a simple activation process.
@@ -108,7 +108,7 @@ const AdobeCreativeCloudPage = () => {
                 <span>Full Control</span>
               </div>
             </div>
-            <Link href="/self-activated-adobe-creative-cloud" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 transition-all duration-300 shadow-lg">
+            <Link href="/email-activated-adobe-creative-cloud" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 transition-all duration-300 shadow-lg">
               Learn More <span className="ml-2">&rarr;</span>
             </Link>
           </motion.div>
@@ -139,7 +139,7 @@ const AdobeCreativeCloudPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <i className="fas fa-check text-green-400"></i>
-                <span>Instant Redemption</span>
+                <span>Immediate Redemption</span>
               </div>
             </div>
             <Link href="/adobe-creative-cloud-redemption-codes" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 transition-all duration-300 shadow-lg">
@@ -171,14 +171,14 @@ const AdobeCreativeCloudPage = () => {
                   <tr className="border-b border-white/10">
                     <th className="pb-4 text-white font-semibold">Features</th>
                     <th className="pb-4 text-purple-400 font-semibold">Pre-activated</th>
-                    <th className="pb-4 text-blue-400 font-semibold">Self-activation</th>
+                    <th className="pb-4 text-blue-400 font-semibold">Email-activated</th>
                     <th className="pb-4 text-emerald-400 font-semibold">Redemption Codes</th>
                   </tr>
                 </thead>
                 <tbody className="space-y-4">
                   <tr className="border-b border-white/5">
                     <td className="py-3 text-gray-300">Setup Time</td>
-                    <td className="py-3 text-green-400">Instant</td>
+                    <td className="py-3 text-green-400">Immediate</td>
                     <td className="py-3 text-yellow-400">5-10 minutes</td>
                     <td className="py-3 text-yellow-400">5-10 minutes</td>
                   </tr>

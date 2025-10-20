@@ -4,8 +4,8 @@ import { useState } from 'react';
 import ActivationTypeTooltip from './ActivationTypeTooltip';
 
 interface ActivationTypeSelectorProps {
-  selectedType: 'pre-activated' | 'self-activation';
-  onTypeChange: (type: 'pre-activated' | 'self-activation') => void;
+  selectedType: 'pre-activated' | 'email-activation';
+  onTypeChange: (type: 'pre-activated' | 'email-activation') => void;
 }
 
 export default function ActivationTypeSelector({ selectedType, onTypeChange }: ActivationTypeSelectorProps) {
@@ -43,7 +43,7 @@ export default function ActivationTypeSelector({ selectedType, onTypeChange }: A
           className="absolute top-1 bottom-1 w-[calc(50%-2px)] bg-gradient-to-r from-fuchsia-500 to-pink-500 shadow-lg
                      md:rounded-lg rounded"
           animate={{
-            x: selectedType === 'self-activation' ? '100%' : '0%',
+            x: selectedType === 'email-activation' ? '100%' : '0%',
           }}
           transition={{
             type: "spring",
@@ -68,14 +68,14 @@ export default function ActivationTypeSelector({ selectedType, onTypeChange }: A
             <div className={`text-xs mt-1 md:transition-opacity md:duration-300 hidden md:block ${
               selectedType === 'pre-activated' ? 'opacity-100' : 'opacity-0'
             }`}>
-              Instant access
+              Quick access
             </div>
           </button>
           
           <button
-            onClick={() => onTypeChange('self-activation')}
+            onClick={() => onTypeChange('email-activation')}
             className={`relative z-10 md:px-6 md:py-3 px-5 py-2.5 text-sm font-medium md:transition-all md:duration-300 transition-colors duration-200 ${
-              selectedType === 'self-activation'
+              selectedType === 'email-activation'
                 ? 'text-white'
                 : 'text-gray-300 hover:text-white'
             }`}
@@ -85,7 +85,7 @@ export default function ActivationTypeSelector({ selectedType, onTypeChange }: A
               <span>Use Your Email</span>
             </div>
             <div className={`text-xs mt-1 md:transition-opacity md:duration-300 hidden md:block ${
-              selectedType === 'self-activation' ? 'opacity-100' : 'opacity-0'
+              selectedType === 'email-activation' ? 'opacity-100' : 'opacity-0'
             }`}>
               Use your Adobe account
             </div>

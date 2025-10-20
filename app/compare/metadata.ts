@@ -1,12 +1,12 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Compare Adobe Solutions | Pre-activated vs Self-activation vs Redemption Codes | CheapCC',
+  title: 'Compare Adobe Solutions | Pre-activated vs Email-activation vs Redemption Codes | CheapCC',
   description: 'Compare all Adobe Creative Cloud and Acrobat Pro solutions from CheapCC. Find the perfect option for your needs with detailed feature comparisons, pros/cons, and recommendations.',
   keywords: [
     'compare adobe solutions',
     'adobe creative cloud comparison',
-    'pre-activated vs self-activation',
+    'pre-activated vs email-activation',
     'adobe redemption codes vs accounts',
     'adobe cc options comparison',
     'cheap adobe creative cloud',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     canonical: '/compare',
   },
   openGraph: {
-    title: 'Compare Adobe Solutions | Pre-activated vs Self-activation vs Redemption Codes | CheapCC',
+    title: 'Compare Adobe Solutions | Pre-activated vs Email-activation vs Redemption Codes | CheapCC',
     description: 'Compare all Adobe Creative Cloud and Acrobat Pro solutions from CheapCC. Find the perfect option for your needs with detailed feature comparisons.',
     url: 'https://cheapcc.net/compare',
     siteName: 'CheapCC',

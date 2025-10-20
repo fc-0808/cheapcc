@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyPayPalWebhookSignature } from '@/utils/paypal-webhook';
 import { createServiceClient } from '@/utils/supabase/supabase-server';
 import { sendConfirmationEmail } from '@/utils/send-email';
-import { calculateExpiryDate, getStandardPlanDescription, calculateSavings, getProductIdFromPriceId, getProductType, getPricingOptionById, getActivationTypeForProduct, getStatusForProduct, OrderLike } from '@/utils/products-supabase';
+import { calculateExpiryDate, getStandardPlanDescription, calculateSavings, getProductIdFromPriceId, getProductType, getPricingOptionById, getActivationTypeForProduct, getStatusForProduct, getAdobeProductLine, OrderLike } from '@/utils/products-supabase';
 // Inline ngrok utility functions to avoid build issues
 function isNgrokEnvironment(): boolean {
   if (typeof window !== 'undefined') {
@@ -232,6 +232,8 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
 
     let name = '', email = '', paypalDescription = '', priceId = null;
     let amount = null, currency = null, activationType = 'pre-activated', adobeEmail = null;
+    let adobeProductLine = null, productType = null, productId = null;
+    let basePrice = null, displayPrice = null, countryCode = 'US';
 
     if (resource.purchase_units && resource.purchase_units[0]) {
         const purchaseUnit = resource.purchase_units[0];
@@ -240,6 +242,9 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
         if (customIdData) {
           priceId = customIdData.priceId || null;
           activationType = customIdData.activationType || 'pre-activated';
+          basePrice = customIdData.basePrice || null;
+          displayPrice = customIdData.displayPrice || null;
+          countryCode = customIdData.countryCode || 'US';
         }
         if (purchaseUnit.amount) {
         amount = purchaseUnit.amount.value || null; currency = purchaseUnit.amount.currency_code || null;
@@ -303,9 +308,10 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
     const expiryDate = await calculateExpiryDate(orderDataForUtils);
 
     // Get product information from priceId
-    const productId = getProductIdFromPriceId(priceId);
+    productId = getProductIdFromPriceId(priceId);
     const pricingOption = await getPricingOptionById(priceId);
-    const productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+    productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+    adobeProductLine = pricingOption ? getAdobeProductLine(pricingOption) : 'creative_cloud';
     const finalActivationType = pricingOption ? getActivationTypeForProduct(pricingOption, activationType) : (activationType || 'pre-activated');
 
     const { data: existingOrder, error: fetchError } = await supabaseClient
@@ -337,13 +343,18 @@ async function handleOrderApproved(webhookData: any, supabaseClient: any, client
         paypal_order_id: orderId, name, email, status: finalStatus, amount, currency,
         description: standardDescription, savings, expiry_date: expiryDate ? expiryDate.toISOString() : null,
         activation_type: finalActivationType,
-        adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
+        adobe_email: adobeEmail || null, // Store the Adobe account email for email-activation
         
         // --- UPDATED COLUMNS ---
         payment_processor: 'paypal',
         payment_data: webhookData,
         product_id: productId,                       // Set the product ID from products table
         product_type: productType,                   // Set the correct product type (subscription/redemption_code)
+        adobe_product_line: adobeProductLine,        // Set Adobe product line
+        price_id: priceId,                           // Set the price ID
+        base_price: basePrice,                       // Set base price
+        display_price: displayPrice,                 // Set display price
+        country_code: countryCode,                   // Set country code
         // --- END OF UPDATES ---
         
         original_status: status, updated_at: now.toISOString(),
@@ -372,6 +383,8 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
 
     let name = '', email = '', paypalDescription = '', priceId = null;
     let amount = null, currency = null, activationType = 'pre-activated', adobeEmail = null;
+    let adobeProductLine = null, productType = null, productId = null;
+    let basePrice = null, displayPrice = null, countryCode = 'US';
 
     const purchaseUnit = resource.supplementary_data?.purchase_units?.[0] || resource.purchase_units?.[0];
     if (purchaseUnit) {
@@ -380,6 +393,9 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
         if (customIdData) { 
           priceId = customIdData.priceId || null; 
           activationType = customIdData.activationType || 'pre-activated';
+          basePrice = customIdData.basePrice || null;
+          displayPrice = customIdData.displayPrice || null;
+          countryCode = customIdData.countryCode || 'US';
         }
         if (purchaseUnit.amount) {
         amount = purchaseUnit.amount.value || null; currency = purchaseUnit.amount.currency_code || null;
@@ -459,9 +475,10 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
     const finalExpiryDate = await calculateExpiryDate(orderDataForUtils);
 
     // Get product information from priceId for proper handling
-    const productId = getProductIdFromPriceId(priceId);
+    productId = getProductIdFromPriceId(priceId);
     const pricingOption = await getPricingOptionById(priceId);
-    const productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+    productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+    adobeProductLine = pricingOption ? getAdobeProductLine(pricingOption) : 'creative_cloud';
     const finalActivationType = pricingOption ? getActivationTypeForProduct(pricingOption, activationType) : (activationType || 'pre-activated');
 
     let isGuestCheckout = true;
@@ -481,10 +498,12 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
               savings: finalSavings,
               expiry_date: finalExpiryDate ? finalExpiryDate.toISOString() : null,
               updated_at: now.toISOString(),
-              adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
+              adobe_email: adobeEmail || null, // Store the Adobe account email for email-activation
               activation_type: finalActivationType,
               product_id: productId,
               product_type: productType,
+              adobe_product_line: adobeProductLine,        // Set Adobe product line
+              price_id: priceId,                           // Set the price ID
               
               // --- UPDATED COLUMNS ---
               payment_data: webhookData,
@@ -509,9 +528,10 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
         console.info(JSON.stringify({ ...logBase, message: `No existing order, creating new.`, emailForOrder: email }, null, 2));
         
         // Get product information from priceId for new order
-        const productId = getProductIdFromPriceId(priceId);
+        productId = getProductIdFromPriceId(priceId);
         const pricingOption = await getPricingOptionById(priceId);
-        const productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+        productType = pricingOption ? getProductType(pricingOption) : 'subscription';
+        adobeProductLine = pricingOption ? getAdobeProductLine(pricingOption) : 'creative_cloud';
         const finalActivationType = pricingOption ? getActivationTypeForProduct(pricingOption, activationType) : (activationType || 'pre-activated');
         const finalStatus = pricingOption ? getStatusForProduct(pricingOption) : 'ACTIVE';
         
@@ -519,13 +539,18 @@ async function handlePaymentCompleted(webhookData: any, supabaseClient: any, cli
             paypal_order_id: orderId, name, email, status: finalStatus, amount, currency,
             description: finalDescription, savings: finalSavings, expiry_date: finalExpiryDate ? finalExpiryDate.toISOString() : null,
             activation_type: finalActivationType,
-            adobe_email: adobeEmail || null, // Store the Adobe account email for self-activation
+            adobe_email: adobeEmail || null, // Store the Adobe account email for email-activation
             
             // --- UPDATED COLUMNS ---
             payment_data: webhookData,
             payment_processor: 'paypal',
             product_id: productId,                       // Set the product ID from products table
             product_type: productType,                   // Set the correct product type (subscription/redemption_code)
+            adobe_product_line: adobeProductLine,        // Set Adobe product line
+            price_id: priceId,                           // Set the price ID
+            base_price: basePrice,                       // Set base price
+            display_price: displayPrice,                 // Set display price
+            country_code: countryCode,                   // Set country code
             // --- END OF UPDATES ---
 
             original_status: paymentStatus,

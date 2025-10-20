@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 // Import components
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductPageWrapper from "@/components/ProductPageWrapper";
+import ProfessionalPricingCard from "@/components/pricing/ProfessionalPricingCard";
 
 // Dynamically import heavy components
 const CheckoutSection = dynamic(() => import("@/components/home/CheckoutSection"), {
@@ -61,9 +62,9 @@ export default function SelfActivatedAdobeCreativeCloud() {
   const checkoutRef = useRef<HTMLDivElement>(null);
   const paymentIntentCacheRef = useRef<Map<string, string>>(new Map());
 
-  // Filter for self-activation products only
-  const selfActivationOptions = pricingOptions.filter(option => 
-    option.activationType === 'self-activation' && 
+  // Filter for email-activation products only
+  const emailActivationOptions = pricingOptions.filter(option => 
+    option.activationType === 'email-activation' && 
     option.productType === 'subscription' &&
     option.adobeProductLine === 'creative_cloud'
   );
@@ -75,9 +76,9 @@ export default function SelfActivatedAdobeCreativeCloud() {
         const options = await getPricingOptions();
         setPricingOptions(options);
         
-        // Set default selected price for self-activation
+        // Set default selected price for email-activation
         const defaultOption = options.find(opt => 
-          opt.activationType === 'self-activation' && 
+          opt.activationType === 'email-activation' && 
           opt.durationMonths === 1 &&
           opt.adobeProductLine === 'creative_cloud'
         );
@@ -168,7 +169,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
 
     const timeoutId = setTimeout(() => {
       const fetchPaymentIntent = async () => {
-        const cacheKey = `${selectedPrice}-${name}-${email}-self-activation-${adobeEmail}`;
+        const cacheKey = `${selectedPrice}-${name}-${email}-email-activation-${adobeEmail}`;
         const cachedClientSecret = paymentIntentCacheRef.current.get(cacheKey);
 
         if (cachedClientSecret) {
@@ -190,7 +191,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
               name,
               email,
               idempotencyKey,
-              activationType: 'self-activation',
+              activationType: 'email-activation',
               adobeEmail: adobeEmail,
             }),
           });
@@ -260,7 +261,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
     }, 10);
   };
 
-  const selectedPriceOption = selfActivationOptions.find(option => option.id === selectedPrice) || null;
+  const selectedPriceOption = emailActivationOptions.find(option => option.id === selectedPrice) || null;
   let amountInCents = selectedPriceOption ? Math.round(selectedPriceOption.price * 100) : 1299;
   
   if (amountInCents <= 0) {
@@ -305,13 +306,13 @@ export default function SelfActivatedAdobeCreativeCloud() {
       <main className="min-h-screen bg-gradient-to-br from-blue-900 via-black to-cyan-900 text-white relative overflow-hidden">
         
         {/* Breadcrumb Navigation - Fixed at top with proper z-index and pushed below header */}
-        <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20">
+        <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20 hidden md:block">
           <Breadcrumb 
             items={[
               { name: 'Adobe Creative Cloud', href: '/adobe-creative-cloud' },
-              { name: 'Self-activation', href: '/self-activated-adobe-creative-cloud' }
+              { name: 'Email-activated', href: '/email-activated-adobe-creative-cloud' }
             ]}
-            currentPage="Self-activated Adobe Creative Cloud"
+            currentPage="Email-activated Adobe Creative Cloud"
           />
         </div>
 
@@ -334,17 +335,17 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   variants={itemVariants}
                 >
                   <i className="fas fa-user-cog text-blue-400"></i>
-                  <span className="text-blue-300 font-medium">Use Your Own Adobe ID</span>
+                  <span className="text-blue-300 font-medium">Use Your Own Adobe Email</span>
                 </motion.div>
                 
                 <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
                   <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
-                    Self-activated Adobe Creative Cloud
+                    Email-activated Adobe Creative Cloud
                   </span>
                 </h1>
                 
                 <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
-                  Activate Adobe Creative Cloud on your existing Adobe ID. 
+                  Activate Adobe Creative Cloud on your existing Adobe email. 
                   <span className="text-blue-400 font-semibold"> Full control</span> over your account with maximum savings.
                 </p>
                 
@@ -355,7 +356,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   </div>
                   <div className="flex items-center gap-2 bg-blue-500/20 border border-blue-500/50 rounded-full px-4 py-2">
                     <i className="fas fa-user-shield text-blue-400"></i>
-                    <span className="text-blue-300 font-medium">Your Adobe ID</span>
+                    <span className="text-blue-300 font-medium">Your Adobe Email</span>
                   </div>
                   <div className="flex items-center gap-2 bg-purple-500/20 border border-purple-500/50 rounded-full px-4 py-2">
                     <i className="fas fa-cogs text-purple-400"></i>
@@ -374,10 +375,10 @@ export default function SelfActivatedAdobeCreativeCloud() {
                 variants={itemVariants}
               >
                 <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                  Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Self-activation</span>?
+                  Why Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Email-activation</span>?
                 </h2>
                 <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                  Take control of your Adobe Creative Cloud experience with your own Adobe ID and enjoy maximum savings.
+                  Take control of your Adobe Creative Cloud experience with your own Adobe email and enjoy maximum savings.
                 </p>
               </motion.div>
 
@@ -386,13 +387,13 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   {
                     icon: "fas fa-piggy-bank",
                     title: "Maximum Savings",
-                    description: "Save more with self-activation compared to pre-activated accounts. Keep your existing Adobe ID while enjoying significant cost reductions.",
+                    description: "Save more with email-activation compared to pre-activated accounts. Keep your existing Adobe email while enjoying significant cost reductions.",
                     color: "from-green-500 to-emerald-500"
                   },
                   {
                     icon: "fas fa-user-check",
-                    title: "Your Adobe ID",
-                    description: "Use your existing Adobe ID and maintain your creative cloud library, fonts, and preferences. No need to start over.",
+                    title: "Your Adobe Email",
+                    description: "Use your existing Adobe email and maintain your creative cloud library, fonts, and preferences. No need to start over.",
                     color: "from-blue-500 to-cyan-500"
                   },
                   {
@@ -427,7 +428,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                 variants={itemVariants}
               >
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
-                  Enter Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Adobe ID Email</span>
+                  Enter Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Adobe Email</span>
                 </h2>
                 <p className="text-lg text-gray-300 mb-8">
                   We'll activate your Adobe Creative Cloud subscription on your existing Adobe account.
@@ -437,7 +438,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   <div className="space-y-4">
                     <div>
                       <label htmlFor="adobe-email" className="block text-sm font-medium text-gray-300 mb-2">
-                        Adobe ID Email Address
+                        Adobe Email Address
                       </label>
                       <input
                         type="email"
@@ -450,7 +451,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                     </div>
                     <p className="text-sm text-gray-400">
                       <i className="fas fa-info-circle mr-2"></i>
-                      This should be the email address associated with your Adobe ID account.
+                      This should be the email address associated with your Adobe email account.
                     </p>
                   </div>
                 </div>
@@ -469,61 +470,26 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Plan</span>
                 </h2>
                 <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                  All plans include the complete Adobe Creative Cloud suite activated on your Adobe ID.
+                  All plans include the complete Adobe Creative Cloud suite activated on your Adobe email.
                 </p>
               </motion.div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                {selfActivationOptions.map((option, index) => (
-                  <motion.div
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                {emailActivationOptions.map((option, index) => (
+                  <ProfessionalPricingCard
                     key={option.id}
-                    className={`relative bg-white/5 backdrop-blur-sm border rounded-2xl p-8 cursor-pointer transition-all duration-300 ${
-                      selectedPrice === option.id 
-                        ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20' 
-                        : 'border-white/10 hover:border-white/20 hover:bg-white/10'
-                    }`}
-                    variants={itemVariants}
-                    whileHover={{ y: -5 }}
-                    onClick={() => handlePlanSelect(option.id)}
-                  >
-                    {selectedPrice === option.id && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                          Selected
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold text-white mb-2">{option.duration}</h3>
-                      <div className="mb-4">
-                        <span className="text-3xl font-bold text-white">
-                          {formatLocalPrice(option.price)}
-                        </span>
-                        {option.originalPrice && option.originalPrice > option.price && (
-                          <span className="text-lg text-gray-400 line-through ml-2">
-                            {formatLocalPrice(option.originalPrice)}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-gray-300 text-sm mb-6">{option.description}</p>
-                      
-                      <div className="space-y-2 text-sm text-gray-300">
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Complete Adobe CC Suite</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Your Adobe ID</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Maximum Savings</span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    option={option}
+                    selectedPrice={selectedPrice}
+                    onSelectPrice={handlePlanSelect}
+                    features={[
+                      'Complete Adobe CC Suite',
+                      'Your Adobe Email',
+                      'Maximum Savings',
+                      'Full Control'
+                    ]}
+                    productType="email-activation"
+                    adobeProductLine="creative_cloud"
+                  />
                 ))}
               </div>
             </div>
@@ -540,7 +506,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   How It <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Works</span>
                 </h2>
                 <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                  Activate Adobe Creative Cloud on your existing Adobe ID in just a few simple steps.
+                  Activate Adobe Creative Cloud on your existing Adobe email in just a few simple steps.
                 </p>
               </motion.div>
 
@@ -548,8 +514,8 @@ export default function SelfActivatedAdobeCreativeCloud() {
                 {[
                   {
                     step: "01",
-                    title: "Provide Your Adobe ID",
-                    description: "Enter your existing Adobe ID email address during checkout. This is where we'll activate your subscription.",
+                    title: "Provide Your Adobe Email",
+                    description: "Enter your existing Adobe email address during checkout. This is where we'll activate your subscription.",
                     icon: "fas fa-envelope"
                   },
                   {
@@ -561,7 +527,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   {
                     step: "03",
                     title: "Activation Instructions",
-                    description: "Receive detailed activation instructions via email. Follow the simple steps to activate on your Adobe ID.",
+                    description: "Receive detailed activation instructions via email. Follow the simple steps to activate on your Adobe email.",
                     icon: "fas fa-list-check"
                   }
                 ].map((step, index) => (
@@ -623,7 +589,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                       onPayPalError={() => setCheckoutFormError("PayPal unavailable")}
                       renderPayPalButton={() => {}}
                       clientSecret={clientSecret}
-                      selectedActivationType="self-activation"
+                      selectedActivationType="email-activation"
                       adobeEmail={adobeEmail}
                       createPayPalOrderWithRetry={async () => ""}
                       onRefreshPaymentIntent={() => {}}
@@ -649,24 +615,24 @@ export default function SelfActivatedAdobeCreativeCloud() {
               <div className="max-w-3xl mx-auto space-y-6">
                 {[
                   {
-                    question: "What is self-activation and how does it work?",
-                    answer: "Self-activation allows you to use your existing Adobe ID to receive a Creative Cloud subscription. We provide you with activation instructions to add the subscription to your account, giving you full control while saving money."
+                    question: "What is email-activation and how does it work?",
+                    answer: "Email-activation allows you to use your existing Adobe email to receive a Creative Cloud subscription. We provide you with activation instructions to add the subscription to your account, giving you full control while saving money."
                   },
                   {
-                    question: "Do I need an existing Adobe ID for self-activation?",
-                    answer: "Yes, you need an existing Adobe ID (free to create at adobe.com) to use the self-activation service. This ensures you maintain control over your account and creative cloud library."
+                    question: "Do I need an existing Adobe email for email-activation?",
+                    answer: "Yes, you need an existing Adobe email (free to create at adobe.com) to use the email-activation service. This ensures you maintain control over your account and creative cloud library."
                   },
                   {
-                    question: "How much can I save with self-activation?",
-                    answer: "Self-activation typically offers the highest savings compared to other options. You can save up to 80% off Adobe's official pricing while using your own Adobe ID."
+                    question: "How much can I save with email-activation?",
+                    answer: "Email-activation typically offers the highest savings compared to other options. You can save up to 80% off Adobe's official pricing while using your own Adobe email."
                   },
                   {
-                    question: "Is self-activation safe and legitimate?",
+                    question: "Is email-activation safe and legitimate?",
                     answer: "Absolutely. We provide legitimate Adobe Creative Cloud subscriptions through official channels. The activation process is completely safe and follows Adobe's official procedures."
                   },
                   {
-                    question: "What if I don't have an Adobe ID yet?",
-                    answer: "You can create a free Adobe ID at adobe.com before purchasing. Alternatively, you can choose our pre-activated service if you prefer not to use your own Adobe ID."
+                    question: "What if I don't have an Adobe email yet?",
+                    answer: "You can create a free Adobe email at adobe.com before purchasing. Alternatively, you can choose our pre-activated service if you prefer not to use your own Adobe email."
                   }
                 ].map((faq, index) => (
                   <motion.div
@@ -693,7 +659,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
                   Ready to Save More?
                 </h2>
                 <p className="text-xl text-gray-300 mb-8">
-                  Get maximum savings with self-activation while keeping full control of your Adobe Creative Cloud account.
+                  Get maximum savings with email-activation while keeping full control of your Adobe Creative Cloud account.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button

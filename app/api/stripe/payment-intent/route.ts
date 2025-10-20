@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation failed.', issues: validationResult.error.format() }, { status: 400 });
     }
 
-    const { priceId, name, email, idempotencyKey, activationType, adobeEmail } = validationResult.data;
+    const { priceId, name, email, idempotencyKey, activationType, adobeEmail, basePrice, displayPrice, countryCode } = validationResult.data;
     
     // Get pricing options dynamically
     const pricingOptions = await getPricingOptions();
@@ -122,7 +122,10 @@ export async function POST(request: NextRequest) {
         adobeEmail: adobeEmail || null,
         productType: productType,
         adobeProductLine: adobeProductLine,
-        productId: productId || ''
+        productId: productId || '',
+        basePrice: basePrice?.toString() || '',
+        displayPrice: displayPrice?.toString() || '',
+        countryCode: countryCode || 'US'
       },
       receipt_email: email, // Send receipt emails automatically
       // Set a description that appears on the customer's statement

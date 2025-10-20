@@ -60,17 +60,17 @@ export type UpdateProfileFormData = z.infer<typeof UpdateProfileSchema>;
 // Assuming PRICING_OPTIONS is available or you have a way to validate priceId
 const VALID_PRICE_IDS = [
   "1m", "3m", "6m", "12m", "admin-test", // Pre-activated subscription options
-  "1m-self", "3m-self", "6m-self", "12m-self", // Self-activation subscription options
+  "1m-self", "3m-self", "6m-self", "12m-self", // Email-activation subscription options
   "cc-code-1m", "cc-code-3m", "cc-code-6m", "cc-code-12m", // Creative Cloud redemption codes
   "acrobat-code-1m", "acrobat-code-3m", "acrobat-code-6m", "acrobat-code-12m" // Acrobat Pro redemption codes
-]; // Updated to include all pricing options including self-activation subscriptions
+]; // Updated to include all pricing options including email-activation subscriptions
 
 export const CreateOrderSchema = z.object({
   priceId: z.string().refine(val => VALID_PRICE_IDS.includes(val), { message: "Invalid pricing option selected." }),
   name: z.string().min(1, { message: "Name is required for the order." }).max(100),
   email: z.string().email({ message: "A valid email is required for the order." }),
-  activationType: z.enum(['pre-activated', 'self-activation', 'redemption-required']).optional().default('pre-activated'),
-  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional().or(z.literal("")).nullable(),
+  activationType: z.enum(['pre-activated', 'email-activation', 'redemption-required']).optional().default('pre-activated'),
+  adobeEmail: z.string().email({ message: "A valid Adobe email is required for email-activation." }).optional().or(z.literal("")).nullable(),
   // ✅ ADD: Country and currency information for multi-currency support
   countryCode: z.string().length(2).toUpperCase().default('US'),
   currency: z.string().length(3).toUpperCase().default('USD'),
@@ -92,8 +92,11 @@ export const CreatePaymentIntentSchema = z.object({
   name: z.string().min(1, { message: "Name is required for the order." }).max(100),
   email: z.string().email({ message: "A valid email is required for the order." }),
   idempotencyKey: z.string().min(1, { message: "Idempotency key is required." }),
-  activationType: z.enum(['pre-activated', 'self-activation', 'redemption-required']).optional().default('pre-activated'),
-  adobeEmail: z.string().email({ message: "A valid Adobe email is required for self-activation." }).optional().or(z.literal("")).nullable(),
+  activationType: z.enum(['pre-activated', 'email-activation', 'redemption-required']).optional().default('pre-activated'),
+  adobeEmail: z.string().email({ message: "A valid Adobe email is required for email-activation." }).optional().or(z.literal("")).nullable(),
+  basePrice: z.number().optional(),
+  displayPrice: z.number().optional(),
+  countryCode: z.string().optional().default('US'),
 });
 export type CreatePaymentIntentPayload = z.infer<typeof CreatePaymentIntentSchema>;
 

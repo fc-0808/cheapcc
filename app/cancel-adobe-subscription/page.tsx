@@ -3,15 +3,15 @@ import Link from 'next/link';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'How to Cancel Adobe Subscription (Step-by-Step Guide 2025)',
-  description: 'Complete guide to cancel your Adobe subscription + discover CheapCC: Get the same Adobe CC for 75% less. No cancellation fees, same apps, massive savings.',
-  keywords: 'how to cancel adobe subscription, cancel adobe subscription, adobe subscription cancel, adobe cancellation fee, cancel adobe creative cloud, cheapcc alternative',
+  title: 'How to Cancel Adobe Creative Cloud Subscription - Step by Step Guide 2025',
+  description: 'Complete guide to cancel your Adobe Creative Cloud subscription + discover CheapCC: Get the same Adobe CC for 83% less. No cancellation fees, same apps, massive savings.',
+  keywords: 'how to cancel adobe creative cloud, cancel adobe creative cloud, adobe creative cloud cancel subscription, adobe creative cloud cancellation, adobe creative cloud cancel account, adobe creative cloud end subscription, adobe creative cloud subscription cancel, cancel adobe creative cloud subscription, adobe creative cloud cancel, how to cancel adobe subscription, cancel adobe subscription, adobe subscription cancel, adobe cancellation fee, cancel adobe creative cloud, cheapcc alternative',
   alternates: {
     canonical: '/cancel-adobe-subscription'
   },
   openGraph: {
-    title: 'How to Cancel Adobe Subscription + Better Alternative (75% Cheaper)',
-    description: 'Step-by-step guide to cancel Adobe subscription. Plus: Get the same Adobe CC for $14.99/month instead of $79.99. Same apps, 75% savings.',
+    title: 'How to Cancel Adobe Creative Cloud Subscription + Better Alternative (83% Cheaper)',
+    description: 'Step-by-step guide to cancel Adobe Creative Cloud subscription. Plus: Get the same Adobe CC for $14.99/month instead of $79.99. Same apps, 83% savings.',
     url: '/cancel-adobe-subscription',
     siteName: 'CheapCC',
     locale: 'en_US',
@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cancel Adobe Subscription + Get Adobe CC for 75% Less',
-    description: 'Cancel your overpriced Adobe subscription and get the same Creative Cloud for $14.99/month instead of $79.99. Step-by-step guide included.',
+    title: 'Cancel Adobe Creative Cloud Subscription + Get Adobe CC for 83% Less',
+    description: 'Cancel your overpriced Adobe Creative Cloud subscription and get the same Creative Cloud for $14.99/month instead of $79.99. Step-by-step guide included.',
   }
 };
 

@@ -8,7 +8,7 @@ export interface PricingOption {
   price: number;
   originalPrice?: number;
   description: string;
-  activationType: 'pre-activated' | 'self-activation' | 'redemption-required';
+  activationType: 'pre-activated' | 'email-activation' | 'redemption-required';
   productType: 'subscription' | 'redemption_code';
   adobeProductLine: 'creative_cloud' | 'acrobat_pro';
   productId: string;
@@ -70,15 +70,15 @@ export const PRICING_OPTIONS: PricingOption[] = [
     productId: '21056281-4310-4a4a-bea0-0b7bcea420f0',
     durationMonths: 12
   },
-  // Self-activation subscriptions
+  // Email-activation subscriptions
   {
     id: '1m-self',
-    name: '1 Month (Self-Activation)',
+    name: '1 Month (Email-Activation)',
     duration: '1 month',
     price: 15.98,
     originalPrice: 54.99,
-    description: 'Adobe Creative Cloud - 1 Month Self-Activation Subscription',
-    activationType: 'self-activation',
+    description: 'Adobe Creative Cloud - 1 Month Email-Activation Subscription',
+    activationType: 'email-activation',
     productType: 'subscription',
     adobeProductLine: 'creative_cloud',
     productId: '0850d34b-630a-4c6e-ab2f-c3b0b2ffb940',
@@ -86,12 +86,12 @@ export const PRICING_OPTIONS: PricingOption[] = [
   },
   {
     id: '3m-self',
-    name: '3 Months (Self-Activation)',
+    name: '3 Months (Email-Activation)',
     duration: '3 months',
     price: 35.98,
     originalPrice: 164.97,
-    description: 'Adobe Creative Cloud - 3 Months Self-Activation Subscription',
-    activationType: 'self-activation',
+    description: 'Adobe Creative Cloud - 3 Months Email-Activation Subscription',
+    activationType: 'email-activation',
     productType: 'subscription',
     adobeProductLine: 'creative_cloud',
     productId: 'edffec5c-d6b5-4bf6-8f05-304bef3ca26f',
@@ -99,12 +99,12 @@ export const PRICING_OPTIONS: PricingOption[] = [
   },
   {
     id: '6m-self',
-    name: '6 Months (Self-Activation)',
+    name: '6 Months (Email-Activation)',
     duration: '6 months',
     price: 65.98,
     originalPrice: 329.94,
-    description: 'Adobe Creative Cloud - 6 Months Self-Activation Subscription',
-    activationType: 'self-activation',
+    description: 'Adobe Creative Cloud - 6 Months Email-Activation Subscription',
+    activationType: 'email-activation',
     productType: 'subscription',
     adobeProductLine: 'creative_cloud',
     productId: '51d85540-844e-44a0-b7c2-a3746165e525',
@@ -112,12 +112,12 @@ export const PRICING_OPTIONS: PricingOption[] = [
   },
   {
     id: '12m-self',
-    name: '12 Months (Self-Activation)',
+    name: '12 Months (Email-Activation)',
     duration: '12 months',
     price: 119.98,
     originalPrice: 599.88,
-    description: 'Adobe Creative Cloud - 12 Months Self-Activation Subscription',
-    activationType: 'self-activation',
+    description: 'Adobe Creative Cloud - 12 Months Email-Activation Subscription',
+    activationType: 'email-activation',
     productType: 'subscription',
     adobeProductLine: 'creative_cloud',
     productId: 'b2f439b5-e679-4348-9eef-4d03fdd9e32b',
@@ -259,14 +259,14 @@ export function getAdobeProductLine(option: PricingOption | null | undefined): s
   return option.adobeProductLine;
 }
 
-export function isSelfActivationSubscription(option: PricingOption | null | undefined): boolean {
+export function isEmailActivationSubscription(option: PricingOption | null | undefined): boolean {
   if (!option) return false;
-  return option.productType === 'subscription' && option.activationType === 'self-activation';
+  return option.productType === 'subscription' && option.activationType === 'email-activation';
 }
 
 export function getActivationFee(priceId: string): number {
   const option = getPricingOptionById(priceId);
-  if (!option || !isSelfActivationSubscription(option)) return 0;
+  if (!option || !isEmailActivationSubscription(option)) return 0;
   
   // Find corresponding pre-activated option
   const preActivatedId = option.id.replace('-self', '');

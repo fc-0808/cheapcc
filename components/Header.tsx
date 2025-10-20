@@ -30,6 +30,7 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
+  const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -227,6 +228,7 @@ export default function Header() {
       // Close dropdowns when clicking outside
       setIsBrandDropdownOpen(false);
       setIsProductsDropdownOpen(false);
+      setIsAboutDropdownOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
 
@@ -241,6 +243,7 @@ export default function Header() {
     setIsMobileMenuOpen(false);
     setIsBrandDropdownOpen(false);
     setIsProductsDropdownOpen(false);
+    setIsAboutDropdownOpen(false);
   }, [pathname]);
   
   // Add touch event handlers for the mobile menu
@@ -442,8 +445,8 @@ export default function Header() {
               )}
             </Link>
             
-            {/* Products Dropdown - Hidden for now */}
-            {/* <div className="relative group">
+            {/* Products Dropdown - Direct Checkout Pages Only */}
+            <div className="relative group">
               <button 
                 className={`${navLinkClasses} relative group text-white/90 hover:text-white flex items-center gap-1`}
                 onMouseEnter={() => setIsProductsDropdownOpen(true)}
@@ -455,7 +458,7 @@ export default function Header() {
               </button>
               
               <div 
-                className={`absolute top-full left-0 mt-2 w-80 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-50 ${
+                className={`absolute top-full left-0 mt-2 w-72 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-50 ${
                   isProductsDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
                 }`}
                 onMouseEnter={() => setIsProductsDropdownOpen(true)}
@@ -466,18 +469,6 @@ export default function Header() {
                     <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2">Adobe Creative Cloud</div>
                     <div className="space-y-1">
                       <Link
-                        href="/adobe-creative-cloud"
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                        onClick={handleNavLinkClick}
-                      >
-                        <i className="fas fa-palette text-purple-400"></i>
-                        <div>
-                          <div className="font-medium text-sm">All Creative Cloud Options</div>
-                          <div className="text-xs text-white/60">Compare all solutions</div>
-                        </div>
-                      </Link>
-                      
-                      <Link
                         href="/pre-activated-adobe-creative-cloud"
                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
                         onClick={handleNavLinkClick}
@@ -485,19 +476,19 @@ export default function Header() {
                         <i className="fas fa-bolt text-purple-400"></i>
                         <div>
                           <div className="font-medium text-sm">Pre-activated Accounts</div>
-                          <div className="text-xs text-white/60">Instant access</div>
+                          <div className="text-xs text-white/60">Quick access - Buy now</div>
                         </div>
                       </Link>
                       
                       <Link
-                        href="/self-activated-adobe-creative-cloud"
+                        href="/email-activated-adobe-creative-cloud"
                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
                         onClick={handleNavLinkClick}
                       >
                         <i className="fas fa-user-cog text-blue-400"></i>
                         <div>
-                          <div className="font-medium text-sm">Self-activation</div>
-                          <div className="text-xs text-white/60">Use your Adobe ID</div>
+                          <div className="font-medium text-sm">Email-activated</div>
+                          <div className="text-xs text-white/60">Use your Adobe Email - Buy now</div>
                         </div>
                       </Link>
                       
@@ -509,7 +500,7 @@ export default function Header() {
                         <i className="fas fa-gift text-emerald-400"></i>
                         <div>
                           <div className="font-medium text-sm">Redemption Codes</div>
-                          <div className="text-xs text-white/60">Official Adobe codes</div>
+                          <div className="text-xs text-white/60">Official Adobe codes - Buy now</div>
                         </div>
                       </Link>
                     </div>
@@ -521,18 +512,6 @@ export default function Header() {
                     <div className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2">Adobe Acrobat Pro</div>
                     <div className="space-y-1">
                       <Link
-                        href="/adobe-acrobat-pro"
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                        onClick={handleNavLinkClick}
-                      >
-                        <i className="fas fa-file-pdf text-red-400"></i>
-                        <div>
-                          <div className="font-medium text-sm">All Acrobat Pro Options</div>
-                          <div className="text-xs text-white/60">Professional PDF tools</div>
-                        </div>
-                      </Link>
-                      
-                      <Link
                         href="/adobe-acrobat-pro-redemption-codes"
                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
                         onClick={handleNavLinkClick}
@@ -540,7 +519,59 @@ export default function Header() {
                         <i className="fas fa-gift text-red-400"></i>
                         <div>
                           <div className="font-medium text-sm">Redemption Codes</div>
-                          <div className="text-xs text-white/60">Official Adobe codes</div>
+                          <div className="text-xs text-white/60">Official Adobe codes - Buy now</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* About Dropdown - Company Information & Support */}
+            <div className="relative group">
+              <button 
+                className={`${navLinkClasses} relative group text-white/90 hover:text-white flex items-center gap-1`}
+                onMouseEnter={() => setIsAboutDropdownOpen(true)}
+                onMouseLeave={() => setIsAboutDropdownOpen(false)}
+              >
+                <span className="relative z-10">About</span>
+                <i className="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
+                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
+              </button>
+              
+              <div 
+                className={`absolute top-full left-0 mt-2 w-72 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-50 ${
+                  isAboutDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+                }`}
+                onMouseEnter={() => setIsAboutDropdownOpen(true)}
+                onMouseLeave={() => setIsAboutDropdownOpen(false)}
+              >
+                <div className="p-2">
+                  <div className="px-3 py-2">
+                    <div className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2">Company</div>
+                    <div className="space-y-1">
+                      <Link
+                        href="/what-is-cheapcc"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-question-circle text-blue-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">What is CheapCC?</div>
+                          <div className="text-xs text-white/60">Service explained</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/cheapcc-vs-adobe-official"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-balance-scale text-green-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">vs Adobe Official</div>
+                          <div className="text-xs text-white/60">Price comparison</div>
                         </div>
                       </Link>
                     </div>
@@ -549,8 +580,85 @@ export default function Header() {
                   <div className="border-t border-white/10 my-2"></div>
                   
                   <div className="px-3 py-2">
-                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Tools & Resources</div>
+                    <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2">Reviews & Support</div>
                     <div className="space-y-1">
+                      <Link
+                        href="/cheapcc-review"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-star text-yellow-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Reviews</div>
+                          <div className="text-xs text-white/60">Customer testimonials</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/cheapcc-testimonials"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-users text-purple-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Customer Stories</div>
+                          <div className="text-xs text-white/60">500+ testimonials</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="mailto:support@cheapcc.online"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-envelope text-gray-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Support</div>
+                          <div className="text-xs text-white/60">Get help</div>
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Tools & Resources Dropdown */}
+            <div className="relative group">
+              <button 
+                className={`${navLinkClasses} relative group text-white/90 hover:text-white flex items-center gap-1`}
+                onMouseEnter={() => setIsBrandDropdownOpen(true)}
+                onMouseLeave={() => setIsBrandDropdownOpen(false)}
+              >
+                <span className="relative z-10">Tools</span>
+                <i className="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
+                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
+              </button>
+              
+              {/* Tools & Resources Dropdown Menu */}
+              <div 
+                className={`absolute top-full left-0 mt-2 w-80 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-50 ${
+                  isBrandDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+                }`}
+                onMouseEnter={() => setIsBrandDropdownOpen(true)}
+                onMouseLeave={() => setIsBrandDropdownOpen(false)}
+              >
+                <div className="p-2">
+                  <div className="px-3 py-2">
+                    <div className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-2">Interactive Tools</div>
+                    <div className="space-y-1">
+                      <Link
+                        href="/adobe-pricing-calculator"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-calculator text-indigo-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Pricing Calculator</div>
+                          <div className="text-xs text-white/60">Calculate your savings</div>
+                        </div>
+                      </Link>
+                      
                       <Link
                         href="/compare"
                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
@@ -564,116 +672,49 @@ export default function Header() {
                       </Link>
                       
                       <Link
-                        href="/adobe-pricing-calculator"
+                        href="/adobe-alternatives"
                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
                         onClick={handleNavLinkClick}
                       >
-                        <i className="fas fa-calculator text-indigo-400"></i>
+                        <i className="fas fa-th-large text-orange-400"></i>
                         <div>
-                          <div className="font-medium text-sm">Pricing Calculator</div>
-                          <div className="text-xs text-white/60">Calculate your savings</div>
+                          <div className="font-medium text-sm">Adobe Alternatives</div>
+                          <div className="text-xs text-white/60">Compare options</div>
                         </div>
                       </Link>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div> */}
-            
-            {/* CheapCC Brand Pages Dropdown */}
-            <div className="relative group">
-              <button 
-                className={`${navLinkClasses} relative group text-white/90 hover:text-white flex items-center gap-1`}
-                onMouseEnter={() => setIsBrandDropdownOpen(true)}
-                onMouseLeave={() => setIsBrandDropdownOpen(false)}
-              >
-                <span className="relative z-10">CheapCC</span>
-                <i className="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
-                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-fuchsia-500/70 to-[#ff3366]/70 group-hover:w-full transition-all duration-300" />
-              </button>
-              
-              {/* CheapCC Dropdown Menu */}
-              <div 
-                className={`absolute top-full left-0 mt-2 w-64 bg-black/90 backdrop-blur-lg border border-white/10 rounded-xl shadow-2xl transition-all duration-300 z-50 ${
-                  isBrandDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
-                }`}
-                onMouseEnter={() => setIsBrandDropdownOpen(true)}
-                onMouseLeave={() => setIsBrandDropdownOpen(false)}
-              >
-                <div className="p-2">
-                  <Link
-                    href="/adobe-pricing-calculator"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                    onClick={handleNavLinkClick}
-                  >
-                    <i className="fas fa-calculator text-indigo-400"></i>
-                    <div>
-                      <div className="font-medium">Pricing Calculator</div>
-                      <div className="text-xs text-white/60">Calculate your savings</div>
-                    </div>
-                  </Link>
-                  
-                  <Link
-                    href="/adobe-alternatives"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                    onClick={handleNavLinkClick}
-                  >
-                    <i className="fas fa-th-large text-orange-400"></i>
-                    <div>
-                      <div className="font-medium">Adobe Alternatives</div>
-                      <div className="text-xs text-white/60">Compare options</div>
-                    </div>
-                  </Link>
                   
                   <div className="border-t border-white/10 my-2"></div>
                   
-                  <Link
-                    href="/cheapcc-review"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                    onClick={handleNavLinkClick}
-                  >
-                    <i className="fas fa-star text-yellow-400"></i>
-                    <div>
-                      <div className="font-medium">Reviews</div>
-                      <div className="text-xs text-white/60">Customer testimonials</div>
+                  <div className="px-3 py-2">
+                    <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2">Solutions Overview</div>
+                    <div className="space-y-1">
+                      <Link
+                        href="/adobe-creative-cloud"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-palette text-purple-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Creative Cloud Solutions</div>
+                          <div className="text-xs text-white/60">Explore all options</div>
+                        </div>
+                      </Link>
+                      
+                      <Link
+                        href="/adobe-acrobat-pro"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                        onClick={handleNavLinkClick}
+                      >
+                        <i className="fas fa-file-pdf text-red-400"></i>
+                        <div>
+                          <div className="font-medium text-sm">Acrobat Pro Solutions</div>
+                          <div className="text-xs text-white/60">Professional PDF tools</div>
+                        </div>
+                      </Link>
                     </div>
-                  </Link>
-                  
-                  <Link
-                    href="/what-is-cheapcc"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                    onClick={handleNavLinkClick}
-                  >
-                    <i className="fas fa-question-circle text-blue-400"></i>
-                    <div>
-                      <div className="font-medium">What is CheapCC?</div>
-                      <div className="text-xs text-white/60">Service explained</div>
-                    </div>
-                  </Link>
-                  
-                  <Link
-                    href="/cheapcc-vs-adobe-official"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                    onClick={handleNavLinkClick}
-                  >
-                    <i className="fas fa-balance-scale text-green-400"></i>
-                    <div>
-                      <div className="font-medium">vs Adobe Official</div>
-                      <div className="text-xs text-white/60">Price comparison</div>
-                    </div>
-                  </Link>
-                  
-                  <Link
-                    href="/cheapcc-testimonials"
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors"
-                    onClick={handleNavLinkClick}
-                  >
-                    <i className="fas fa-users text-purple-400"></i>
-                    <div>
-                      <div className="font-medium">Customer Stories</div>
-                      <div className="text-xs text-white/60">500+ testimonials</div>
-                    </div>
-                  </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1007,110 +1048,119 @@ export default function Header() {
               {/* Divider */}
               <div className="border-t my-3 border-white/10"></div>
               
-              {/* Common links for both logged in and non-logged in users */}
+              {/* Streamlined Mobile Menu - Industry Standard */}
               <div className="py-1">
-                {/* Products Section */}
-                <div className="mb-4">
-                  <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2 px-3">Products</div>
-                  <div className="space-y-1">
+                {/* Primary Actions - Most Important */}
+                <div className="mb-6">
+                  <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-3 px-3">Shop</div>
+                  <div className="space-y-2">
                     <Link 
-                      href="/adobe-creative-cloud"
+                      href="/pre-activated-adobe-creative-cloud"
                       prefetch={false}
                       onClick={handleNavLinkClick}
-                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300"
                     >
-                      <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                        background: "rgba(168, 85, 247, 0.15)",
-                        boxShadow: "0 2px 5px rgba(168, 85, 247, 0.1)"
-                      }}>
-                        <i className="fas fa-palette text-purple-400"></i>
+                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+                        <i className="fas fa-bolt text-white text-lg"></i>
                       </span>
-                      Creative Cloud
+                      <div>
+                        <div className="font-bold">Pre-activated Accounts</div>
+                        <div className="text-sm text-white/70">Quick access - Buy now</div>
+                      </div>
+                    </Link>
+                    
+                    <Link 
+                      href="/email-activated-adobe-creative-cloud"
+                      prefetch={false}
+                      onClick={handleNavLinkClick}
+                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300"
+                    >
+                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg">
+                        <i className="fas fa-user-cog text-white text-lg"></i>
+                      </span>
+                      <div>
+                        <div className="font-bold">Email Activation</div>
+                        <div className="text-sm text-white/70">Use your Adobe Email</div>
+                      </div>
+                    </Link>
+                    
+                    <Link 
+                      href="/adobe-creative-cloud-redemption-codes"
+                      prefetch={false}
+                      onClick={handleNavLinkClick}
+                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 transition-all duration-300"
+                    >
+                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg">
+                        <i className="fas fa-gift text-white text-lg"></i>
+                      </span>
+                      <div>
+                        <div className="font-bold">Redemption Codes</div>
+                        <div className="text-sm text-white/70">Official Adobe codes</div>
+                      </div>
                     </Link>
                     
                     <Link 
                       href="/adobe-acrobat-pro"
                       prefetch={false}
                       onClick={handleNavLinkClick}
-                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 hover:from-red-500/30 hover:to-orange-500/30 transition-all duration-300"
                     >
-                      <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                        background: "rgba(239, 68, 68, 0.15)",
-                        boxShadow: "0 2px 5px rgba(239, 68, 68, 0.1)"
-                      }}>
-                        <i className="fas fa-file-pdf text-red-400"></i>
+                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-red-500 to-orange-500 shadow-lg">
+                        <i className="fas fa-file-pdf text-white text-lg"></i>
                       </span>
-                      Acrobat Pro
-                    </Link>
-                    
-                    <Link 
-                      href="/compare"
-                      prefetch={false}
-                      onClick={handleNavLinkClick}
-                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
-                    >
-                      <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                        background: "rgba(234, 179, 8, 0.15)",
-                        boxShadow: "0 2px 5px rgba(234, 179, 8, 0.1)"
-                      }}>
-                        <i className="fas fa-balance-scale text-yellow-400"></i>
-                      </span>
-                      Compare Options
+                      <div>
+                        <div className="font-bold">Acrobat Pro</div>
+                        <div className="text-sm text-white/70">Professional PDF tools</div>
+                      </div>
                     </Link>
                   </div>
                 </div>
                 
-                <div className="border-t border-white/10 my-3"></div>
+                <div className="border-t border-white/10 my-4"></div>
                 
-                <Link 
-                  href="/blog"
-                  prefetch={false}
-                  onClick={handleNavLinkClick}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300 ${
-                    isBlogPage ? 'bg-white/10' : ''
-                  }`}
-                >
-                  <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                    background: "rgba(59, 130, 246, 0.15)",
-                    boxShadow: "0 2px 5px rgba(59, 130, 246, 0.1)"
-                  }}>
-                    <i className="fas fa-book-open text-blue-400"></i>
-                  </span>
-                  Blog
-                </Link>
-                
-                <Link 
-                  href="/#pricing"
-                  prefetch={false}
-                  onClick={handleNavLinkClick}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
-                >
-                  <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                    background: "rgba(16, 185, 129, 0.15)",
-                    boxShadow: "0 2px 5px rgba(16, 185, 129, 0.1)"
-                  }}>
-                    <i className="fas fa-tag text-emerald-400"></i>
-                  </span>
-                  Pricing
-                </Link>
-                
-                <Link 
-                  href="mailto:support@cheapcc.online"
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-all duration-300"
-                  onClick={() => {
-                    if (window.navigator && 'vibrate' in window.navigator) {
-                      window.navigator.vibrate(5);
-                    }
-                  }}
-                >
-                  <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{
-                    background: "rgba(156, 163, 175, 0.15)",
-                    boxShadow: "0 2px 5px rgba(156, 163, 175, 0.1)"
-                  }}>
-                    <i className="fas fa-envelope text-gray-400" aria-hidden="true"></i>
-                  </span>
-                  <span>Support</span>
-                </Link>
+                {/* Secondary Actions - Tools & Info */}
+                <div className="space-y-1">
+                  <Link 
+                    href="/blog"
+                    prefetch={false}
+                    onClick={handleNavLinkClick}
+                    className={`flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300 ${
+                      isBlogPage ? 'bg-white/10' : ''
+                    }`}
+                  >
+                    <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500/20">
+                      <i className="fas fa-book-open text-blue-400"></i>
+                    </span>
+                    Blog
+                  </Link>
+                  
+                  <Link 
+                    href="/what-is-cheapcc"
+                    prefetch={false}
+                    onClick={handleNavLinkClick}
+                    className="flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                  >
+                    <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-500/20">
+                      <i className="fas fa-question-circle text-purple-400"></i>
+                    </span>
+                    About CheapCC
+                  </Link>
+                  
+                  <Link 
+                    href="mailto:support@cheapcc.online"
+                    className="flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-medium text-white/90 hover:bg-white/10 transition-all duration-300"
+                    onClick={() => {
+                      if (window.navigator && 'vibrate' in window.navigator) {
+                        window.navigator.vibrate(5);
+                      }
+                    }}
+                  >
+                    <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-500/20">
+                      <i className="fas fa-envelope text-gray-400"></i>
+                    </span>
+                    Support
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

@@ -120,7 +120,7 @@ export default function WhatIsCheapCCPage() {
                   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i className="fas fa-bolt text-2xl text-white"></i>
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-3">3. Instant Access</h3>
+                  <h3 className="text-xl font-semibold text-white mb-3">3. Quick Access</h3>
                   <p className="text-white/80">Receive your genuine Adobe Creative Cloud account credentials within 24 hours via email.</p>
                 </div>
               </div>
@@ -188,7 +188,7 @@ export default function WhatIsCheapCCPage() {
                   <div className="flex items-start">
                     <i className="fas fa-clock text-green-400 mr-3 mt-1"></i>
                     <div>
-                      <h4 className="font-semibold text-white">Instant Delivery</h4>
+                      <h4 className="font-semibold text-white">Fast Delivery</h4>
                       <p className="text-white/80">Get your account within 24 hours of purchase</p>
                     </div>
                   </div>

@@ -38,8 +38,8 @@ interface PricingSectionProps {
   setSelectedPrice: (priceId: string) => void;
   selectedPriceRef: { current: string };
   userEmail?: string | null;
-  selectedActivationType?: 'pre-activated' | 'self-activation';
-  onActivationTypeChange?: (type: 'pre-activated' | 'self-activation') => void;
+  selectedActivationType?: 'pre-activated' | 'email-activation';
+  onActivationTypeChange?: (type: 'pre-activated' | 'email-activation') => void;
   email?: string;
   setEmail?: (email: string) => void;
   isUserSignedIn?: boolean;

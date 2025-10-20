@@ -70,7 +70,7 @@ const testimonials = [
     title: "Graphic Designer",
     location: "New York, USA",
     rating: 5,
-    text: "I was paying $80/month for Adobe CC through their official site. CheapCC gives me the exact same access for $15/month. I've saved over $600 in my first year alone! The setup was instant and everything works perfectly.",
+    text: "I was paying $80/month for Adobe CC through their official site. CheapCC gives me the exact same access for $15/month. I've saved over $600 in my first year alone! The setup was immediate and everything works perfectly.",
     savings: "$780/year",
     timeUsing: "14 months"
   },
@@ -133,7 +133,7 @@ const testimonials = [
     title: "Social Media Manager",
     location: "Seoul, South Korea",
     rating: 5,
-    text: "Creating content for multiple clients requires the full Adobe suite. CheapCC makes it affordable for small businesses like mine. The instant delivery was impressive too!",
+    text: "Creating content for multiple clients requires the full Adobe suite. CheapCC makes it affordable for small businesses like mine. The fast delivery was impressive too!",
     savings: "$780/year",
     timeUsing: "5 months"
   },

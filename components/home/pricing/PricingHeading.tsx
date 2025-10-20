@@ -8,8 +8,8 @@ import EmailInputField from './EmailInputField';
 interface PricingHeadingProps {
   isAdmin?: boolean;
   adminError?: string | null;
-  selectedActivationType?: 'pre-activated' | 'self-activation';
-  onActivationTypeChange?: (type: 'pre-activated' | 'self-activation') => void;
+  selectedActivationType?: 'pre-activated' | 'email-activation';
+  onActivationTypeChange?: (type: 'pre-activated' | 'email-activation') => void;
   email?: string;
   setEmail?: (email: string) => void;
   isUserSignedIn?: boolean;
@@ -71,7 +71,7 @@ export default function PricingHeading({ isAdmin, adminError, selectedActivation
       )}
 
       {/* Email Input Field - Only for Use Your Email */}
-      {email !== undefined && setEmail && selectedActivationType === 'self-activation' && (
+      {email !== undefined && setEmail && selectedActivationType === 'email-activation' && (
         <motion.div 
           className="max-w-lg mx-auto mb-8 relative z-10"
           initial={{ opacity: 0, height: 0, y: -20 }}

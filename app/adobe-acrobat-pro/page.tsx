@@ -18,7 +18,7 @@ const AdobeAcrobatProPage = () => {
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Breadcrumb Navigation - Fixed at top with proper z-index and pushed below header */}
-        <div className="relative z-20 pt-6 pb-4 mt-20">
+        <div className="relative z-20 pt-6 pb-4 mt-20 hidden md:block">
           <Breadcrumb
             items={[]}
             currentPage="Adobe Acrobat Pro"
@@ -76,7 +76,7 @@ const AdobeAcrobatProPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <i className="fas fa-check text-green-400"></i>
-                <span>Instant Redemption</span>
+                <span>Quick Redemption</span>
               </div>
             </div>
             <Link href="/adobe-acrobat-pro-redemption-codes" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 transition-all duration-300 shadow-lg">

@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import { EmailTemplate } from '@/components/EmailTemplate';
-import { SelfActivationEmailTemplate } from '@/components/SelfActivationEmailTemplate';
+import { EmailActivationEmailTemplate } from '@/components/SelfActivationEmailTemplate';
 import { RedemptionCodeEmailTemplate } from '@/components/RedemptionCodeEmailTemplate';
 import { WelcomeEmailTemplate } from '@/components/WelcomeEmailTemplate';
 import { CustomerOwnedEmailAnnouncementTemplate } from '@/components/CustomerOwnedEmailAnnouncementTemplate';
@@ -60,9 +60,9 @@ export async function sendConfirmationEmail(
         duration: selectedPriceOption?.duration || '6 months'
       };
       emailSubject = 'Your CheapCC Redemption Code Order Confirmation';
-    } else if (activationType === 'self-activation') {
-      // Use self-activation template for regular products with self-activation
-      templateComponent = SelfActivationEmailTemplate;
+    } else if (activationType === 'email-activation') {
+      // Use email-activation template for regular products with email-activation
+      templateComponent = EmailActivationEmailTemplate;
       templateProps = { name, orderId, isGuest, adobeEmail };
     }
     // Default case uses EmailTemplate with basic props (already set above)

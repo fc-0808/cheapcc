@@ -64,14 +64,14 @@ const stripePromise = createStripePromise();
 export default function Home() {
   const router = useRouter();
   const [selectedPrice, setSelectedPrice] = useState<string>('1m');
-  const [selectedActivationType, setSelectedActivationType] = useState<'pre-activated' | 'self-activation'>('pre-activated');
+  const [selectedActivationType, setSelectedActivationType] = useState<'pre-activated' | 'email-activation'>('pre-activated');
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
   const [sdkReady, setSdkReady] = useState<boolean>(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
   const [stripeRetryCount, setStripeRetryCount] = useState<number>(0);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>(''); // Payment/billing email
-  const [adobeEmail, setAdobeEmail] = useState<string>(''); // Adobe account email for self-activation
+  const [adobeEmail, setAdobeEmail] = useState<string>(''); // Adobe account email for email-activation
   const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
   
   // ✅ GET INTERNATIONALIZATION DATA
@@ -81,7 +81,7 @@ export default function Home() {
   const [pricingOptions, setPricingOptions] = useState<PricingOption[]>([]);
   
   // Handle activation type change and clear Adobe email if switching to pre-activated
-  const handleActivationTypeChange = useCallback((type: 'pre-activated' | 'self-activation') => {
+  const handleActivationTypeChange = useCallback((type: 'pre-activated' | 'email-activation') => {
     setSelectedActivationType(type);
     
     // Clear Adobe email when switching to pre-activated (not needed for pre-activated accounts)
@@ -89,17 +89,17 @@ export default function Home() {
       setAdobeEmail('');
     }
     
-    // Auto-select 1-month option when switching to self-activation
-    if (type === 'self-activation') {
-      // Find the 1-month self-activation option
+    // Auto-select 1-month option when switching to email-activation
+    if (type === 'email-activation') {
+      // Find the 1-month email-activation option
       const oneMonthSelfOption = pricingOptions.find(option => 
-        option.activationType === 'self-activation' && 
+        option.activationType === 'email-activation' && 
         option.durationMonths === 1 && 
         !option.id.includes('code') // Exclude redemption codes
       );
       
       if (oneMonthSelfOption) {
-        console.log('Auto-selecting 1-month self-activation option:', oneMonthSelfOption.id);
+        console.log('Auto-selecting 1-month email-activation option:', oneMonthSelfOption.id);
         setSelectedPrice(oneMonthSelfOption.id);
       }
     } else if (type === 'pre-activated') {
@@ -136,6 +136,52 @@ export default function Home() {
 
   // Cache for payment intent requests to prevent duplicates
   const paymentIntentCacheRef = useRef<Map<string, string>>(new Map());
+
+  // Handle URL parameters for product page redirects
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const type = urlParams.get('type');
+      const product = urlParams.get('product');
+      const scroll = urlParams.get('scroll');
+      const plan = urlParams.get('plan');
+      const adobeEmailParam = urlParams.get('adobeEmail');
+
+      // Set activation type based on URL parameter
+      if (type === 'pre-activated' || type === 'email-activation') {
+        setSelectedActivationType(type);
+      } else if (type === 'redemption-required') {
+        // For redemption codes, we'll handle this in the pricing section
+        setSelectedActivationType('pre-activated'); // Default fallback
+      }
+
+      // Set Adobe email if provided
+      if (adobeEmailParam && type === 'email-activation') {
+        setAdobeEmail(adobeEmailParam);
+      }
+
+      // Auto-scroll to specific section if requested
+      if (scroll) {
+        setTimeout(() => {
+          let targetElement = null;
+          
+          if (scroll === 'checkout') {
+            targetElement = document.getElementById('checkout');
+          } else if (scroll === 'pricing') {
+            targetElement = document.getElementById('pricing');
+          } else if (scroll === 'creative-cloud-codes') {
+            targetElement = document.getElementById('creative-cloud-codes');
+          } else if (scroll === 'acrobat-codes') {
+            targetElement = document.getElementById('acrobat-codes');
+          }
+          
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 1000); // Delay to ensure page is loaded
+      }
+    }
+  }, []);
 
   // Function to refresh payment intent by clearing cache and triggering new creation
   const refreshPaymentIntent = useCallback(() => {
@@ -175,6 +221,35 @@ export default function Home() {
     fetchPricingOptions();
   }, []);
 
+  // Handle plan selection from URL parameters after pricing options are loaded
+  useEffect(() => {
+    if (typeof window !== 'undefined' && pricingOptions.length > 0) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const plan = urlParams.get('plan');
+      const type = urlParams.get('type');
+      const product = urlParams.get('product');
+
+      if (plan) {
+        // Find the plan in the pricing options
+        const planOption = pricingOptions.find(option => option.id === plan);
+        
+        if (planOption) {
+          console.log('Auto-selecting plan from URL:', plan, planOption);
+          setSelectedPrice(plan);
+          
+          // Also set the activation type if it matches the plan
+          if (type && (type === 'pre-activated' || type === 'email-activation')) {
+            setSelectedActivationType(type);
+          } else if (planOption.activationType === 'pre-activated' || planOption.activationType === 'email-activation') {
+            setSelectedActivationType(planOption.activationType);
+          }
+        } else {
+          console.warn('Plan not found in pricing options:', plan);
+        }
+      }
+    }
+  }, [pricingOptions]);
+
   // Update refs when values change
   useEffect(() => { nameRef.current = name; }, [name]);
   useEffect(() => { emailRef.current = email; }, [email]);
@@ -182,7 +257,7 @@ export default function Home() {
 
   const isValidEmail = (email: string) => /.+@.+\..+/.test(email);
   const isFormValid = name.trim() !== '' && isValidEmail(email) && 
-    (selectedActivationType === 'pre-activated' || (selectedActivationType === 'self-activation' && isValidEmail(adobeEmail)));
+    (selectedActivationType === 'pre-activated' || (selectedActivationType === 'email-activation' && isValidEmail(adobeEmail)));
   
   // Monitor Stripe loading and handle errors
   useEffect(() => {
@@ -205,7 +280,7 @@ export default function Home() {
   useEffect(() => {
     // Determine form validity based on the current state.
     const formIsValid = name.trim() !== '' && isValidEmail(email) &&
-      (selectedActivationType === 'pre-activated' || (selectedActivationType === 'self-activation' && isValidEmail(adobeEmail)));
+      (selectedActivationType === 'pre-activated' || (selectedActivationType === 'email-activation' && isValidEmail(adobeEmail)));
 
     // If the form is not valid, clear any existing client secret and stop.
     if (!formIsValid) {
@@ -595,7 +670,7 @@ export default function Home() {
         
         <HowItWorksSection />
 
-        <div ref={checkoutRef}>
+        <div ref={checkoutRef} id="checkout">
           {amountInCents > 0 && (
             <>
               {stripeError ? (

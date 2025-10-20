@@ -9,7 +9,7 @@ interface SimplePricingCardListProps {
   pricingOptions: PricingOption[];
   selectedPrice: string;
   onSelectPrice: (priceId: string) => void;
-  selectedActivationType?: 'pre-activated' | 'self-activation';
+  selectedActivationType?: 'pre-activated' | 'email-activation';
 }
 
 // Re-usable Card Component

@@ -24,22 +24,22 @@ const INTERNAL_LINKS: InternalLink[] = [
   // High priority pages
   {
     href: '/#pricing',
-    title: 'Adobe Creative Cloud Discount Plans',
-    description: 'Compare our Adobe CC discount pricing plans - genuine Creative Cloud subscriptions starting at $14.99/month',
+    title: 'Adobe Creative Cloud Discount Plans - Student, Teacher & Military Discounts',
+    description: 'Compare our Adobe CC discount pricing plans - genuine Creative Cloud subscriptions starting at $14.99/month. Get Adobe Creative Cloud student discount, teacher discount, and military discount.',
     category: 'pricing',
     priority: 'high'
   },
   {
     href: '/adobe-alternatives',
-    title: 'Adobe CC Alternatives 2025',
-    description: 'Comprehensive comparison of Adobe Creative Cloud alternatives and why CheapCC is the smart choice',
+    title: 'Best Adobe Creative Cloud Alternatives 2025 - CheapCC vs Others',
+    description: 'Comprehensive comparison of Adobe Creative Cloud alternatives and why CheapCC is the smart choice. Find cheaper alternatives to Adobe Creative Cloud.',
     category: 'alternatives',
     priority: 'high'
   },
   {
     href: '/adobe-pricing-calculator',
-    title: 'Adobe CC Pricing Calculator',
-    description: 'Calculate your exact savings with our interactive Adobe Creative Cloud pricing calculator',
+    title: 'Adobe Creative Cloud Pricing Calculator - Compare Costs & Savings',
+    description: 'Calculate your exact savings with our interactive Adobe Creative Cloud pricing calculator. Compare Adobe CC cost, price, and subscription plans.',
     category: 'tools',
     priority: 'high'
   },
@@ -88,7 +88,7 @@ const INTERNAL_LINKS: InternalLink[] = [
   {
     href: '/voice-search-faq',
     title: 'Voice Search FAQ - CheapCC Questions Answered',
-    description: 'Voice-optimized FAQ with instant answers to common CheapCC questions and concerns.',
+    description: 'Voice-optimized FAQ with immediate answers to common CheapCC questions and concerns.',
     category: 'support',
     priority: 'medium'
   },
@@ -110,15 +110,29 @@ const INTERNAL_LINKS: InternalLink[] = [
   },
   {
     href: '/adobe-photoshop-discount',
-    title: 'Adobe Photoshop Discount',
-    description: 'Get Adobe Photoshop at 83% off official pricing with full Creative Cloud access',
+    title: 'Adobe Photoshop Discount - Get Photoshop at 83% Off',
+    description: 'Get Adobe Photoshop at 83% off official pricing with full Creative Cloud access. Adobe Photoshop discount code and coupon available.',
     category: 'pricing',
     priority: 'medium'
   },
   {
+    href: '/adobe-creative-cloud',
+    title: 'Adobe Creative Cloud Student Discount - Education Pricing',
+    description: 'Get Adobe Creative Cloud student discount, teacher discount, and education pricing. Special rates for students and educators.',
+    category: 'pricing',
+    priority: 'high'
+  },
+  {
+    href: '/adobe-creative-cloud',
+    title: 'Adobe Creative Cloud Military Discount - Special Pricing',
+    description: 'Get Adobe Creative Cloud military discount and special pricing for military personnel. Honoring those who serve.',
+    category: 'pricing',
+    priority: 'high'
+  },
+  {
     href: '/cancel-adobe-subscription',
-    title: 'How to Cancel Adobe Subscription',
-    description: 'Step-by-step guide to cancel your Adobe subscription and switch to CheapCC',
+    title: 'How to Cancel Adobe Creative Cloud Subscription - Step by Step Guide',
+    description: 'Step-by-step guide to cancel your Adobe Creative Cloud subscription and switch to CheapCC. Learn how to cancel Adobe Creative Cloud, end subscription, and cancel account.',
     category: 'support',
     priority: 'medium'
   },

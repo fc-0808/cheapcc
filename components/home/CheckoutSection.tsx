@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { getPricingOptions, getPriceForActivationType, isRedemptionCode, getActivationFee, isSelfActivationSubscription, type PricingOption } from '@/utils/products-supabase';
+import { getPricingOptions, getPriceForActivationType, isRedemptionCode, getActivationFee, isEmailActivationSubscription, type PricingOption } from '@/utils/products-supabase';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
 import { format } from 'date-fns';
 import { motion, useInView, Variants, AnimatePresence, PanInfo } from 'framer-motion';
@@ -13,6 +13,7 @@ import PayPalErrorBoundary from '../PayPalErrorBoundary';
 import { useRouter } from 'next/navigation';
 import { useInternationalization } from '@/contexts/InternationalizationContext';
 import Script from 'next/script';
+import { validateAdobeEmail, getEmailErrorMessage, getEmailSuggestions, type EmailValidationResult } from '@/utils/email-validation';
 
 // Success message component to show after successful payment
 const PaymentSuccessMessage = ({ email }: { email: string }) => {
@@ -109,7 +110,7 @@ interface CheckoutSectionProps {
   onPayPalError?: () => void;
   renderPayPalButton?: () => void;
   clientSecret: string | null;
-  selectedActivationType?: 'pre-activated' | 'self-activation';
+  selectedActivationType?: 'pre-activated' | 'email-activation';
   adobeEmail?: string;
   createPayPalOrderWithRetry?: (
     selectedPrice: string, 
@@ -153,6 +154,9 @@ export default function CheckoutSection({
   const [nameError, setNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   
+  // Adobe email validation state
+  const [adobeEmailValidation, setAdobeEmailValidation] = useState<EmailValidationResult | null>(null);
+  
   // Track screen size to determine which view to render
   const [isMobile, setIsMobile] = useState(false);
   
@@ -163,10 +167,16 @@ export default function CheckoutSection({
   const elements = useElements();
   
   // Memoize form validation to avoid recalculating on every render
-  const isFormValid = useMemo(() => 
-    name.trim() !== '' && isValidEmail(email) && !nameError && !emailError, 
-    [name, email, nameError, emailError]
-  );
+  const isFormValid = useMemo(() => {
+    const basicValidation = name.trim() !== '' && isValidEmail(email) && !nameError && !emailError;
+    
+    // For email-activation, also validate Adobe email
+    if (selectedActivationType === 'email-activation') {
+      return basicValidation && adobeEmailValidation?.isValid === true;
+    }
+    
+    return basicValidation;
+  }, [name, email, nameError, emailError, selectedActivationType, adobeEmailValidation]);
 
   const router = useRouter();
 
@@ -371,7 +381,7 @@ export default function CheckoutSection({
   // Calculate activation fee when selected price option changes
   useEffect(() => {
     const calculateActivationFee = async () => {
-      if (selectedPriceOption && isSelfActivationSubscription(selectedPriceOption)) {
+      if (selectedPriceOption && isEmailActivationSubscription(selectedPriceOption)) {
         try {
           const fee = await getActivationFee(selectedPriceOption.id);
           setActivationFee(fee);
@@ -387,9 +397,20 @@ export default function CheckoutSection({
     calculateActivationFee();
   }, [selectedPriceOption]);
 
+  // Adobe email validation
+  useEffect(() => {
+    if (!adobeEmail || adobeEmail.trim() === '') {
+      setAdobeEmailValidation(null);
+      return;
+    }
+
+    const validation = validateAdobeEmail(adobeEmail);
+    setAdobeEmailValidation(validation);
+  }, [adobeEmail]);
+
   // Professional guidance for missing Adobe email
-  const isAdobeEmailRequired = selectedActivationType === 'self-activation';
-  const isAdobeEmailMissing = isAdobeEmailRequired && (!adobeEmail || !isValidEmail(adobeEmail));
+  const isAdobeEmailRequired = selectedActivationType === 'email-activation';
+  const isAdobeEmailMissing = isAdobeEmailRequired && (!adobeEmail || !adobeEmailValidation?.isValid);
   const showAdobeEmailGuidance = isAdobeEmailMissing;
   
   const containerVariants: Variants = useMemo(() => ({ 
@@ -597,11 +618,16 @@ export default function CheckoutSection({
                           <div className="md:space-y-3 space-y-2">
                             <p className="text-gray-200 text-sm md:leading-relaxed">
                               <span className="hidden md:inline">
-                                To proceed with <span className="font-semibold text-amber-200 bg-amber-500/20 px-1.5 py-0.5 rounded">Use Your Email</span>, 
-                                please provide your Adobe Creative Cloud account email address in the pricing section above.
+                                {adobeEmail && adobeEmailValidation && !adobeEmailValidation.isValid 
+                                  ? `Please fix the email validation issue: ${getEmailErrorMessage(adobeEmailValidation)}`
+                                  : `To proceed with Use Your Email, please provide your Adobe Creative Cloud account email address in the pricing section above.`
+                                }
                               </span>
                               <span className="md:hidden">
-                                Please enter your Adobe account email in the pricing section above.
+                                {adobeEmail && adobeEmailValidation && !adobeEmailValidation.isValid 
+                                  ? `Please fix the email validation issue: ${getEmailErrorMessage(adobeEmailValidation)}`
+                                  : 'Please enter your Adobe account email in the pricing section above.'
+                                }
                               </span>
                             </p>
                             
@@ -748,7 +774,7 @@ export default function CheckoutSection({
                   {selectedPriceOption ? formatLocalPrice(selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice : (selectedPriceOption.price * 4)) : 'Loading...'}
                 </span>
               </div>
-              {isSelfActivationSubscription(selectedPriceOption) && (
+              {isEmailActivationSubscription(selectedPriceOption) && (
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Activation Fee</span>
                   <span className="text-gray-300">
@@ -962,7 +988,10 @@ export default function CheckoutSection({
                   
                   {/* Concise description */}
                   <p className="text-gray-300 text-sm">
-                    Please enter your Adobe account email in the pricing section above to link your subscription.
+                    {adobeEmail && adobeEmailValidation && !adobeEmailValidation.isValid 
+                      ? `Please fix the email validation issue: ${getEmailErrorMessage(adobeEmailValidation)}`
+                      : 'Please enter your Adobe account email in the pricing section above to link your subscription.'
+                    }
                   </p>
                   
                   {/* Compact action button */}
@@ -1116,7 +1145,7 @@ export default function CheckoutSection({
             {selectedPriceOption ? formatLocalPrice(selectedPriceOption.originalPrice ? selectedPriceOption.originalPrice : (selectedPriceOption.price * 4)) : 'Loading...'}
           </span>
         </div>
-        {isSelfActivationSubscription(selectedPriceOption) && (
+        {isEmailActivationSubscription(selectedPriceOption) && (
           <div className="flex justify-between items-center">
             <span className="text-gray-400">Activation Fee</span>
             <span className="text-gray-300">

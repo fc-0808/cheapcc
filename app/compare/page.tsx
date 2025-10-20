@@ -12,12 +12,12 @@ const ComparePage = () => {
     {
       id: 'pre-activated',
       name: 'Pre-activated Accounts',
-      description: 'Instant access with ready-to-use accounts',
+      description: 'Quick access with ready-to-use accounts',
       href: '/pre-activated-adobe-creative-cloud',
       color: 'from-purple-500 to-pink-500',
       icon: 'fas fa-bolt',
       features: [
-        'Instant Access',
+        'Quick Access',
         'Pre-configured Setup',
         'No Adobe ID Required',
         'Time Saving',
@@ -26,20 +26,20 @@ const ComparePage = () => {
       pros: [
         'Fastest setup time',
         'No technical knowledge needed',
-        'Immediate productivity'
+        'Quick productivity'
       ],
       cons: [
         'Limited account control',
         'Cannot use existing Adobe ID',
         'Less flexibility'
       ],
-      bestFor: 'Quick start, beginners, immediate needs'
+      bestFor: 'Quick start, beginners, quick needs'
     },
     {
-      id: 'self-activation',
-      name: 'Self-activated Subscriptions',
+      id: 'email-activation',
+      name: 'Email-activated Subscriptions',
       description: 'Use your own Adobe ID with maximum savings',
-      href: '/self-activated-adobe-creative-cloud',
+      href: '/email-activated-adobe-creative-cloud',
       color: 'from-blue-500 to-cyan-500',
       icon: 'fas fa-user-cog',
       features: [
@@ -72,7 +72,7 @@ const ComparePage = () => {
       features: [
         'Official Adobe Codes',
         'Your Adobe Account',
-        'Instant Redemption',
+        'Quick Redemption',
         'Maximum Flexibility',
         'Gift-like Experience'
       ],
@@ -104,7 +104,7 @@ const ComparePage = () => {
         'Professional PDF Tools',
         'Official Adobe Codes',
         'Your Adobe Account',
-        'Instant Redemption',
+        'Quick Redemption',
         'Document Management'
       ],
       pros: [
@@ -135,7 +135,7 @@ const ComparePage = () => {
         <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
         
-      <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20">
+      <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20 hidden md:block">
         {/* Breadcrumb Navigation - Fixed at top with proper z-index and pushed below header */}
         <Breadcrumb
           items={[]}
@@ -218,8 +218,8 @@ const ComparePage = () => {
                   <td className="py-3 text-gray-300 font-medium">Setup Time</td>
                   {currentOptions.map((option, index) => (
                     <td key={index} className="py-3 text-center">
-                      {option.id === 'pre-activated' && <span className="text-green-400 font-semibold">Instant</span>}
-                      {option.id === 'self-activation' && <span className="text-yellow-400">5-10 min</span>}
+                      {option.id === 'pre-activated' && <span className="text-green-400 font-semibold">Immediate</span>}
+                      {option.id === 'email-activation' && <span className="text-yellow-400">5-10 min</span>}
                       {option.id === 'redemption-codes' && <span className="text-yellow-400">5-10 min</span>}
                       {option.id === 'acrobat-codes' && <span className="text-yellow-400">5-10 min</span>}
                     </td>
@@ -230,7 +230,7 @@ const ComparePage = () => {
                   {currentOptions.map((option, index) => (
                     <td key={index} className="py-3 text-center">
                       {option.id === 'pre-activated' && <span className="text-red-400">No</span>}
-                      {option.id === 'self-activation' && <span className="text-green-400">Yes</span>}
+                      {option.id === 'email-activation' && <span className="text-green-400">Yes</span>}
                       {option.id === 'redemption-codes' && <span className="text-green-400">Yes</span>}
                       {option.id === 'acrobat-codes' && <span className="text-green-400">Yes</span>}
                     </td>
@@ -241,7 +241,7 @@ const ComparePage = () => {
                   {currentOptions.map((option, index) => (
                     <td key={index} className="py-3 text-center">
                       {option.id === 'pre-activated' && <span className="text-yellow-400">High</span>}
-                      {option.id === 'self-activation' && <span className="text-green-400">Maximum</span>}
+                      {option.id === 'email-activation' && <span className="text-green-400">Maximum</span>}
                       {option.id === 'redemption-codes' && <span className="text-green-400">Maximum</span>}
                       {option.id === 'acrobat-codes' && <span className="text-green-400">Maximum</span>}
                     </td>
@@ -252,7 +252,7 @@ const ComparePage = () => {
                   {currentOptions.map((option, index) => (
                     <td key={index} className="py-3 text-center">
                       {option.id === 'pre-activated' && <span className="text-yellow-400">Limited</span>}
-                      {option.id === 'self-activation' && <span className="text-green-400">Full</span>}
+                      {option.id === 'email-activation' && <span className="text-green-400">Full</span>}
                       {option.id === 'redemption-codes' && <span className="text-green-400">Full</span>}
                       {option.id === 'acrobat-codes' && <span className="text-green-400">Full</span>}
                     </td>
@@ -263,7 +263,7 @@ const ComparePage = () => {
                   {currentOptions.map((option, index) => (
                     <td key={index} className="py-3 text-center">
                       {option.id === 'pre-activated' && <span className="text-yellow-400">Low</span>}
-                      {option.id === 'self-activation' && <span className="text-green-400">High</span>}
+                      {option.id === 'email-activation' && <span className="text-green-400">High</span>}
                       {option.id === 'redemption-codes' && <span className="text-green-400">Maximum</span>}
                       {option.id === 'acrobat-codes' && <span className="text-green-400">Maximum</span>}
                     </td>

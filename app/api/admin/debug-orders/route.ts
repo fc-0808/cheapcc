@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
           currency: "USD",
           description: "Adobe Creative Cloud - 12 Months",
           savings: 499.89,
-          activation_type: "self-activation",
+          activation_type: "email-activation",
           adobe_email: "test3@adobe.com",
           payment_processor: "test",
           original_status: "completed",

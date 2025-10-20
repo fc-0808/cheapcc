@@ -230,7 +230,7 @@ export default function AdobePricingCalculatorPage() {
                   Compare All Options
                 </Link>
               </div>
-              <p className="text-sm text-blue-100 mt-4">Same Adobe CC • No contracts • Instant access</p>
+              <p className="text-sm text-blue-100 mt-4">Same Adobe CC • No contracts • Quick access</p>
             </div>
           </div>
         </div>

@@ -46,20 +46,20 @@ const Footer: React.FC = () => {
             <p 
               className="text-sm text-gray-300 mb-7 font-light leading-relaxed"
             >
-              Providing affordable Adobe Creative Cloud subscriptions with premium support and instant delivery.
+              Providing affordable Adobe Creative Cloud subscriptions with premium support and fast delivery.
             </p>
             
             <div 
               className="footer-social-icons flex gap-5"
             >
               <a 
-                href="https://www.instagram.com/cheapcc_online/" 
-                aria-label="Instagram" 
+                href="https://www.facebook.com/profile.php?id=61581806114835" 
+                aria-label="Facebook" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-gray-300 hover:border-pink-500/30 transition-colors duration-150 group"
               >
-                <i className="fab fa-instagram text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-500 group-hover:via-pink-500 group-hover:to-red-500 transition-colors duration-300"></i>
+                <i className="fab fa-facebook text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-500 group-hover:via-pink-500 group-hover:to-red-500 transition-colors duration-300"></i>
               </a>
               
               <a 
@@ -70,6 +70,16 @@ const Footer: React.FC = () => {
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-gray-300 hover:border-pink-500/30 transition-colors duration-150 group"
               >
                 <i className="fab fa-x-twitter text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-500 group-hover:via-pink-500 group-hover:to-red-500 transition-colors duration-300"></i>
+              </a>
+              
+              <a 
+                href="https://www.instagram.com/cheapcc_online/" 
+                aria-label="Instagram" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-gray-300 hover:border-pink-500/30 transition-colors duration-150 group"
+              >
+                <i className="fab fa-instagram text-lg group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-fuchsia-500 group-hover:via-pink-500 group-hover:to-red-500 transition-colors duration-300"></i>
               </a>
               
               <a 

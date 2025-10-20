@@ -120,7 +120,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isSelected, onSelect
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <i className="fas fa-clock text-blue-400"></i>
-              <span>Instant delivery</span>
+              <span>Fast delivery</span>
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <i className="fas fa-shield-alt text-green-400"></i>
@@ -139,7 +139,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isSelected, onSelect
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <i className="fas fa-bolt text-yellow-400"></i>
-              <span>Instant activation</span>
+              <span>Quick activation</span>
             </div>
           </>
         )}

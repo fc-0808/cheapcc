@@ -175,12 +175,12 @@ export default function CheapCCVsAdobeOfficialPage() {
                       </td>
                     </tr>
                     <tr className="border-b border-white/10">
-                      <td className="py-4 px-6 font-medium">Instant Delivery</td>
+                      <td className="py-4 px-6 font-medium">Fast Delivery</td>
                       <td className="text-center py-4 px-6">
                         <div className="text-green-400 font-medium">Within 24 hours</div>
                       </td>
                       <td className="text-center py-4 px-6">
-                        <div className="text-white/70">Immediate</div>
+                        <div className="text-white/70">Quick</div>
                       </td>
                     </tr>
                     <tr className="border-b border-white/10">

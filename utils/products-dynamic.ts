@@ -78,7 +78,7 @@ export async function getProductByPriceId(priceId: string): Promise<PricingOptio
 /**
  * Get products filtered by activation type
  */
-export async function getProductsByActivationType(activationType: 'pre-activated' | 'self-activation'): Promise<PricingOption[]> {
+export async function getProductsByActivationType(activationType: 'pre-activated' | 'email-activation'): Promise<PricingOption[]> {
   const products = await getProducts();
   return products.filter(product => product.activationType === activationType);
 }

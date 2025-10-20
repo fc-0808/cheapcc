@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: '%s | CheapCC - Affordable Adobe CC Subscriptions',
     default: 'CheapCC - #1 Source for Affordable Adobe Creative Cloud',
   },
-  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 83% off. Instant delivery for all Adobe apps.",
+  description: "CheapCC offers genuine Adobe Creative Cloud subscriptions for up to 83% off. Fast delivery for all Adobe apps.",
 };
 
 export default function RootLayout({
@@ -49,8 +49,7 @@ export default function RootLayout({
         {/* Safari Pinned Tab Icon */}
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#2c2d5a" />
         
-        {/* Meta tag to allow PayPal scripts */}
-        <meta httpEquiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: data: blob:; style-src 'self' 'unsafe-inline' https: http: data:; font-src 'self' data: https: http:; img-src 'self' data: https: http: blob:; connect-src 'self' https: http: wss: ws:; frame-src 'self' https: http:; media-src 'self' https: http: data: blob:; object-src 'none'; base-uri 'self';" />
+        {/* CSP is now handled by Next.js headers in next.config.js */}
         
         {/* Microsoft Tile Color */}
         <meta name="msapplication-TileColor" content="#2c2d5a" />
@@ -192,7 +191,83 @@ export default function RootLayout({
                 "Illustrator Discount",
                 "Premiere Pro Discount",
                 "Adobe Subscription Discount",
-                "Creative Software Licensing"
+                "Creative Software Licensing",
+                "Adobe Creative Cloud Student Discount",
+                "Adobe Creative Cloud Teacher Discount",
+                "Adobe Creative Cloud Education Discount",
+                "Adobe Creative Cloud Military Discount",
+                "Adobe Discount Code",
+                "Adobe Coupon Code",
+                "Adobe Creative Cloud Alternatives",
+                "Cheap Adobe Creative Cloud",
+                "Cancel Adobe Creative Cloud",
+                "Adobe Creative Cloud Pricing",
+                "Adobe Creative Cloud Cost",
+                "Adobe Creative Cloud Subscription Plans",
+                "Adobe Creative Cloud All Apps",
+                "Adobe Creative Cloud Student",
+                "Adobe Creative Cloud Education",
+                "Adobe Creative Cloud Membership",
+                "Adobe Creative Cloud Student Pricing",
+                "Adobe Creative Cloud Student Plan",
+                "Adobe Creative Cloud Student Rate",
+                "Adobe Creative Cloud Student Deal",
+                "Adobe Creative Cloud For Students Price",
+                "Adobe Creative Cloud Student Cost",
+                "Adobe Creative Cloud All Apps Subscription",
+                "Adobe Creative Cloud Discounts",
+                "Adobe Creative Cloud Price Increase",
+                "Adobe Creative Cloud All Apps Price",
+                "Adobe Creative Cloud Annual Subscription",
+                "Adobe Creative Cloud Yearly Subscription",
+                "Adobe Creative Cloud Monthly Cost",
+                "Adobe Creative Cloud Suite Price",
+                "Adobe Creative Cloud Subscriptions",
+                "Adobe Creative Cloud Cancel Subscription",
+                "Adobe Creative Cloud Cancel",
+                "Adobe Creative Cloud Cancellation",
+                "Adobe Creative Cloud Cancel Account",
+                "Adobe Creative Cloud End Subscription",
+                "Adobe Creative Cloud Subscription Cancel",
+                "Adobe Creative Cloud Studenten",
+                "Adobe Creative Cloud For Student",
+                "Adobe Creative Cloud All Apps Student Discount",
+                "Adobe Creative Cloud Discount Coupon",
+                "Adobe Creative Cloud Alternative Download",
+                "Best Adobe Creative Cloud Alternatives",
+                "Cheaper Alternatives To Adobe Creative Cloud",
+                "Cheapest Adobe Creative Cloud Country",
+                "Cheapest Country For Adobe Creative Cloud",
+                "Cheapest Way To Get Adobe Creative Cloud",
+                "Adobe Creative Cloud 1 Year Cheap",
+                "Adobe Creative Cloud Buy Cheap",
+                "Adobe Creative Cloud Cheap Price",
+                "Adobe Creative Cloud Cheap Reddit",
+                "Adobe Creative Cloud Cheap Subscription",
+                "Adobe Creative Cloud Cheapest Country",
+                "Adobe Creative Cloud Cheapest Price",
+                "Adobe Creative Cloud For Cheap",
+                "Cheap Adobe Creative Cloud Subscription",
+                "Adobe Acrobat Discount Code",
+                "Adobe Acrobat Coupon Code",
+                "Adobe Acrobat Pro Discount Code",
+                "Adobe Acrobat Pro Coupon Code",
+                "Adobe CC Discount Code",
+                "Adobe CC Coupon Code",
+                "Adobe Cloud Discount Code",
+                "Adobe Cloud Coupon Code",
+                "Adobe Creative Cloud Code Promo",
+                "Adobe Creative Cloud Coupon Code Free",
+                "Adobe Creative Cloud Free Coupon Code",
+                "Adobe Creative Suite Discount Code",
+                "Adobe Elements Coupon Code",
+                "Adobe Illustrator Coupon Code",
+                "Adobe Illustrator Discount Code",
+                "Adobe Lightroom Coupon Code",
+                "Adobe Discount Codes",
+                "Adobe Coupon Codes",
+                "Adobe 12 Month Coupon Code",
+                "Adobe Discount Code Reddit"
               ],
               "serviceArea": {
                 "@type": "GeoShape",
@@ -310,37 +385,65 @@ export default function RootLayout({
                 "priceCurrency": "USD",
                 "availability": "https://schema.org/InStock",
                 "priceValidUntil": "2025-12-31",
-                "offerCount": "4",
-                "offers": [
-                  {
-                    "@type": "Offer",
-                    "name": "1 Month Adobe CC",
-                    "price": "19.99",
-                    "priceCurrency": "USD",
-                    "availability": "https://schema.org/InStock"
-                  },
-                  {
-                    "@type": "Offer",
-                    "name": "3 Months Adobe CC",
-                    "price": "39.99",
-                    "priceCurrency": "USD",
-                    "availability": "https://schema.org/InStock"
-                  },
-                  {
-                    "@type": "Offer",
-                    "name": "6 Months Adobe CC",
-                    "price": "69.99",
-                    "priceCurrency": "USD",
-                    "availability": "https://schema.org/InStock"
-                  },
-                  {
-                    "@type": "Offer",
-                    "name": "12 Months Adobe CC",
-                    "price": "89.99",
-                    "priceCurrency": "USD",
-                    "availability": "https://schema.org/InStock"
-                  }
-                ]
+                "offerCount": "7",
+              "offers": [
+                {
+                  "@type": "Offer",
+                  "name": "1 Month Adobe Creative Cloud",
+                  "price": "19.99",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Adobe Creative Cloud 1 month subscription with all apps"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "3 Months Adobe Creative Cloud",
+                  "price": "39.99",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Adobe Creative Cloud 3 month subscription with all apps"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "6 Months Adobe Creative Cloud",
+                  "price": "69.99",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Adobe Creative Cloud 6 month subscription with all apps"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "12 Months Adobe Creative Cloud",
+                  "price": "89.99",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Adobe Creative Cloud 12 month subscription with all apps"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Adobe Creative Cloud Student Discount",
+                  "price": "14.99",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Adobe Creative Cloud student discount pricing for education"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Adobe Creative Cloud Teacher Discount",
+                  "price": "14.99",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Adobe Creative Cloud teacher discount pricing for educators"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Adobe Creative Cloud Military Discount",
+                  "price": "14.99",
+                  "priceCurrency": "USD",
+                  "availability": "https://schema.org/InStock",
+                  "description": "Adobe Creative Cloud military discount pricing for service members"
+                }
+              ]
               },
               "aggregateRating": {
                 "@type": "AggregateRating",

@@ -1,13 +1,13 @@
 import * as React from 'react';
 
-interface SelfActivationEmailTemplateProps {
+interface EmailActivationEmailTemplateProps {
   name: string;
   orderId: string;
   isGuest?: boolean;
   adobeEmail?: string;
 }
 
-export const SelfActivationEmailTemplate: React.FC<Readonly<SelfActivationEmailTemplateProps>> = ({
+export const EmailActivationEmailTemplate: React.FC<Readonly<EmailActivationEmailTemplateProps>> = ({
   name,
   orderId,
   isGuest = false,
@@ -17,7 +17,7 @@ export const SelfActivationEmailTemplate: React.FC<Readonly<SelfActivationEmailT
     <head>
       <meta charSet="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Your CheapCC Order Confirmation - Self-Activation</title>
+      <title>Your CheapCC Order Confirmation - Email Activation</title>
     </head>
     <body style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'", lineHeight: 1.6, color: '#333333', margin: 0, padding: 0, backgroundColor: '#f4f7f6' }}>
       <div style={{ width: '100%', backgroundColor: '#f4f7f6', padding: '20px 0' }}>
@@ -38,7 +38,7 @@ export const SelfActivationEmailTemplate: React.FC<Readonly<SelfActivationEmailT
               <div><strong>Activation Type:</strong> <span style={{ color: '#3b82f6' }}>Your Own Adobe Account</span></div>
             </div>
 
-            {/* Self-activation specific information */}
+            {/* Email activation specific information */}
             <div style={{ background: '#e0f2fe', borderLeft: '4px solid #0ea5e9', borderRadius: 6, padding: 16, margin: '24px 0', color: '#0c4a6e', fontSize: 15 }}>
               <strong>🔄 Account Activation Process:</strong>
               <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>

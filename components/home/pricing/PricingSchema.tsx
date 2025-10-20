@@ -20,7 +20,7 @@ export default function PricingSchema({ pricingOptions }: PricingSchemaProps) {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": "Adobe Creative Cloud All Apps Subscription",
-        "description": "Genuine Adobe Creative Cloud subscriptions at up to 75% off official pricing. Includes all Adobe apps: Photoshop, Illustrator, Premiere Pro, After Effects & more. Instant delivery.",
+        "description": "Genuine Adobe Creative Cloud subscriptions at up to 75% off official pricing. Includes all Adobe apps: Photoshop, Illustrator, Premiere Pro, After Effects & more. Fast delivery.",
         "brand": { "@type": "Brand", "name": "Adobe" },
         "image": "https://cheapcc.online/og-image.svg",
         "offers": {

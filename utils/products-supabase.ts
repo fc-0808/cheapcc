@@ -11,7 +11,7 @@ export interface PricingOption {
   price: number;
   originalPrice?: number;
   description: string;
-  activationType: 'pre-activated' | 'self-activation' | 'redemption-required';
+  activationType: 'pre-activated' | 'email-activation' | 'redemption-required';
   productType: 'subscription' | 'redemption_code';
   adobeProductLine: 'creative_cloud' | 'acrobat_pro';
   productId: string;
@@ -61,9 +61,9 @@ export async function fetchPricingOptionsFromSupabase(): Promise<PricingOption[]
           priceId = `cc-code-${product.duration_months}m`;
         }
       } else {
-        // For subscriptions, check if it's self-activation based on name
-        const isSelfActivation = product.name.includes('(Email Activation)');
-        priceId = isSelfActivation ? `${product.duration_months}m-self` : `${product.duration_months}m`;
+        // For subscriptions, check if it's email-activation based on name
+        const isEmailActivation = product.name.includes('(Email Activation)');
+        priceId = isEmailActivation ? `${product.duration_months}m-self` : `${product.duration_months}m`;
       }
 
       // Generate duration string
@@ -78,7 +78,7 @@ export async function fetchPricingOptionsFromSupabase(): Promise<PricingOption[]
         originalPrice: parseFloat(product.original_price || '0'),
         description: product.description,
         activationType: product.product_type === 'redemption_code' ? 'redemption-required' : 
-                       (product.name.includes('(Email Activation)') ? 'self-activation' : 'pre-activated'),
+                       (product.name.includes('(Email Activation)') ? 'email-activation' : 'pre-activated'),
         productType: product.product_type,
         adobeProductLine: product.adobe_product_line,
         productId: product.id,
@@ -164,15 +164,15 @@ export function getAdobeProductLine(option: PricingOption | null | undefined): s
   return option.adobeProductLine;
 }
 
-export function isSelfActivationSubscription(option: PricingOption | null | undefined): boolean {
+export function isEmailActivationSubscription(option: PricingOption | null | undefined): boolean {
   if (!option) return false;
-  return option.productType === 'subscription' && option.activationType === 'self-activation';
+  return option.productType === 'subscription' && option.activationType === 'email-activation';
 }
 
 export async function getActivationFee(priceId: string): Promise<number> {
   // Calculate activation fee based on the difference between email activation and pre-activated prices
   const emailActivationOption = await getPricingOptionById(priceId);
-  if (!emailActivationOption || emailActivationOption.activationType !== 'self-activation') {
+  if (!emailActivationOption || emailActivationOption.activationType !== 'email-activation') {
     return 0;
   }
 

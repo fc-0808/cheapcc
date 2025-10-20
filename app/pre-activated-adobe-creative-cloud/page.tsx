@@ -5,61 +5,21 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/supabase-client';
 import type { Session } from '@supabase/supabase-js';
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
-import { v4 as uuidv4 } from 'uuid';
-import { getPricingOptions, type PricingOption } from '@/utils/products-supabase';
-import dynamic from 'next/dynamic';
-import { useInternationalization } from '@/contexts/InternationalizationContext';
 import { motion } from 'framer-motion';
-import { useInView } from 'framer-motion';
+import { getPricingOptions, type PricingOption } from '@/utils/products-supabase';
 
 // Import components
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductPageWrapper from "@/components/ProductPageWrapper";
+import ProfessionalPricingCard from "@/components/pricing/ProfessionalPricingCard";
+import ProductPageRedirect from "@/components/ProductPageRedirect";
 
-// Dynamically import heavy components
-const CheckoutSection = dynamic(() => import("@/components/home/CheckoutSection"), {
-  loading: () => (
-    <div className="py-20 md:py-32">
-      <div className="container px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center">
-          <div className="h-8 w-8 border-2 border-fuchsia-500/50 border-t-fuchsia-500 rounded-full animate-spin"></div>
-        </div>
-      </div>
-    </div>
-  ),
-  ssr: false
-});
-
-// Load Stripe with error handling
-const createStripePromise = () => {
-  return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!).catch((error) => {
-    console.error('Failed to load Stripe.js:', error);
-    return Promise.reject(error);
-  });
-};
-
-const stripePromise = createStripePromise();
 
 export default function PreActivatedAdobeCreativeCloud() {
   const router = useRouter();
   const [selectedPrice, setSelectedPrice] = useState<string>('1m');
-  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'cancel'>('idle');
-  const [sdkReady, setSdkReady] = useState<boolean>(false);
-  const [stripeError, setStripeError] = useState<string | null>(null);
-  const [name, setName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
   const [pricingOptions, setPricingOptions] = useState<PricingOption[]>([]);
-  const [canPay, setCanPay] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [checkoutFormError, setCheckoutFormError] = useState<string | null>(null);
-  const [checkoutVisible, setCheckoutVisible] = useState(false);
-  
-  const { countryConfig, formatLocalPrice, selectedCountry } = useInternationalization();
-  const checkoutRef = useRef<HTMLDivElement>(null);
-  const paymentIntentCacheRef = useRef<Map<string, string>>(new Map());
+  const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>(false);
 
   // Filter for pre-activated products only
   const preActivatedOptions = pricingOptions.filter(option => 
@@ -101,18 +61,6 @@ export default function PreActivatedAdobeCreativeCloud() {
         const currentUser = session?.user;
         if (currentUser) {
           setIsUserSignedIn(true);
-          const userEmail = currentUser.email || '';
-          setEmail(userEmail);
-          let userName = currentUser.user_metadata?.name || '';
-          if (!userName) {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('name')
-              .eq('id', currentUser.id)
-              .maybeSingle();
-            userName = profileData?.name || '';
-          }
-          setName(userName);
         } else {
           setIsUserSignedIn(false);
         }
@@ -123,18 +71,6 @@ export default function PreActivatedAdobeCreativeCloud() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setIsUserSignedIn(true);
-        const userEmail = user.email || '';
-        setEmail(userEmail);
-        let userName = user.user_metadata?.name || '';
-        if (!userName) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('name')
-            .eq('id', user.id)
-            .maybeSingle();
-          userName = profileData?.name || '';
-        }
-        setName(userName);
       } else {
         setIsUserSignedIn(false);
       }
@@ -146,141 +82,17 @@ export default function PreActivatedAdobeCreativeCloud() {
     };
   }, []);
 
-  // Payment intent creation
-  useEffect(() => {
-    const formIsValid = name.trim() !== '' && /.+@.+\..+/.test(email);
-    
-    if (!formIsValid) {
-      if (clientSecret) {
-        setClientSecret(null);
-        setPaymentStatus('idle');
-      }
-      return;
-    }
-
-    if (pricingOptions.length === 0) return;
-
-    const selectedPriceExists = pricingOptions.some(option => option.id === selectedPrice);
-    if (!selectedPriceExists) {
-      console.warn(`Selected price ${selectedPrice} not found in pricing options`);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      const fetchPaymentIntent = async () => {
-        const cacheKey = `${selectedPrice}-${name}-${email}-pre-activated`;
-        const cachedClientSecret = paymentIntentCacheRef.current.get(cacheKey);
-
-        if (cachedClientSecret) {
-          setClientSecret(cachedClientSecret);
-          setPaymentStatus('idle');
-          return;
-        }
-
-        setPaymentStatus('loading');
-        setCheckoutFormError(null);
-
-        try {
-          const idempotencyKey = uuidv4();
-          const response = await fetch('/api/stripe/payment-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              priceId: selectedPrice,
-              name,
-              email,
-              idempotencyKey,
-              activationType: 'pre-activated',
-            }),
-          });
-
-          const data = await response.json();
-          
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to initialize payment.');
-          }
-
-          if (!data.clientSecret) {
-            throw new Error('No client secret received from payment service.');
-          }
-
-          paymentIntentCacheRef.current.set(cacheKey, data.clientSecret);
-          setClientSecret(data.clientSecret);
-          setPaymentStatus('idle');
-
-        } catch (error: any) {
-          console.error('Error creating payment intent:', error);
-          setCheckoutFormError(error.message);
-          setPaymentStatus('error');
-        }
-      };
-
-      fetchPaymentIntent();
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [name, email, selectedPrice, pricingOptions]);
-
-  // Stripe loading check
-  useEffect(() => {
-    const checkStripeLoading = async () => {
-      try {
-        await stripePromise;
-        setStripeError(null);
-        setSdkReady(true);
-      } catch (error) {
-        console.error('Stripe failed to load:', error);
-        setStripeError('Failed to load payment system');
-        setSdkReady(false);
-      }
-    };
-
-    checkStripeLoading();
-  }, []);
-
-  // Scroll listener for checkout visibility
-  useEffect(() => {
-    function onScroll() {
-      if (checkoutRef.current && !checkoutVisible) {
-        const rect = checkoutRef.current.getBoundingClientRect();
-        if (rect.top < window.innerHeight * 0.3) setCheckoutVisible(true);
-      }
-    }
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [checkoutVisible]);
-
   const handlePlanSelect = (optionId: string) => {
     if (selectedPrice !== optionId) {
       setSelectedPrice(optionId);
     }
+    // Scroll to checkout section after a brief delay to ensure state is updated
     setTimeout(() => {
-      document.getElementById('checkout')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 10);
-  };
-
-  const selectedPriceOption = preActivatedOptions.find(option => option.id === selectedPrice) || null;
-  let amountInCents = selectedPriceOption ? Math.round(selectedPriceOption.price * 100) : 1299;
-  
-  if (amountInCents <= 0) {
-    console.warn('Invalid amount detected, using default $12.99');
-    amountInCents = 1299;
-  }
-
-  const stripeOptions: StripeElementsOptions = clientSecret ? {
-    clientSecret,
-    appearance: {
-      theme: 'night' as const,
-      variables: { colorPrimary: '#ff33ff' },
-    },
-  } : {
-    mode: 'payment',
-    currency: 'usd',
-    amount: amountInCents,
-    appearance: {
-      theme: 'night' as const,
-      variables: { colorPrimary: '#ff33ff' },
-    },
+      const checkoutSection = document.getElementById('checkout-section');
+      if (checkoutSection) {
+        checkoutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const containerVariants = {
@@ -304,7 +116,7 @@ export default function PreActivatedAdobeCreativeCloud() {
       <main className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-pink-900 text-white relative overflow-hidden">
         
         {/* Breadcrumb Navigation - Fixed at top with proper z-index and pushed below header */}
-        <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20">
+        <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20 hidden md:block">
           <Breadcrumb 
             items={[
               { name: 'Adobe Creative Cloud', href: '/adobe-creative-cloud' },
@@ -333,7 +145,7 @@ export default function PreActivatedAdobeCreativeCloud() {
                   variants={itemVariants}
                 >
                   <i className="fas fa-bolt text-purple-400"></i>
-                  <span className="text-purple-300 font-medium">Instant Access</span>
+                  <span className="text-purple-300 font-medium">Quick Access</span>
                 </motion.div>
                 
                 <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
@@ -343,14 +155,14 @@ export default function PreActivatedAdobeCreativeCloud() {
                 </h1>
                 
                 <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
-                  Get instant access to the complete Adobe Creative Cloud suite with pre-configured accounts. 
+                  Get quick access to the complete Adobe Creative Cloud suite with pre-configured accounts. 
                   <span className="text-purple-400 font-semibold"> No setup required</span> - start creating immediately.
                 </p>
                 
                 <div className="flex flex-wrap justify-center gap-4 mb-12">
                   <div className="flex items-center gap-2 bg-green-500/20 border border-green-500/50 rounded-full px-4 py-2">
                     <i className="fas fa-check-circle text-green-400"></i>
-                    <span className="text-green-300 font-medium">Instant Access</span>
+                    <span className="text-green-300 font-medium">Quick Access</span>
                   </div>
                   <div className="flex items-center gap-2 bg-blue-500/20 border border-blue-500/50 rounded-full px-4 py-2">
                     <i className="fas fa-shield-check text-blue-400"></i>
@@ -384,7 +196,7 @@ export default function PreActivatedAdobeCreativeCloud() {
                 {[
                   {
                     icon: "fas fa-rocket",
-                    title: "Instant Access",
+                    title: "Quick Access",
                     description: "No waiting, no setup - your account is ready to use immediately after purchase. Start creating within minutes.",
                     color: "from-purple-500 to-pink-500"
                   },
@@ -429,61 +241,26 @@ export default function PreActivatedAdobeCreativeCloud() {
                   Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Plan</span>
                 </h2>
                 <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                  All plans include the complete Adobe Creative Cloud suite with instant access to all applications.
+                  All plans include the complete Adobe Creative Cloud suite with quick access to all applications.
                 </p>
               </motion.div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
                 {preActivatedOptions.map((option, index) => (
-                  <motion.div
+                  <ProfessionalPricingCard
                     key={option.id}
-                    className={`relative bg-white/5 backdrop-blur-sm border rounded-2xl p-8 cursor-pointer transition-all duration-300 ${
-                      selectedPrice === option.id 
-                        ? 'border-purple-500 bg-purple-500/10 shadow-lg shadow-purple-500/20' 
-                        : 'border-white/10 hover:border-white/20 hover:bg-white/10'
-                    }`}
-                    variants={itemVariants}
-                    whileHover={{ y: -5 }}
-                    onClick={() => handlePlanSelect(option.id)}
-                  >
-                    {selectedPrice === option.id && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                          Selected
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold text-white mb-2">{option.duration}</h3>
-                      <div className="mb-4">
-                        <span className="text-3xl font-bold text-white">
-                          {formatLocalPrice(option.price)}
-                        </span>
-                        {option.originalPrice && option.originalPrice > option.price && (
-                          <span className="text-lg text-gray-400 line-through ml-2">
-                            {formatLocalPrice(option.originalPrice)}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-gray-300 text-sm mb-6">{option.description}</p>
-                      
-                      <div className="space-y-2 text-sm text-gray-300">
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Complete Adobe CC Suite</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Instant Access</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Pre-configured Account</span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    option={option}
+                    selectedPrice={selectedPrice}
+                    onSelectPrice={handlePlanSelect}
+                    features={[
+                      'Complete Adobe CC Suite',
+                      'Quick Access',
+                      'All Creative Apps',
+                      'Cloud Storage'
+                    ]}
+                    productType="pre-activated"
+                    adobeProductLine="creative_cloud"
+                  />
                 ))}
               </div>
             </div>
@@ -509,19 +286,19 @@ export default function PreActivatedAdobeCreativeCloud() {
                   {
                     step: "01",
                     title: "Choose & Purchase",
-                    description: "Select your preferred plan and complete the secure checkout process. Payment is processed instantly.",
+                    description: "Select your preferred plan and complete the secure checkout process. Payment is processed immediately.",
                     icon: "fas fa-shopping-cart"
                   },
                   {
                     step: "02", 
-                    title: "Instant Delivery",
+                    title: "Fast Delivery",
                     description: "Receive your pre-activated account credentials immediately via email. No waiting required.",
                     icon: "fas fa-envelope"
                   },
                   {
                     step: "03",
                     title: "Start Creating",
-                    description: "Log in to your account and access all Adobe Creative Cloud applications instantly. Begin your creative journey.",
+                    description: "Log in to your account and access all Adobe Creative Cloud applications immediately. Begin your creative journey.",
                     icon: "fas fa-palette"
                   }
                 ].map((step, index) => (
@@ -546,52 +323,14 @@ export default function PreActivatedAdobeCreativeCloud() {
             </div>
           </section>
 
-          {/* Checkout Section */}
-          <div ref={checkoutRef} id="checkout">
-            {amountInCents > 0 && (
-              <>
-                {stripeError ? (
-                  <div className="p-6 border border-red-500/20 rounded-lg bg-red-500/10 text-red-400 text-center">
-                    <div className="mb-4">
-                      <i className="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                      <h3 className="text-lg font-semibold mb-2">Payment System Unavailable</h3>
-                      <p className="text-sm mb-4">
-                        We're experiencing issues loading our secure payment system. Please try again later.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <Elements
-                    stripe={stripePromise}
-                    options={stripeOptions}
-                  >
-                    <CheckoutSection
-                      selectedPrice={selectedPrice}
-                      isUserSignedIn={isUserSignedIn}
-                      name={name}
-                      setName={setName}
-                      email={email}
-                      setEmail={setEmail}
-                      canPay={canPay}
-                      paymentStatus={paymentStatus}
-                      setPaymentStatus={setPaymentStatus}
-                      checkoutFormError={checkoutFormError}
-                      setCheckoutFormError={setCheckoutFormError}
-                      paypalButtonContainerRef={useRef<HTMLDivElement>(null)}
-                      sdkReady={sdkReady}
-                      onPayPalLoad={() => setSdkReady(true)}
-                      onPayPalError={() => setCheckoutFormError("PayPal unavailable")}
-                      renderPayPalButton={() => {}}
-                      clientSecret={clientSecret}
-                      selectedActivationType="pre-activated"
-                      adobeEmail=""
-                      createPayPalOrderWithRetry={async () => ""}
-                      onRefreshPaymentIntent={() => {}}
-                    />
-                  </Elements>
-                )}
-              </>
-            )}
+          {/* Redirect to Home Page Checkout */}
+          <div id="checkout-section">
+            <ProductPageRedirect
+              productType="pre-activated"
+              adobeProductLine="creative_cloud"
+              productName="Pre-activated Adobe Creative Cloud"
+              selectedPrice={selectedPrice}
+            />
           </div>
 
           {/* FAQ Section */}
@@ -614,7 +353,7 @@ export default function PreActivatedAdobeCreativeCloud() {
                   },
                   {
                     question: "How quickly will I receive my account credentials?",
-                    answer: "Account credentials are delivered instantly via email after successful payment. You'll receive login information and instructions within minutes of completing your purchase."
+                    answer: "Account credentials are delivered immediately via email after successful payment. You'll receive login information and instructions within minutes of completing your purchase."
                   },
                   {
                     question: "Is this legitimate and safe?",
@@ -626,7 +365,7 @@ export default function PreActivatedAdobeCreativeCloud() {
                   },
                   {
                     question: "Can I use my own Adobe ID with this service?",
-                    answer: "Pre-activated accounts come with their own Adobe ID that's already configured. If you prefer to use your own Adobe ID, consider our self-activation service instead."
+                    answer: "Pre-activated accounts come with their own Adobe ID that's already configured. If you prefer to use your own Adobe ID, consider our email-activation service instead."
                   }
                 ].map((faq, index) => (
                   <motion.div
@@ -654,15 +393,15 @@ export default function PreActivatedAdobeCreativeCloud() {
                 </h2>
                 <p className="text-xl text-gray-300 mb-8">
                   Join thousands of creatives who trust CheapCC for their Adobe Creative Cloud needs. 
-                  Get instant access to the complete suite today.
+                  Get quick access to the complete suite today.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={() => document.getElementById('checkout')?.scrollIntoView({ behavior: 'smooth' })}
+                  <Link
+                    href="/?type=pre-activated&product=creative-cloud&scroll=pricing"
                     className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg shadow-purple-500/25"
                   >
                     Get Started Now
-                  </button>
+                  </Link>
                   <Link
                     href="/compare"
                     className="px-8 py-4 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300"

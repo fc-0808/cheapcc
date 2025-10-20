@@ -16,6 +16,8 @@ import { motion } from 'framer-motion';
 // Import components
 import Breadcrumb from "@/components/Breadcrumb";
 import ProductPageWrapper from "@/components/ProductPageWrapper";
+import ProfessionalPricingCard from "@/components/pricing/ProfessionalPricingCard";
+import ProductPageRedirect from "@/components/ProductPageRedirect";
 
 // Dynamically import heavy components
 const CheckoutSection = dynamic(() => import("@/components/home/CheckoutSection"), {
@@ -253,9 +255,13 @@ export default function AdobeAcrobatProRedemptionCodes() {
     if (selectedPrice !== optionId) {
       setSelectedPrice(optionId);
     }
+    // Scroll to checkout section after a brief delay to ensure state is updated
     setTimeout(() => {
-      document.getElementById('checkout')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 10);
+      const checkoutSection = document.getElementById('checkout-section');
+      if (checkoutSection) {
+        checkoutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const selectedPriceOption = acrobatRedemptionOptions.find(option => option.id === selectedPrice) || null;
@@ -303,7 +309,7 @@ export default function AdobeAcrobatProRedemptionCodes() {
       <main className="min-h-screen bg-gradient-to-br from-red-900 via-black to-orange-900 text-white relative overflow-hidden">
         
         {/* Breadcrumb Navigation - Fixed at top with proper z-index and pushed below header */}
-        <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20">
+        <div className="relative z-20 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4 mt-20 hidden md:block">
           <Breadcrumb 
             items={[
               { name: 'Adobe Acrobat Pro', href: '/adobe-acrobat-pro' },
@@ -403,8 +409,8 @@ export default function AdobeAcrobatProRedemptionCodes() {
                   },
                   {
                     icon: "fas fa-mobile-alt",
-                    title: "Instant Redemption",
-                    description: "Redeem your code immediately at redeem.adobe.com. No waiting, no delays - activate your Acrobat Pro subscription instantly.",
+                    title: "Quick Redemption",
+                    description: "Redeem your code immediately at redeem.adobe.com. No waiting, no delays - activate your Acrobat Pro subscription right away.",
                     color: "from-purple-500 to-pink-500"
                   }
                 ].map((benefit, index) => (
@@ -568,108 +574,35 @@ export default function AdobeAcrobatProRedemptionCodes() {
                 </p>
               </motion.div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
                 {acrobatRedemptionOptions.map((option, index) => (
-                  <motion.div
+                  <ProfessionalPricingCard
                     key={option.id}
-                    className={`relative bg-white/5 backdrop-blur-sm border rounded-2xl p-8 cursor-pointer transition-all duration-300 ${
-                      selectedPrice === option.id 
-                        ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/20' 
-                        : 'border-white/10 hover:border-white/20 hover:bg-white/10'
-                    }`}
-                    variants={itemVariants}
-                    whileHover={{ y: -5 }}
-                    onClick={() => handlePlanSelect(option.id)}
-                  >
-                    {selectedPrice === option.id && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                          Selected
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold text-white mb-2">{option.duration}</h3>
-                      <div className="mb-4">
-                        <span className="text-3xl font-bold text-white">
-                          {formatLocalPrice(option.price)}
-                        </span>
-                        {option.originalPrice && option.originalPrice > option.price && (
-                          <span className="text-lg text-gray-400 line-through ml-2">
-                            {formatLocalPrice(option.originalPrice)}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-gray-300 text-sm mb-6">{option.description}</p>
-                      
-                      <div className="space-y-2 text-sm text-gray-300">
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Complete Acrobat Pro Suite</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Official Redemption Code</span>
-                        </div>
-                        <div className="flex items-center justify-center gap-2">
-                          <i className="fas fa-check text-green-400"></i>
-                          <span>Your Adobe Account</span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    option={option}
+                    selectedPrice={selectedPrice}
+                    onSelectPrice={handlePlanSelect}
+                    features={[
+                      'Complete Acrobat Pro Suite',
+                      'Official Redemption Code',
+                      'Your Adobe Account',
+                      'Quick Redemption'
+                    ]}
+                    productType="redemption-code"
+                    adobeProductLine="acrobat_pro"
+                  />
                 ))}
               </div>
             </div>
           </section>
 
-          {/* Checkout Section */}
-          <div ref={checkoutRef} id="checkout">
-            {amountInCents > 0 && (
-              <>
-                {stripeError ? (
-                  <div className="p-6 border border-red-500/20 rounded-lg bg-red-500/10 text-red-400 text-center">
-                    <div className="mb-4">
-                      <i className="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                      <h3 className="text-lg font-semibold mb-2">Payment System Unavailable</h3>
-                      <p className="text-sm mb-4">
-                        We're experiencing issues loading our secure payment system. Please try again later.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <Elements
-                    stripe={stripePromise}
-                    options={stripeOptions}
-                  >
-                    <CheckoutSection
-                      selectedPrice={selectedPrice}
-                      isUserSignedIn={isUserSignedIn}
-                      name={name}
-                      setName={setName}
-                      email={email}
-                      setEmail={setEmail}
-                      canPay={canPay}
-                      paymentStatus={paymentStatus}
-                      setPaymentStatus={setPaymentStatus}
-                      checkoutFormError={checkoutFormError}
-                      setCheckoutFormError={setCheckoutFormError}
-                      paypalButtonContainerRef={useRef<HTMLDivElement>(null)}
-                      sdkReady={sdkReady}
-                      onPayPalLoad={() => setSdkReady(true)}
-                      onPayPalError={() => setCheckoutFormError("PayPal unavailable")}
-                      renderPayPalButton={() => {}}
-                      clientSecret={clientSecret}
-                      selectedActivationType="redemption-required"
-                      adobeEmail=""
-                      createPayPalOrderWithRetry={async () => ""}
-                      onRefreshPaymentIntent={() => {}}
-                    />
-                  </Elements>
-                )}
-              </>
-            )}
+          {/* Redirect to Home Page Checkout */}
+          <div id="checkout-section">
+            <ProductPageRedirect
+              productType="redemption-required"
+              adobeProductLine="acrobat_pro"
+              productName="Adobe Acrobat Pro Redemption Codes"
+              selectedPrice={selectedPrice}
+            />
           </div>
 
           {/* FAQ Section */}
@@ -700,7 +633,7 @@ export default function AdobeAcrobatProRedemptionCodes() {
                   },
                   {
                     question: "How quickly will I receive my redemption code?",
-                    answer: "Redemption codes are delivered instantly via email after successful payment. You'll receive your code within minutes of completing your purchase."
+                    answer: "Redemption codes are delivered immediately via email after successful payment. You'll receive your code within minutes of completing your purchase."
                   },
                   {
                     question: "Are these codes legitimate and safe to use?",
@@ -739,12 +672,12 @@ export default function AdobeAcrobatProRedemptionCodes() {
                   Get official codes with maximum flexibility and professional features.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={() => document.getElementById('checkout')?.scrollIntoView({ behavior: 'smooth' })}
+                  <Link
+                    href="/?type=redemption-required&product=acrobat-pro&scroll=acrobat-codes"
                     className="px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-xl hover:from-red-600 hover:to-orange-600 transition-all duration-300 shadow-lg shadow-red-500/25"
                   >
                     Get Acrobat Pro Code
-                  </button>
+                  </Link>
                   <Link
                     href="/compare"
                     className="px-8 py-4 border border-white/20 text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-300"

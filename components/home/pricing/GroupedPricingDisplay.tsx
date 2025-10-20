@@ -10,7 +10,7 @@ interface GroupedPricingDisplayProps {
   pricingOptions: PricingOption[];
   selectedPrice: string;
   onSelectPrice: (priceId: string) => void;
-  selectedActivationType?: 'pre-activated' | 'self-activation';
+  selectedActivationType?: 'pre-activated' | 'email-activation';
 }
 
 interface ProductGroup {
@@ -154,6 +154,7 @@ export default function GroupedPricingDisplay({
       {productGroups.map((group, groupIndex) => (
         <motion.div 
           key={group.id}
+          id={group.id}
           className="relative"
           variants={groupVariants}
           transition={{ duration: 0.6, ease: "easeOut" }}

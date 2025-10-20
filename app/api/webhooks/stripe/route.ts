@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
         }
         
         // --- Extract metadata ---
-        const { priceId, userName, userEmail, productDescription, activationType, adobeEmail } = paymentIntent.metadata;
+        const { priceId, userName, userEmail, productDescription, activationType, adobeEmail, basePrice, displayPrice, countryCode } = paymentIntent.metadata;
 
         if (!userEmail || !userName || !priceId) {
             console.error(JSON.stringify({ ...logContext, event: "metadata_missing", metadata: paymentIntent.metadata }, null, 2));
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
             savings: savings,
             expiry_date: expiryDate ? expiryDate.toISOString() : null,
             activation_type: finalActivationType,
-            adobe_email: adobeEmail || null, // Store Adobe account email for self-activation
+            adobe_email: adobeEmail || null, // Store Adobe account email for email-activation
             
             // --- UPDATED COLUMNS ---
             stripe_payment_intent_id: paymentIntent.id, // Use the new Stripe column
@@ -258,6 +258,11 @@ export async function POST(request: NextRequest) {
             payment_data: paymentIntent,                 // Use the generic data column
             product_id: productId,                       // Set the product ID from products table
             product_type: productType,                   // Set the correct product type (subscription/redemption_code)
+            adobe_product_line: paymentIntent.metadata.adobeProductLine || null, // Set Adobe product line
+            price_id: priceId,                           // Set the price ID
+            base_price: basePrice ? parseFloat(basePrice) : null, // Set base price
+            display_price: displayPrice ? parseFloat(displayPrice) : null, // Set display price
+            country_code: countryCode || 'US',           // Set country code
             // --- END OF UPDATES ---
 
             original_status: paymentIntent.status,

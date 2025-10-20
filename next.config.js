@@ -41,10 +41,24 @@ const nextConfig = {
 						key: 'Permissions-Policy',
 						value: 'accelerometer=*, camera=*, geolocation=*, gyroscope=*, magnetometer=*, microphone=*, payment=*, usb=*',
 					},
-					// Content Security Policy - More permissive for PayPal compatibility
+					// Content Security Policy - Strict configuration with specific domain allowlists
 					{
 						key: 'Content-Security-Policy',
-						value: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: data: blob:; style-src 'self' 'unsafe-inline' https: http: data:; font-src 'self' data: https: http:; img-src 'self' data: https: http: blob:; connect-src 'self' https: http: wss: ws:; frame-src 'self' https: http:; media-src 'self' https: http: data: blob:; object-src 'none'; base-uri 'self';",
+						value: [
+							"default-src 'self'",
+							"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://cdnjs.cloudflare.com https://use.fontawesome.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+							"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://use.fontawesome.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
+							"font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://use.fontawesome.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
+							"img-src 'self' data: blob: https://cheapcc.online https://images.unsplash.com https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://www.gstatic.com https://cdnjs.cloudflare.com https://flagcdn.com https://redeem.adobe.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
+							"connect-src 'self' https://api.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://www.gstatic.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to https://vitals.vercel-insights.com https://*.supabase.co wss://embed.tawk.to wss://*.tawk.to",
+							"frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com https://www.google.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
+							"media-src 'self' data: blob:",
+							"object-src 'none'",
+							"base-uri 'self'",
+							"form-action 'self' https://www.paypal.com https://www.sandbox.paypal.com",
+							"frame-ancestors 'none'",
+							'upgrade-insecure-requests',
+						].join('; '),
 					},
 					// Optimize mobile caching with stale-while-revalidate
 					{
@@ -76,14 +90,6 @@ const nextConfig = {
 				hostname: 'images.unsplash.com',
 				pathname: '**',
 			},
-		],
-		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-		formats: ['image/avif', 'image/webp'],
-		minimumCacheTTL: 31536000, // 1 year cache for better Core Web Vitals
-		dangerouslyAllowSVG: true,
-		contentSecurityPolicy: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: data: blob:; style-src 'self' 'unsafe-inline' https: http: data:; font-src 'self' data: https: http:; img-src 'self' data: https: http: blob:; connect-src 'self' https: http: wss: ws:; frame-src 'self' https: http:; media-src 'self' https: http: data: blob:; object-src 'none'; base-uri 'self';",
-		remotePatterns: [
 			{
 				protocol: 'https',
 				hostname: 'cheapcc.online',
@@ -93,6 +99,12 @@ const nextConfig = {
 				hostname: '*.cheapcc.online',
 			},
 		],
+		deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+		formats: ['image/avif', 'image/webp'],
+		minimumCacheTTL: 31536000, // 1 year cache for better Core Web Vitals
+		dangerouslyAllowSVG: true,
+		contentSecurityPolicy: "default-src 'self'; img-src 'self' data: blob: https://cheapcc.online https://images.unsplash.com;",
 	},
 	experimental: {
 		optimizeCss: true,

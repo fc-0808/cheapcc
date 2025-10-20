@@ -71,7 +71,7 @@ export default function CheapCCNetPage() {
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold text-white flex items-center gap-2">
                   <i className="fas fa-bolt text-yellow-400"></i>
-                  Instant Delivery
+                  Fast Delivery
                 </h3>
                 <p className="text-white/70">
                   Get your Adobe CC access within 24 hours of purchase. Quick delivery to start creating soon.
@@ -147,7 +147,7 @@ export default function CheapCCNetPage() {
               </div>
               <div className="flex items-center gap-2">
                 <i className="fas fa-clock text-blue-400"></i>
-                <span>Instant Delivery</span>
+                <span>Fast Delivery</span>
               </div>
               <div className="flex items-center gap-2">
                 <i className="fas fa-headset text-purple-400"></i>

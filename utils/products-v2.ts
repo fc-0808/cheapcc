@@ -1,7 +1,7 @@
 // Enhanced product management system for redemption codes and subscriptions
 export type ProductType = 'subscription' | 'redemption_code';
 export type AdobeProductLine = 'creative_cloud' | 'acrobat_pro';
-export type ActivationType = 'pre-activated' | 'self-activation';
+export type ActivationType = 'pre-activated' | 'email-activation';
 
 export interface Product {
   id: string;
