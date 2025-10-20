@@ -1051,21 +1051,21 @@ export default function Header() {
               {/* Streamlined Mobile Menu - Industry Standard */}
               <div className="py-1">
                 {/* Primary Actions - Most Important */}
-                <div className="mb-6">
-                  <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-3 px-3">Shop</div>
-                  <div className="space-y-2">
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-2 px-3">Shop</div>
+                  <div className="space-y-1.5">
                     <Link 
                       href="/pre-activated-adobe-creative-cloud"
                       prefetch={false}
                       onClick={handleNavLinkClick}
-                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300"
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300"
                     >
-                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
-                        <i className="fas fa-bolt text-white text-lg"></i>
+                      <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+                        <i className="fas fa-bolt text-white text-sm"></i>
                       </span>
                       <div>
-                        <div className="font-bold">Pre-activated Accounts</div>
-                        <div className="text-sm text-white/70">Quick access - Buy now</div>
+                        <div className="font-bold text-sm">Pre-activated Accounts</div>
+                        <div className="text-xs text-white/70">Quick access - Buy now</div>
                       </div>
                     </Link>
                     
@@ -1073,14 +1073,14 @@ export default function Header() {
                       href="/email-activated-adobe-creative-cloud"
                       prefetch={false}
                       onClick={handleNavLinkClick}
-                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300"
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300"
                     >
-                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg">
-                        <i className="fas fa-user-cog text-white text-lg"></i>
+                      <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg">
+                        <i className="fas fa-user-cog text-white text-sm"></i>
                       </span>
                       <div>
-                        <div className="font-bold">Email Activation</div>
-                        <div className="text-sm text-white/70">Use your Adobe Email</div>
+                        <div className="font-bold text-sm">Email Activation</div>
+                        <div className="text-xs text-white/70">Use your Adobe Email</div>
                       </div>
                     </Link>
                     
@@ -1088,14 +1088,14 @@ export default function Header() {
                       href="/adobe-creative-cloud-redemption-codes"
                       prefetch={false}
                       onClick={handleNavLinkClick}
-                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 transition-all duration-300"
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 transition-all duration-300"
                     >
-                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg">
-                        <i className="fas fa-gift text-white text-lg"></i>
+                      <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg">
+                        <i className="fas fa-gift text-white text-sm"></i>
                       </span>
                       <div>
-                        <div className="font-bold">Redemption Codes</div>
-                        <div className="text-sm text-white/70">Official Adobe codes</div>
+                        <div className="font-bold text-sm">Redemption Codes</div>
+                        <div className="text-xs text-white/70">Official Adobe codes</div>
                       </div>
                     </Link>
                     
@@ -1103,14 +1103,14 @@ export default function Header() {
                       href="/adobe-acrobat-pro"
                       prefetch={false}
                       onClick={handleNavLinkClick}
-                      className="flex items-center gap-4 px-4 py-4 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 hover:from-red-500/30 hover:to-orange-500/30 transition-all duration-300"
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 hover:from-red-500/30 hover:to-orange-500/30 transition-all duration-300"
                     >
-                      <span className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-r from-red-500 to-orange-500 shadow-lg">
-                        <i className="fas fa-file-pdf text-white text-lg"></i>
+                      <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-r from-red-500 to-orange-500 shadow-lg">
+                        <i className="fas fa-file-pdf text-white text-sm"></i>
                       </span>
                       <div>
-                        <div className="font-bold">Acrobat Pro</div>
-                        <div className="text-sm text-white/70">Professional PDF tools</div>
+                        <div className="font-bold text-sm">Acrobat Pro</div>
+                        <div className="text-xs text-white/70">Professional PDF tools</div>
                       </div>
                     </Link>
                   </div>
