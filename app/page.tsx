@@ -653,8 +653,13 @@ export default function Home() {
         </React.Suspense>
 
         <HeroSection />
-        <ProductInclusionsSection />
+        <div className="md:hidden">
+          <ProductInclusionsSection />
+        </div>
         <SocialProofSection />
+        <div className="hidden md:block">
+          <ProductInclusionsSection />
+        </div>
         <BenefitsSection />
         
         <PricingSection 

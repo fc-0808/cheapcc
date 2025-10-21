@@ -116,45 +116,78 @@ export default function HeroSection() {
             </div>
 
             {/* Desktop View */}
-            <div className="hidden md:block space-y-10">
-              <motion.div variants={itemVariants} className="mb-10">
+            <div className="hidden md:block space-y-8">
+              {/* Badge */}
+              <motion.div variants={itemVariants} className="flex justify-center">
                 <motion.div 
                   whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(255, 51, 102, 0.8)' }}
-                  className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-black/20 backdrop-blur-sm border border-[#ff3366]/50 text-[#ff3366] text-sm font-medium shadow-[0_0_15px_rgba(255,51,102,0.6)] transition-shadow duration-300"
+                  className="inline-flex items-center gap-2.5 py-2.5 px-6 rounded-full bg-white/5 backdrop-blur-xl border border-[#ff3366]/40 text-[#ff3366] text-sm font-semibold shadow-lg shadow-red-500/10 hover:bg-white/8 transition-all duration-300"
                 >
-                  <i className="fas fa-tags" aria-hidden="true" /> Limited Time Offer: Save up to 83% vs Official Pricing
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#ff3366]/20">
+                    <i className="fas fa-bolt text-xs" aria-hidden="true" />
+                  </span>
+                  <span>Limited Time: Save up to 83%</span>
                 </motion.div>
               </motion.div>
 
-              <motion.h1 id="hero-heading-desktop" variants={itemVariants} className="text-center text-6xl font-extrabold text-white leading-tight mb-6" style={{ textShadow: '0 5px 25px rgba(0,0,0,0.4)' }}>
-                <span className="bg-gradient-to-r from-fuchsia-500 via-pink-500 to-red-500 bg-clip-text text-transparent">
-                  Adobe Creative Cloud Discount
-                </span> <br />
-                83% Off Official Pricing
-              </motion.h1>
-              <motion.p variants={itemVariants} className="text-white/70 max-w-2xl mx-auto mb-10 text-lg font-light">
-                CheapCC: Your trusted Adobe CC alternative. Get genuine Photoshop, Illustrator, Premiere Pro & all Creative Cloud apps for less.
+              {/* Main Heading */}
+              <motion.div variants={itemVariants} className="space-y-5">
+                <h1 id="hero-heading-desktop" className="text-6xl lg:text-7xl font-black text-white leading-tight tracking-tight" style={{ textShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+                  <span className="block">Genuine Adobe CC</span>
+                  <span className="block">
+                    <span className="bg-gradient-to-r from-pink-400 via-pink-500 to-rose-500 bg-clip-text text-transparent">
+                      Up to 83% Off
+                    </span>
+                  </span>
+                </h1>
+              </motion.div>
+
+              {/* Description */}
+              <motion.p variants={itemVariants} className="text-base lg:text-lg text-white/75 max-w-2xl mx-auto leading-relaxed font-light">
+                CheapCC provides legitimate Adobe Creative Cloud subscriptions. Same apps, guaranteed activation, lifetime support.
               </motion.p>
-              <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-4 mb-10">
-                {['All Creative Cloud Apps', '100GB Cloud Storage', 'Adobe Firefly Included'].map((feature, i) => (
-                  <motion.div key={feature} whileHover={{ y: -5, scale: 1.05 }} className="flex items-center gap-2 py-2 px-4 border border-white/10 bg-white/5 backdrop-blur-sm rounded-full text-white/80 text-sm font-medium">
-                    <i className={`fas ${['fa-th', 'fa-cloud', 'fa-wand-magic-sparkles'][i]} text-[#ff3366] text-xs`}></i>{feature}
+
+              {/* Feature Pills */}
+              <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-3 pt-2">
+                {[
+                  { icon: 'fa-check', text: 'Fast Delivery' },
+                  { icon: 'fa-shield', text: 'Secure' },
+                  { icon: 'fa-headset', text: '24/7 Support' }
+                ].map((feature, i) => (
+                  <motion.div key={feature.text} whileHover={{ scale: 1.05, y: -2 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm font-medium backdrop-blur-sm hover:bg-white/8 hover:border-white/20 transition-all duration-300">
+                    <i className={`fas ${feature.icon} text-xs text-[#ff3366]`}></i>
+                    <span>{feature.text}</span>
                   </motion.div>
                 ))}
               </motion.div>
-              <motion.div variants={itemVariants}>
-                <motion.a
-                  whileHover={{ scale: 1.05, y: -3, boxShadow: '0 10px 30px rgba(239, 68, 68, 0.35)' }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  href="#pricing"
-                  onClick={handleScrollToPricing}
-                  className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-600 text-white font-semibold text-lg shadow-lg shadow-red-500/30 border border-white/20"
-                  aria-label="View pricing"
+
+              {/* CTA Button */}
+              <motion.div variants={itemVariants} className="pt-4 lg:pt-6 w-full px-0">
+                <motion.a 
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                  href="#pricing" 
+                  onClick={handleScrollToPricing} 
+                  className="group inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl bg-gradient-to-r from-pink-500 via-pink-500 to-rose-600 text-white font-bold text-lg shadow-xl shadow-red-500/20 border border-white/20 hover:shadow-2xl hover:shadow-red-500/30 transition-all duration-300 backdrop-blur-sm"
+                  aria-label="View pricing plans"
                 >
-                  View Pricing & Plans
-                  <i className="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
+                  <span>View Pricing & Plans</span>
+                  <i className="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform duration-300"></i>
                 </motion.a>
+              </motion.div>
+
+              {/* Trust Indicator */}
+              <motion.div variants={itemVariants} className="pt-6 flex items-center justify-center gap-8">
+                <div className="text-center">
+                  <p className="text-3xl lg:text-4xl font-bold text-white">500+</p>
+                  <p className="text-sm text-white/60 mt-1">Happy Customers</p>
+                </div>
+                <div className="w-px h-16 bg-gradient-to-b from-white/0 via-white/20 to-white/0"></div>
+                <div className="text-center">
+                  <p className="text-3xl lg:text-4xl font-bold text-white">4.8/5</p>
+                  <p className="text-sm text-white/60 mt-1">Rating</p>
+                </div>
               </motion.div>
             </div>
           </div>
