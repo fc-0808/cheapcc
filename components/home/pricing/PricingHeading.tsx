@@ -29,9 +29,9 @@ export default function PricingHeading({ isAdmin, adminError, selectedActivation
     >
       <motion.h2
         ref={titleRef}
-        className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6"
+        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-8 leading-tight tracking-tight"
         style={{
-          textShadow: '0 0 20px rgba(255, 51, 102, 0.3)',
+          textShadow: '0 4px 12px rgba(0,0,0,0.3), 0 0 30px rgba(255, 51, 102, 0.2)',
           transform: titleInView ? "perspective(1000px) rotateX(0deg)" : "perspective(1000px) rotateX(10deg)",
           willChange: 'transform'
         }}
@@ -53,7 +53,7 @@ export default function PricingHeading({ isAdmin, adminError, selectedActivation
         </motion.span>
       </motion.h2>
       <motion.p
-        className="text-white/80 mx-auto mb-8 text-base sm:text-lg font-light tracking-wide"
+        className="text-white/90 mx-auto mb-10 text-lg sm:text-xl md:text-2xl font-light tracking-wide max-w-4xl leading-relaxed"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}

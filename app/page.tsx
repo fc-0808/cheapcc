@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import { useInternationalization } from '@/contexts/InternationalizationContext';
 
 // Import section components
-import HeroSection from "@/components/home/HeroSection";
+import HeroSection, { ProductInclusionsSection } from "@/components/home/HeroSection";
 import SocialProofSection from "@/components/home/SocialProofSection";
 import BenefitsSection from "@/components/home/BenefitsSection";
 import PricingSection from "@/components/home/PricingSection";
@@ -653,6 +653,7 @@ export default function Home() {
         </React.Suspense>
 
         <HeroSection />
+        <ProductInclusionsSection />
         <SocialProofSection />
         <BenefitsSection />
         
@@ -759,7 +760,7 @@ export default function Home() {
                   <i className="fas fa-users mr-2"></i>500+ Happy Customers
                 </div>
                 <div className="bg-purple-500/20 border border-purple-500/50 rounded-full px-6 py-2 text-purple-400 font-medium">
-                  <i className="fas fa-shield-check mr-2"></i>Verified Reviews
+                  <i className="fas fa-check-circle mr-2"></i>Verified Reviews
                 </div>
               </div>
               

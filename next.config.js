@@ -46,12 +46,12 @@ const nextConfig = {
 						key: 'Content-Security-Policy',
 						value: [
 							"default-src 'self'",
-							"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://cdnjs.cloudflare.com https://use.fontawesome.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+							"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://www.googleadservices.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://cdnjs.cloudflare.com https://use.fontawesome.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to https://vitals.vercel-insights.com https://va.vercel-scripts.com",
 							"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://use.fontawesome.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
 							"font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://use.fontawesome.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
-							"img-src 'self' data: blob: https://cheapcc.online https://images.unsplash.com https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://www.gstatic.com https://cdnjs.cloudflare.com https://flagcdn.com https://redeem.adobe.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
-							"connect-src 'self' https://api.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://www.gstatic.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to https://vitals.vercel-insights.com https://*.supabase.co wss://embed.tawk.to wss://*.tawk.to",
-							"frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com https://www.google.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
+							"img-src 'self' data: blob: https://cheapcc.online https://images.unsplash.com https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://www.gstatic.com https://www.googleadservices.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googletagmanager.com https://cdnjs.cloudflare.com https://flagcdn.com https://redeem.adobe.com https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
+							"connect-src 'self' https://api.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://www.google.com https://www.gstatic.com https://www.googleadservices.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to https://vitals.vercel-insights.com https://*.supabase.co wss://embed.tawk.to wss://*.tawk.to",
+							"frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com https://js.stripe.com https://www.google.com https://www.googletagmanager.com https://www.googleadservices.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://embed.tawk.to https://static.tawk.to https://tawk.to https://va.tawk.to https://tawk.link https://*.tawk.to",
 							"media-src 'self' data: blob:",
 							"object-src 'none'",
 							"base-uri 'self'",
@@ -75,6 +75,10 @@ const nextConfig = {
 		NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
 		NEXT_PUBLIC_RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
 		NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+		// Google Ads/Analytics gtag ID (e.g., AW-17667223561)
+		NEXT_PUBLIC_GOOGLE_ADS_ID: process.env.NEXT_PUBLIC_GOOGLE_ADS_ID,
+		// Google Ads conversion label for purchase event
+		NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL: process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL,
 		// ngrok configuration
 		NGROK_URL: process.env.NGROK_URL,
 		FORCE_NGROK_FOR_WEBHOOKS: process.env.FORCE_NGROK_FOR_WEBHOOKS,

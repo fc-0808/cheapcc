@@ -17,7 +17,7 @@ export const trackBrandPageView = (pageName: string, pageUrl: string) => {
       content_group1: 'Brand Pages',
       content_group2: 'CheapCC Content',
       custom_parameter_1: 'brand_content',
-      send_to: 'GA_MEASUREMENT_ID'
+      send_to: (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || 'AW-XXXXXXX') : 'AW-XXXXXXX')
     });
   }
 };
@@ -203,5 +203,23 @@ export const initializeEnhancedTracking = () => {
     // This would integrate with web-vitals library if installed
     console.log('Core Web Vitals tracking initialized for brand pages');
   }
+};
+
+// Fire Google Ads conversion with optional value and currency
+export const trackGoogleAdsConversion = (
+  value?: number,
+  currency: string = 'USD',
+  transactionId?: string
+) => {
+  if (typeof window === 'undefined' || !window.gtag) return;
+
+  const sendTo = (process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || 'AW-XXXXXXX') + '/' + (process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || 'conversion_label');
+
+  const params: Record<string, any> = { send_to: sendTo };
+  if (typeof value === 'number') params.value = value;
+  if (currency) params.currency = currency;
+  if (transactionId) params.transaction_id = transactionId;
+
+  window.gtag('event', 'conversion', params);
 };
 

@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useInternationalization } from '@/contexts/InternationalizationContext';
 import Script from 'next/script';
 import { validateAdobeEmail, getEmailErrorMessage, getEmailSuggestions, type EmailValidationResult } from '@/utils/email-validation';
+import { trackGoogleAdsConversion } from '@/utils/analytics';
 
 // Success message component to show after successful payment
 const PaymentSuccessMessage = ({ email }: { email: string }) => {
@@ -349,6 +350,9 @@ export default function CheckoutSection({
         setPaymentStatus('error');
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
         // Payment successful, show success message by setting status
+        try {
+          trackGoogleAdsConversion(finalPrice, countryConfig.currency, paymentIntent.id);
+        } catch {}
         setPaymentStatus('success');
       }
     } catch (error: any) {
@@ -438,25 +442,30 @@ export default function CheckoutSection({
   // Render mobile/tablet card switcher with swipe functionality
   const renderMobileCardSwitcher = useCallback(() => {
     return (
-      <div className="relative w-full max-w-md mx-auto md:hidden">
+      <div className="relative w-full max-w-lg mx-auto md:hidden">
         <motion.div 
           variants={itemVariants}
-          className="w-full bg-white/5 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl shadow-black/20 border border-white/10"
+          className="w-full bg-gradient-to-br from-gray-900/95 via-gray-800/90 to-gray-900/95 backdrop-blur-xl p-8 sm:p-10 rounded-3xl shadow-2xl shadow-black/40 border border-white/20"
         >
           {/* Unified Checkout Form - Mobile/Tablet */}
           
           {/* Section 1: Billing Information */}
-          <h3 className="text-xl font-semibold text-white mb-6">Billing Information</h3>
-          <div className="space-y-6 mb-8">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-8 h-8 bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20 rounded-lg flex items-center justify-center">
+              <i className="fas fa-user text-fuchsia-400 text-sm"></i>
+            </div>
+            <h3 className="text-2xl font-bold text-white">Billing Information</h3>
+          </div>
+          <div className="space-y-8 mb-10">
             <div>
               <div className="relative group">
-                <div className={`absolute -inset-0.5 rounded-lg blur transition duration-300 ${nameError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
-                <i className="far fa-user text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
+                <div className={`absolute -inset-0.5 rounded-xl blur transition duration-300 ${nameError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
+                <i className="far fa-user text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
                 <input type="text" id="name-checkout-mobile" required value={name} disabled={isUserSignedIn}
                   onChange={e => !isUserSignedIn && setName(e.target.value)}
-                  className={`relative w-full px-4 py-3 pl-10 border-b-2 bg-black/20 focus:outline-none transition text-white ${nameError ? 'border-red-500' : 'border-white/20 focus:border-fuchsia-400/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-black/30' : ''}`}
+                  className={`relative w-full px-5 py-4 pl-12 border-2 rounded-xl bg-gray-800/50 focus:outline-none transition-all duration-300 text-white text-base ${nameError ? 'border-red-500 bg-red-500/10' : 'border-white/20 focus:border-fuchsia-400/50 focus:bg-gray-700/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-gray-700/30' : ''}`}
                 />
-                <label htmlFor="name-checkout-mobile" className={`absolute left-10 transition-all duration-300 pointer-events-none ${name || isUserSignedIn ? '-top-5 left-0' : 'top-3'} text-${name || isUserSignedIn ? 'xs' : 'base'} ${nameError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-5 group-focus-within:text-xs group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Full Name</label>
+                <label htmlFor="name-checkout-mobile" className={`absolute left-12 transition-all duration-300 pointer-events-none ${name || isUserSignedIn ? '-top-3 left-0' : 'top-4'} text-${name || isUserSignedIn ? 'sm' : 'base'} ${nameError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-3 group-focus-within:text-sm group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Full Name</label>
                 {isUserSignedIn && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                     <span className="bg-gradient-to-r from-green-500 to-cyan-500 text-xs text-black font-medium py-0.5 px-2 rounded-full flex items-center gap-1">
@@ -471,13 +480,13 @@ export default function CheckoutSection({
             </div>
             <div>
               <div className="relative group">
-                <div className={`absolute -inset-0.5 rounded-lg blur transition duration-300 ${emailError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
-                <i className="far fa-envelope text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
+                <div className={`absolute -inset-0.5 rounded-xl blur transition duration-300 ${emailError ? 'bg-red-500 opacity-75' : 'bg-gradient-to-r from-fuchsia-600 to-pink-600 opacity-0 group-focus-within:opacity-75'}`}></div>
+                <i className="far fa-envelope text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10"></i>
                 <input type="email" id="email-checkout-mobile" required value={email} disabled={isUserSignedIn}
                   onChange={e => !isUserSignedIn && setEmail(e.target.value)}
-                  className={`relative w-full px-4 py-3 pl-10 border-b-2 bg-black/20 focus:outline-none transition text-white ${emailError ? 'border-red-500' : 'border-white/20 focus:border-fuchsia-400/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-black/30' : ''}`}
+                  className={`relative w-full px-5 py-4 pl-12 border-2 rounded-xl bg-gray-800/50 focus:outline-none transition-all duration-300 text-white text-base ${emailError ? 'border-red-500 bg-red-500/10' : 'border-white/20 focus:border-fuchsia-400/50 focus:bg-gray-700/50'} ${isUserSignedIn ? 'cursor-not-allowed bg-gray-700/30' : ''}`}
                 />
-                <label htmlFor="email-checkout-mobile" className={`absolute left-10 transition-all duration-300 pointer-events-none ${email || isUserSignedIn ? '-top-5 left-0' : 'top-3'} text-${email || isUserSignedIn ? 'xs' : 'base'} ${emailError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-5 group-focus-within:text-xs group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Email Address</label>
+                <label htmlFor="email-checkout-mobile" className={`absolute left-12 transition-all duration-300 pointer-events-none ${email || isUserSignedIn ? '-top-3 left-0' : 'top-4'} text-${email || isUserSignedIn ? 'sm' : 'base'} ${emailError ? 'text-red-400' : 'text-gray-400 group-focus-within:-top-3 group-focus-within:text-sm group-focus-within:left-0 group-focus-within:text-fuchsia-400'}`}>Email Address</label>
                 {isUserSignedIn && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
                     <span className="bg-gradient-to-r from-green-400 to-cyan-400 text-xs text-black font-medium py-0.5 px-2 rounded-full flex items-center gap-1">
@@ -529,7 +538,12 @@ export default function CheckoutSection({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <h3 className="text-xl font-semibold text-white mb-4">Payment Method</h3>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-credit-card text-green-400 text-sm"></i>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">Payment Method</h3>
+                </div>
                 <div className="flex border-b border-white/10 mb-6">
                   {TABS.map(tab => (
                     <button key={tab.id} onClick={() => setActiveTab(tab.id as 'stripe' | 'paypal')} className="flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors relative text-gray-400 hover:text-white">
@@ -689,7 +703,11 @@ export default function CheckoutSection({
                           console.log('🎯 CheckoutSection MOBILE: Setting payment status to "success"');
                           console.log('🎯 CheckoutSection MOBILE: Current paymentStatus before set:', paymentStatus);
                           
-                          // Force immediate state update
+                          // Fire Ads conversion and then set success
+                          try {
+                            const transactionId = details?.id || details?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+                            trackGoogleAdsConversion(finalPrice, countryConfig.currency, transactionId);
+                          } catch {}
                           setPaymentStatus('success');
                           
                           // Also call the parent callback
@@ -741,7 +759,12 @@ export default function CheckoutSection({
           <div className="border-t border-white/10 my-6"></div>
 
           {/* Section 3: Order Summary */}
-          <h3 className="text-xl font-semibold text-white mb-4">Order Summary</h3>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-lg flex items-center justify-center">
+              <i className="fas fa-receipt text-blue-400 text-sm"></i>
+            </div>
+            <h3 className="text-2xl font-bold text-white">Order Summary</h3>
+          </div>
           <div className="inline-flex items-center gap-2 py-1.5 px-3 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 mb-4">
             <i className="fas fa-clock text-fuchsia-400 text-xs"></i>
             <span className="text-xs font-medium text-fuchsia-400">Limited Time Offer</span>
@@ -1036,7 +1059,11 @@ export default function CheckoutSection({
                     console.log('🎯 CheckoutSection: Setting payment status to "success"');
                     console.log('🎯 CheckoutSection: Current paymentStatus before set:', paymentStatus);
                     
-                    // Force immediate state update
+                    // Fire Ads conversion and then set success
+                    try {
+                      const transactionId = details?.id || details?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+                      trackGoogleAdsConversion(finalPrice, countryConfig.currency, transactionId);
+                    } catch {}
                     setPaymentStatus('success');
                     
                     // Also call the parent callback
