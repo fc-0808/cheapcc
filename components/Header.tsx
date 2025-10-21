@@ -36,6 +36,7 @@ export default function Header() {
   const [isVisible, setIsVisible] = useState(false);
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(true);
+  const [isTabletOrLarger, setIsTabletOrLarger] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -378,13 +379,17 @@ export default function Header() {
       ref={headerRef}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className={`fixed top-0 z-50 py-3 mx-3 my-4 rounded-[20px] transition-all duration-300 ease-in-out left-0 right-0 md:left-20 md:right-20 lg:left-80 lg:right-80 ${visibilityClasses}`}
+      className={`fixed top-0 z-50 py-3 mx-3 my-4 rounded-[20px] transition-all duration-300 ease-in-out left-0 right-0 ${visibilityClasses}`}
       style={{
         background: 'transparent',
         backdropFilter: "blur(3px)",
         boxShadow: "none",
         borderBottom: "none",
-        transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
+        // Apply transform with translateX for tablets/desktop centering
+        transform: typeof window !== 'undefined' && window.innerWidth >= 768
+          ? (headerVisible ? 'translateY(0) translateX(-50%)' : 'translateY(-100%) translateX(-50%)')
+          : (headerVisible ? 'translateY(0)' : 'translateY(-100%)'),
+
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between relative z-10">
@@ -1169,3 +1174,7 @@ export default function Header() {
     </header>
   );
 }
+
+
+
+

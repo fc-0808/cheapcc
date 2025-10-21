@@ -19,6 +19,16 @@ import { trackGoogleAdsConversion } from '@/utils/analytics';
 // Success message component to show after successful payment
 const PaymentSuccessMessage = ({ email }: { email: string }) => {
   console.log('🎉 PaymentSuccessMessage rendering with email:', email);
+  
+  // Track Google Ads conversion when success message appears
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.gtag) {
+      // Fire conversion with optional value (you can customize this based on product price)
+      trackGoogleAdsConversion(1.0, 'USD');
+      console.log('✅ Google Ads conversion tracked for successful payment');
+    }
+  }, []);
+  
   return (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
     <motion.div 

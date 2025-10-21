@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 const Header = dynamic(() => import('./Header'), {
   ssr: false,
   loading: () => (
-    <header className="fixed top-0 z-50 py-3 mx-3 my-4 rounded-[20px] transition-all duration-300 ease-in-out left-0 right-0 md:left-20 md:right-20 lg:left-80 lg:right-80 opacity-0">
+    <header className="fixed top-0 z-50 py-3 mx-3 my-4 rounded-[20px] transition-all duration-300 ease-in-out left-0 right-0 opacity-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between relative z-10">
         <div className="h-8 w-24 bg-white/5 rounded-md backdrop-blur-sm animate-pulse" />
         <div className="h-8 w-8 bg-white/5 rounded-md backdrop-blur-sm animate-pulse md:hidden" />

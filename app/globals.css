@@ -655,6 +655,8 @@ input:focus, select:focus, textarea:focus {
   min-height: 95vh;
   display: flex;
   align-items: center;
+  /* Prevent fixed header from covering hero content on mobile */
+  scroll-margin-top: 80px;
 }
 
 @media (min-width: 640px) { /* sm breakpoint */
@@ -4170,3 +4172,40 @@ section#pricing [data-id] {
     right: 0;
   }
 }
+
+@media (max-width: 767px) {
+  /* Mobile: Add extra padding-top to push content below header */
+  .hero {
+    padding-top: 30px !important;
+    scroll-margin-top: 30px;
+  }
+}
+
+/* Ensure proper scroll padding for the entire document on mobile */
+@media (max-width: 767px) {
+  html {
+    scroll-padding-top: 30px;
+  }
+}
+/* Header layout fix for tablets (iPad, iPad Air) - 768px to 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  header.fixed {
+    left: 50% !important;
+    right: auto !important;
+    width: calc(100% - 80px) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Header layout fix for iPad Pro and larger screens - 1024px and above */
+@media (min-width: 1024px) {
+  header.fixed {
+    left: 50% !important;
+    right: auto !important;
+    width: calc(100% - 640px) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
+

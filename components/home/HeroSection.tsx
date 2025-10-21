@@ -31,9 +31,9 @@ export default function HeroSection() {
   return (
     <>
       <Script id="hero-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(heroSchemaData) }} />
-      <section className="hero relative overflow-hidden min-h-screen md:min-h-screen flex items-center justify-center -mt-16 md:-mt-16 bg-transparent" aria-labelledby="hero-heading">
+      <section className="hero relative overflow-hidden min-h-screen md:min-h-screen flex items-center justify-center md:-mt-16 bg-transparent" aria-labelledby="hero-heading">
         <motion.div
-          className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-8 relative z-10 flex flex-col items-center justify-center text-center"
+          className="container mx-auto px-4 sm:px-6 pt-1 sm:pt-2 md:py-8 relative z-10 flex flex-col items-center justify-center text-center"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
