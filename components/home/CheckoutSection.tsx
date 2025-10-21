@@ -454,7 +454,7 @@ export default function CheckoutSection({
             <div className="w-8 h-8 bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20 rounded-lg flex items-center justify-center">
               <i className="fas fa-user text-fuchsia-400 text-sm"></i>
             </div>
-            <h3 className="text-2xl font-bold text-white">Billing Information</h3>
+            <h3 className="text-lg font-semibold text-white">Billing Information</h3>
           </div>
           <div className="space-y-8 mb-10">
             <div>
@@ -542,7 +542,7 @@ export default function CheckoutSection({
                   <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg flex items-center justify-center">
                     <i className="fas fa-credit-card text-green-400 text-sm"></i>
                   </div>
-                  <h3 className="text-2xl font-bold text-white">Payment Method</h3>
+                  <h3 className="text-lg font-semibold text-white">Payment Method</h3>
                 </div>
                 <div className="flex border-b border-white/10 mb-6">
                   {TABS.map(tab => (
@@ -763,7 +763,7 @@ export default function CheckoutSection({
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-lg flex items-center justify-center">
               <i className="fas fa-receipt text-blue-400 text-sm"></i>
             </div>
-            <h3 className="text-2xl font-bold text-white">Order Summary</h3>
+            <h3 className="text-lg font-semibold text-white">Order Summary</h3>
           </div>
           <div className="inline-flex items-center gap-2 py-1.5 px-3 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 mb-4">
             <i className="fas fa-clock text-fuchsia-400 text-xs"></i>

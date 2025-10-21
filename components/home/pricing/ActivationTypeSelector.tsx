@@ -13,7 +13,7 @@ export default function ActivationTypeSelector({ selectedType, onTypeChange }: A
 
   return (
     <motion.div 
-      className="flex justify-center mb-8 relative z-50 md:z-20"
+      className="flex justify-center mb-8 relative z-20 md:z-20"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
@@ -25,7 +25,7 @@ export default function ActivationTypeSelector({ selectedType, onTypeChange }: A
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Tooltip */}
-        <div className="absolute -top-2 -right-2 z-10">
+        <div className="absolute -top-2 -right-2 z-30">
           <ActivationTypeTooltip />
         </div>
         {/* Background slider - Desktop only */}

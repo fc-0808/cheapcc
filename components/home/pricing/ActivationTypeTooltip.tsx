@@ -45,6 +45,16 @@ export default function ActivationTypeTooltip({ className = "" }: ActivationType
       <AnimatePresence>
         {isVisible && (
           <>
+            {/* Mobile Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="block sm:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[99998]"
+              onClick={() => setIsVisible(false)}
+            />
+            
             {/* Desktop Tooltip */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -5 }}
@@ -99,23 +109,23 @@ export default function ActivationTypeTooltip({ className = "" }: ActivationType
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -5 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="block sm:hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-sm bg-[rgba(17,17,40,0.98)] backdrop-blur-lg border border-white/30 rounded-xl shadow-2xl z-50000 p-4"
+              className="block sm:hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-sm bg-[rgba(17,17,40,0.98)] backdrop-blur-lg border border-white/30 rounded-xl shadow-2xl z-[99999] p-4 isolate"
               onMouseEnter={() => setIsVisible(true)}
               onMouseLeave={() => setIsVisible(false)}
             >
               {/* Mobile Content */}
-              <div className="space-y-4">
+              <div className="relative space-y-4">
                 <h4 className="text-base font-bold text-white flex items-center gap-2 mb-4">
                   <i className="fas fa-info-circle text-fuchsia-400"></i>
                   Activation Type Options
                 </h4>
                 
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg">
+                  <div className="relative flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 overflow-hidden">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg z-10">
                       <i className="fas fa-key text-white text-xs"></i>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 relative z-10">
                       <div className="font-semibold text-white text-sm mb-1">Pre-Activated</div>
                       <div className="text-gray-300 leading-relaxed text-xs">
                         Ready-to-use Adobe account with quick access.
@@ -123,11 +133,11 @@ export default function ActivationTypeTooltip({ className = "" }: ActivationType
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg">
+                  <div className="relative flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 overflow-hidden">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-lg z-10">
                       <i className="fas fa-envelope text-white text-xs"></i>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 relative z-10">
                       <div className="font-semibold text-white text-sm mb-1">Use Your Email</div>
                       <div className="text-gray-300 leading-relaxed text-xs">
                         CheapCC authorizes your Adobe account via educational organization access.

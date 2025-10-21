@@ -104,7 +104,7 @@ export default function HeroSection() {
               {/* Trust Indicator */}
               <motion.div variants={itemVariants} className="pt-2 flex items-center justify-center gap-4">
                 <div className="text-center">
-                  <p className="text-2xl sm:text-3xl font-bold text-white">1000+</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">500+</p>
                   <p className="text-xs sm:text-sm text-white/60">Happy Customers</p>
                 </div>
                 <div className="w-px h-12 bg-white/10"></div>
