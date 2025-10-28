@@ -97,6 +97,7 @@ export const CreatePaymentIntentSchema = z.object({
   basePrice: z.number().optional(),
   displayPrice: z.number().optional(),
   countryCode: z.string().optional().default('US'),
+  currency: z.string().optional().default('USD'),
 });
 export type CreatePaymentIntentPayload = z.infer<typeof CreatePaymentIntentSchema>;
 

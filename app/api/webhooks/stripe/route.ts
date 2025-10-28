@@ -286,7 +286,19 @@ export async function POST(request: NextRequest) {
         const { data: userProfile } = await supabase.from('profiles').select('id').eq('email', userEmail).maybeSingle();
         const isGuestCheckout = !userProfile;
         
-        await sendConfirmationEmail(userEmail, userName, paymentIntent.id, isGuestCheckout, finalActivationType, adobeEmail, priceId);
+        await sendConfirmationEmail(
+          userEmail,
+          userName,
+          paymentIntent.id,
+          isGuestCheckout,
+          finalActivationType,
+          adobeEmail,
+          priceId,
+          amount,
+          paymentIntent.currency?.toUpperCase(),
+          countryCode,
+          standardDescription
+        );
         console.info(JSON.stringify({ ...logContext, event: "confirmation_email_sent" }, null, 2));
 
       } catch (dbError: any) {

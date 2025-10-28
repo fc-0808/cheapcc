@@ -4,12 +4,20 @@ interface EmailTemplateProps {
   name: string;
   orderId: string;
   isGuest?: boolean;
+  planDescription?: string;
+  priceDisplay?: string;
+  duration?: string;
+  productName?: string;
 }
 
 export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   name,
   orderId,
   isGuest = false,
+  planDescription,
+  priceDisplay,
+  duration,
+  productName,
 }) => (
   <html lang="en">
     <head>
@@ -33,6 +41,17 @@ export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
               <div style={{ marginBottom: 8 }}><strong>Order Number:</strong> <span style={{ color: '#ff3366' }}>{orderId}</span></div>
               <div><strong>Status:</strong> <span style={{ color: '#10b981' }}>Confirmed</span></div>
             </div>
+            {(planDescription || priceDisplay || duration || productName) && (
+              <div style={{ background: '#eef2ff', borderLeft: '4px solid #6366f1', borderRadius: 6, padding: 16, margin: '24px 0', color: '#1e293b', fontSize: 15 }}>
+                <strong>Order Summary</strong>
+                <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                  {productName && <li><strong>Product:</strong> {productName}</li>}
+                  {planDescription && <li><strong>Plan:</strong> {planDescription}</li>}
+                  {duration && <li><strong>Duration:</strong> {duration}</li>}
+                  {priceDisplay && <li><strong>Total Paid:</strong> {priceDisplay}</li>}
+                </ul>
+              </div>
+            )}
             {/* Guest reminder */}
             {isGuest && (
               <div style={{ background: '#fffbe6', borderLeft: '4px solid #ffe066', borderRadius: 6, padding: 16, margin: '24px 0', color: '#b08900', fontSize: 15 }}>

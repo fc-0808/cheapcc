@@ -732,7 +732,9 @@ export default function CheckoutSection({
                           onPaymentError?.(error);
                         }}
                         isProcessing={paymentStatus === 'loading'}
-                        setIsProcessing={(processing) => setPaymentStatus(processing ? 'loading' : 'idle')}
+                        setIsProcessing={(processing) =>
+                          setPaymentStatus(prev => processing ? 'loading' : (prev === 'success' ? 'success' : 'idle'))
+                        }
                         containerId="mobile-paypal-container"
                         createPayPalOrderWithRetry={createPayPalOrderWithRetry}
                         adobeEmail={adobeEmail}
@@ -1088,7 +1090,9 @@ export default function CheckoutSection({
                     onPaymentError?.(error);
                   }}
                   isProcessing={paymentStatus === 'loading'}
-                  setIsProcessing={(processing) => setPaymentStatus(processing ? 'loading' : 'idle')}
+                  setIsProcessing={(processing) =>
+                    setPaymentStatus(prev => processing ? 'loading' : (prev === 'success' ? 'success' : 'idle'))
+                  }
                   containerId="desktop-paypal-container"
                   createPayPalOrderWithRetry={createPayPalOrderWithRetry}
                   adobeEmail={adobeEmail}

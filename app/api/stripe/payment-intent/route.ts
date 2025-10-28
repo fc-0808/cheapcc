@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation failed.', issues: validationResult.error.format() }, { status: 400 });
     }
 
-    const { priceId, name, email, idempotencyKey, activationType, adobeEmail, basePrice, displayPrice, countryCode } = validationResult.data;
+    const { priceId, name, email, idempotencyKey, activationType, adobeEmail, basePrice, displayPrice, countryCode, currency } = validationResult.data;
     
     // Get pricing options dynamically
     const pricingOptions = await getPricingOptions();
@@ -104,10 +104,15 @@ export async function POST(request: NextRequest) {
       productDescription = `${productName} - ${selectedOption.duration} Subscription`;
     }
 
+    // Determine currency:
+    // - Prefer validated client-provided currency (e.g., EUR)
+    // - Fallback to USD
+    const finalCurrency = (currency || 'USD').toLowerCase();
+
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
-      currency: 'usd',
+      currency: finalCurrency,
       // Enable automatic payment methods for better conversion
       automatic_payment_methods: {
         enabled: true, // Allow Stripe to automatically enable suitable payment methods
@@ -125,7 +130,8 @@ export async function POST(request: NextRequest) {
         productId: productId || '',
         basePrice: basePrice?.toString() || '',
         displayPrice: displayPrice?.toString() || '',
-        countryCode: countryCode || 'US'
+        countryCode: countryCode || 'US',
+        currency: finalCurrency.toUpperCase()
       },
       receipt_email: email, // Send receipt emails automatically
       // Set a description that appears on the customer's statement

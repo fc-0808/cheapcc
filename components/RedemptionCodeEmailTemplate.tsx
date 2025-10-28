@@ -6,6 +6,7 @@ interface RedemptionCodeEmailTemplateProps {
   isGuest?: boolean;
   productName?: string;
   duration?: string;
+  priceDisplay?: string;
 }
 
 export const RedemptionCodeEmailTemplate: React.FC<Readonly<RedemptionCodeEmailTemplateProps>> = ({
@@ -14,6 +15,7 @@ export const RedemptionCodeEmailTemplate: React.FC<Readonly<RedemptionCodeEmailT
   isGuest = false,
   productName = 'Adobe Creative Cloud',
   duration = '6 months',
+  priceDisplay,
 }) => (
   <html lang="en">
     <head>
@@ -39,6 +41,17 @@ export const RedemptionCodeEmailTemplate: React.FC<Readonly<RedemptionCodeEmailT
               <div style={{ marginBottom: 8 }}><strong>Status:</strong> <span style={{ color: '#10b981' }}>Confirmed</span></div>
               <div><strong>Product Type:</strong> <span style={{ color: '#9333ea' }}>Redemption Code</span></div>
             </div>
+
+            {(productName || duration || priceDisplay) && (
+              <div style={{ background: '#eef2ff', borderLeft: '4px solid #6366f1', borderRadius: 6, padding: 16, margin: '24px 0', color: '#1e293b', fontSize: 15 }}>
+                <strong>Order Summary</strong>
+                <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                  {productName && <li><strong>Product:</strong> {productName}</li>}
+                  {duration && <li><strong>Duration:</strong> {duration}</li>}
+                  {priceDisplay && <li><strong>Total Paid:</strong> {priceDisplay}</li>}
+                </ul>
+              </div>
+            )}
 
             {/* Redemption code specific information */}
             <div style={{ background: '#fef3c7', borderLeft: '4px solid #f59e0b', borderRadius: 6, padding: 16, margin: '24px 0', color: '#92400e', fontSize: 15 }}>

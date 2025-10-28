@@ -25,7 +25,11 @@ export async function sendConfirmationEmail(
   isGuest: boolean = false, 
   activationType?: string,
   adobeEmail?: string,
-  priceId?: string
+  priceId?: string,
+  amount?: number | string,
+  currency?: string,
+  countryCode?: string,
+  descriptionFromSource?: string
 ) {
   if (!resendApiKey) {
     console.error(JSON.stringify({
@@ -39,6 +43,27 @@ export async function sendConfirmationEmail(
   }
 
   try {
+    const normalizeAmount = (value: number | string | undefined): number | undefined => {
+      if (value === undefined) return undefined;
+      if (typeof value === 'number') return value;
+      const parsed = parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    };
+
+    const formatCurrency = (
+      value?: number,
+      currencyCode?: string,
+      localeHint?: string
+    ): string | undefined => {
+      if (value === undefined || !currencyCode) return undefined;
+      try {
+        const locale = localeHint && localeHint.length === 2 ? `${localeHint}-${localeHint}` : undefined;
+        return new Intl.NumberFormat(locale || undefined, { style: 'currency', currency: currencyCode }).format(value);
+      } catch {
+        return `${value.toFixed(2)} ${currencyCode}`;
+      }
+    };
+
     // Determine the product type and choose appropriate template
     let templateComponent = EmailTemplate;
     let templateProps: any = { name, orderId, isGuest };
@@ -49,6 +74,12 @@ export async function sendConfirmationEmail(
     const selectedPriceOption = priceId ? pricingOptions.find(p => p.id === priceId) : null;
     const isRedemptionCodeProduct = selectedPriceOption ? isRedemptionCode(selectedPriceOption) : false;
 
+    const normalizedAmount = normalizeAmount(amount);
+    const priceDisplay = formatCurrency(normalizedAmount, currency, countryCode);
+    const planDescription = descriptionFromSource || selectedPriceOption?.description;
+    const duration = selectedPriceOption?.duration;
+    const productName = selectedPriceOption?.originalName?.includes('Acrobat') ? 'Adobe Acrobat Pro' : 'Adobe Creative Cloud';
+
     if (isRedemptionCodeProduct) {
       // Use redemption code template
       templateComponent = RedemptionCodeEmailTemplate;
@@ -56,16 +87,28 @@ export async function sendConfirmationEmail(
         name, 
         orderId, 
         isGuest,
-        productName: selectedPriceOption?.description?.includes('Acrobat') ? 'Adobe Acrobat Pro' : 'Adobe Creative Cloud',
-        duration: selectedPriceOption?.duration || '6 months'
+        productName,
+        duration: duration || '6 months',
+        priceDisplay,
       };
       emailSubject = 'Your CheapCC Redemption Code Order Confirmation';
     } else if (activationType === 'email-activation') {
       // Use email-activation template for regular products with email-activation
       templateComponent = EmailActivationEmailTemplate;
-      templateProps = { name, orderId, isGuest, adobeEmail };
+      templateProps = { name, orderId, isGuest, adobeEmail, priceDisplay, planDescription, duration };
     }
     // Default case uses EmailTemplate with basic props (already set above)
+
+    // Always enrich the default/basic template with plan + price when available
+    if (templateComponent === EmailTemplate) {
+      templateProps = { 
+        ...templateProps,
+        planDescription,
+        priceDisplay,
+        duration,
+        productName,
+      };
+    }
 
     const emailData = {
       from: 'CheapCC Support <support@cheapcc.online>', // Ensure this email is verified with Resend

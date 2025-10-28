@@ -17,6 +17,13 @@ export default function CountrySelector({ className = '', showPricing = true }: 
   const handleCountryChange = (countryCode: string) => {
     setCountry(countryCode);
     setIsOpen(false);
+    // Force a full page reload so currency-dependent content updates everywhere
+    if (typeof window !== 'undefined') {
+      // Use a microtask to ensure localStorage/state updates flush first
+      setTimeout(() => {
+        window.location.reload();
+      }, 0);
+    }
   };
 
   const selectedCountryData = countries.find(c => c.code === selectedCountry) || countries[0];

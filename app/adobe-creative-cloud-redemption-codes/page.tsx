@@ -192,6 +192,8 @@ export default function AdobeCreativeCloudRedemptionCodes() {
               email,
               idempotencyKey,
               activationType: 'redemption-required',
+              countryCode: selectedCountry,
+              currency: countryConfig.currency,
             }),
           });
 
@@ -280,7 +282,7 @@ export default function AdobeCreativeCloudRedemptionCodes() {
     },
   } : {
     mode: 'payment',
-    currency: 'usd',
+    currency: countryConfig.currency.toLowerCase(),
     amount: amountInCents,
     appearance: {
       theme: 'night' as const,

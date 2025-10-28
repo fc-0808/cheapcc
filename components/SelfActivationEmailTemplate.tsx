@@ -5,6 +5,9 @@ interface EmailActivationEmailTemplateProps {
   orderId: string;
   isGuest?: boolean;
   adobeEmail?: string;
+  priceDisplay?: string;
+  planDescription?: string;
+  duration?: string;
 }
 
 export const EmailActivationEmailTemplate: React.FC<Readonly<EmailActivationEmailTemplateProps>> = ({
@@ -12,6 +15,9 @@ export const EmailActivationEmailTemplate: React.FC<Readonly<EmailActivationEmai
   orderId,
   isGuest = false,
   adobeEmail,
+  priceDisplay,
+  planDescription,
+  duration,
 }) => (
   <html lang="en">
     <head>
@@ -37,6 +43,17 @@ export const EmailActivationEmailTemplate: React.FC<Readonly<EmailActivationEmai
               <div style={{ marginBottom: 8 }}><strong>Status:</strong> <span style={{ color: '#10b981' }}>Confirmed</span></div>
               <div><strong>Activation Type:</strong> <span style={{ color: '#3b82f6' }}>Your Own Adobe Account</span></div>
             </div>
+
+            {(planDescription || priceDisplay || duration) && (
+              <div style={{ background: '#eef2ff', borderLeft: '4px solid #6366f1', borderRadius: 6, padding: 16, margin: '24px 0', color: '#1e293b', fontSize: 15 }}>
+                <strong>Order Summary</strong>
+                <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                  {planDescription && <li><strong>Plan:</strong> {planDescription}</li>}
+                  {duration && <li><strong>Duration:</strong> {duration}</li>}
+                  {priceDisplay && <li><strong>Total Paid:</strong> {priceDisplay}</li>}
+                </ul>
+              </div>
+            )}
 
             {/* Email activation specific information */}
             <div style={{ background: '#e0f2fe', borderLeft: '4px solid #0ea5e9', borderRadius: 6, padding: 16, margin: '24px 0', color: '#0c4a6e', fontSize: 15 }}>

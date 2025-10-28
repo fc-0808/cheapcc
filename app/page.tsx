@@ -332,6 +332,8 @@ export default function Home() {
               idempotencyKey,
               activationType: selectedActivationType,
               adobeEmail: adobeEmail && adobeEmail.trim() !== '' ? adobeEmail : null,
+              countryCode: selectedCountry,
+              currency: countryConfig.currency,
             }),
           });
 
@@ -613,7 +615,7 @@ export default function Home() {
     },
   } : {
     mode: 'payment',
-    currency: 'usd',
+    currency: countryConfig.currency.toLowerCase(),
     amount: amountInCents,
     appearance: {
       theme: 'night' as const,

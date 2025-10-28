@@ -213,6 +213,8 @@ export default function SelfActivatedAdobeCreativeCloud() {
               idempotencyKey,
               activationType: 'email-activation',
               adobeEmail: adobeEmail,
+              countryCode: selectedCountry,
+              currency: countryConfig.currency,
             }),
           });
 
@@ -301,7 +303,7 @@ export default function SelfActivatedAdobeCreativeCloud() {
     },
   } : {
     mode: 'payment',
-    currency: 'usd',
+    currency: countryConfig.currency.toLowerCase(),
     amount: amountInCents,
     appearance: {
       theme: 'night' as const,

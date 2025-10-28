@@ -326,6 +326,10 @@ export async function POST(request: NextRequest) {
     // Store order data in database before creating PayPal order
     // This allows the webhook to retrieve the form data later
     const supabase = await createServiceClient();
+
+    // Resolve a standard, product-level description up-front for DB consistency
+    const { getStandardPlanDescription } = await import('@/utils/products-supabase');
+    const standardDescription = await getStandardPlanDescription({ priceId });
     const pendingOrderData = {
       price_id: priceId,
       name,
@@ -339,6 +343,8 @@ export async function POST(request: NextRequest) {
       // ✅ ADD: Store currency for multi-currency support
       currency: currency,
       country_code: countryCode,
+      // Seed a human-readable plan description so table is immediately meaningful
+      description: standardDescription,
       status: 'PENDING',
       payment_processor: 'paypal',
       paypal_order_id: `pending-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
